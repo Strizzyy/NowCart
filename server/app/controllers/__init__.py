@@ -6,10 +6,11 @@ register here, keeping `main.py` stable.
 """
 from fastapi import APIRouter
 
-from app.controllers import health
+from app.controllers import health, catalog
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(catalog.router)
 
 # Feature routers are mounted under /api as they are implemented:
 # api_router.include_router(outcome.router, prefix="/api")

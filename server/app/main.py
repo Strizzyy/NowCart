@@ -28,6 +28,37 @@ async def lifespan(app: FastAPI):
         settings.llm_vision_provider,
         settings.data_backend,
     )
+
+    # Auto-seed in-memory backend so the API is usable without a separate seed step
+    if settings.data_backend == "memory":
+        from app.seed.catalog import load_catalog
+        from app.seed.mock_data import create_mock_users, create_mock_orders
+        from app.seed.stock_overrides import get_override_product_ids
+        from app.repositories import get_repository, get_cache
+
+        repo = get_repository()
+        cache = get_cache()
+
+        products = load_catalog()
+        override_ids = get_override_product_ids([p.product_id for p in products])
+        override_set = set(override_ids)
+        for p in products:
+            if p.product_id in override_set:
+                p.in_stock = False
+        await repo.bulk_upsert_products(products)
+        for pid in override_ids:
+            await cache.set_stock_override(pid, False)
+
+        users = create_mock_users()
+        for user in users:
+            await repo.upsert_user(user)
+
+        orders = create_mock_orders([p.product_id for p in products])
+        for order in orders:
+            await repo.upsert_order(order)
+
+        logger.info("Auto-seeded %d products, %d users, %d orders", len(products), len(users), len(orders))
+
     yield
     logger.info("NowCart shutting down")
 

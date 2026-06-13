@@ -18,7 +18,7 @@ STOCK_OVERRIDE_INDICES: list[int] = [
     75,   # A dairy product — tests brand swap
     100,  # A health food — tests organic alternative
     200,  # A household item — tests category match
-    500,  # A pantry staple — tests bulk item swap
+    400,  # A pantry staple — tests bulk item swap
 ]
 
 # Populated at seed time from the actual catalog product_ids
