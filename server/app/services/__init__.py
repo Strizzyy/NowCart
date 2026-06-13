@@ -2,15 +2,25 @@
 
 Modules:
 - catalog_service     search, fuzzy match, availability + stock override
-
-Planned modules (later tasks):
-- outcome_service     run the LangGraph engine, persist cart, return DTO
-- confidence_service  scoring (C2/C3)
-- substitution_service swap ranking (D2)
-- budget_service      constraint-first selection (A3)
-- sos_service         emergency kit templates (D4)
-- cart_service        add/remove/update/total (voice follow-ups)
+- outcome_service     run the LangGraph engine, persist cart, return domain model
 """
 from app.services.catalog_service import CatalogService, get_catalog_service
 
-__all__ = ["CatalogService", "get_catalog_service"]
+
+def __getattr__(name: str):  # noqa: N807
+    """Lazy-load OutcomeService to avoid circular imports with agents.graph."""
+    if name == "OutcomeService":
+        from app.services.outcome_service import OutcomeService
+        return OutcomeService
+    if name == "get_outcome_service":
+        from app.services.outcome_service import get_outcome_service
+        return get_outcome_service
+    raise AttributeError(f"module 'app.services' has no attribute {name!r}")
+
+
+__all__ = [
+    "CatalogService",
+    "get_catalog_service",
+    "OutcomeService",
+    "get_outcome_service",
+]

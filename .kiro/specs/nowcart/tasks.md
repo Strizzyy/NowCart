@@ -47,40 +47,40 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     - [x] 3.2v **Verify**: unit test fuzzy matching with known inputs (e.g. "basmati rice" → matches "Basmati Rice 1kg")
     - _Requirements: 1.2, 1.3, 8.3_
 
-- [ ] 4. LangGraph Outcome Engine (A1 backbone)
-    - [ ] 4.1 AgentState + nodes: intent, decompose, match, optimize, substitute, confidence
-    - [ ] 4.1v **Verify**: instantiate graph nodes individually with mock state; confirm each node transforms state correctly
-    - [ ] 4.2 Graph wiring with out-of-stock conditional edge + HITL gate; outcome_service persists cart
-    - [ ] 4.2v **Verify**: run full graph end-to-end with MockProvider input "Biryani for 4"; confirm cart is returned with items
+- [-] 4. LangGraph Outcome Engine (A1 backbone)
+    - [x] 4.1 AgentState + nodes: intent, decompose, match, optimize, substitute, confidence
+    - [x] 4.1v **Verify**: instantiate graph nodes individually with mock state; confirm each node transforms state correctly
+    - [x] 4.2 Graph wiring with out-of-stock conditional edge + HITL gate; outcome_service persists cart
+    - [x] 4.2v **Verify**: run full graph end-to-end with MockProvider input "Biryani for 4"; confirm cart is returned with items
     - _Requirements: 1.1–1.6, 5.x, 6.x_
 
-- [ ] 5. Supporting services (front doors + trust/resilience)
-    - [ ] 5.1 confidence (C2/C3) + substitution (D2)
-    - [ ] 5.1v **Verify**: unit test confidence scoring returns 0–1; substitution picks an in-stock alternative when primary is OOS
-    - [ ] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
+- [~] 5. Supporting services (front doors + trust/resilience)
+    - [~] 5.1 confidence (C2/C3) + substitution (D2)
+    - [~] 5.1v **Verify**: unit test confidence scoring returns 0–1; substitution picks an in-stock alternative when primary is OOS
+    - [~] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
     - [ ] 5.2v **Verify**: budget service returns cart ≤ budget; SOS returns a kit; cart ops (add/remove) mutate cart correctly
     - _Requirements: 2.3, 2.4, 3.x, 5.x, 6.x, 7.x_
 
-- [ ] 6. REST API + middleware
-    - [ ] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
-    - [ ] 6.1v **Verify**: start server, POST `/api/outcome` with `{"text":"Biryani for 4"}`, confirm 200 + cart JSON
-    - [ ] 6.2 Middleware: PII redaction, rate limit, request id
+- [~] 6. REST API + middleware
+    - [~] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
+    - [~] 6.1v **Verify**: start server, POST `/api/outcome` with `{"text":"Biryani for 4"}`, confirm 200 + cart JSON
+    - [~] 6.2 Middleware: PII redaction, rate limit, request id
     - [ ] 6.2v **Verify**: send request with PII in body, confirm it's redacted in logs; confirm rate limit header present
     - _Requirements: 1.x, 2.x, 3.x, 4.x, 7.x, 8.3, 9.5_
 
-- [ ] 7. Frontend (React + Vite + TS, Nest theme)
-    - [ ] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
-    - [ ] 7.1v **Verify**: `npm run build` succeeds; dev server starts; layout renders in browser
-    - [ ] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
-    - [ ] 7.2v **Verify**: type an outcome in composer, confirm API call fires and cart appears
-    - [ ] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
+- [~] 7. Frontend (React + Vite + TS, Nest theme)
+    - [~] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
+    - [~] 7.1v **Verify**: `npm run build` succeeds; dev server starts; layout renders in browser
+    - [~] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
+    - [~] 7.2v **Verify**: type an outcome in composer, confirm API call fires and cart appears
+    - [~] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
     - [ ] 7.3v **Verify**: cart drawer opens with items; confidence chips visible; SOS mode triggers emergency UI
     - _Requirements: 1.x–7.x, 9.6_
 
-- [ ] 8. Verify + deploy
-    - [ ] 8.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
-    - [ ] 8.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
-    - [ ] 8.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
+- [~] 8. Verify + deploy
+    - [~] 8.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
+    - [~] 8.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
+    - [~] 8.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
     - [ ] 8.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
     - _Requirements: all, 9.3, 9.4_
 
