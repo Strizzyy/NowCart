@@ -15,25 +15,97 @@ logger = get_logger(__name__)
 # happens via Groq when a key is present; this keeps the mock path believable.
 _RECIPE_BOOK: dict[str, list[dict]] = {
     "biryani": [
-        {"name": "basmati rice", "quantity": 500, "unit": "g", "category_hint": "rice"},
-        {"name": "chicken", "quantity": 750, "unit": "g", "category_hint": "meat"},
-        {"name": "onion", "quantity": 3, "unit": "unit", "category_hint": "vegetables"},
-        {"name": "yogurt", "quantity": 200, "unit": "g", "category_hint": "dairy"},
+        {"name": "basmati rice", "quantity": 1, "unit": "kg", "category_hint": "rice"},
+        {"name": "chicken", "quantity": 1, "unit": "kg", "category_hint": "meat"},
+        {"name": "onion", "quantity": 1, "unit": "kg", "category_hint": "vegetables"},
+        {"name": "yogurt", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
         {"name": "biryani masala", "quantity": 1, "unit": "pack", "category_hint": "spices"},
-        {"name": "ghee", "quantity": 100, "unit": "g", "category_hint": "edible oil"},
+        {"name": "ghee", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
     ],
     "pasta": [
-        {"name": "pasta", "quantity": 500, "unit": "g", "category_hint": "pasta"},
-        {"name": "tomato", "quantity": 4, "unit": "unit", "category_hint": "vegetables"},
-        {"name": "cheese", "quantity": 200, "unit": "g", "category_hint": "dairy"},
+        {"name": "pasta", "quantity": 1, "unit": "pack", "category_hint": "pasta"},
+        {"name": "tomato", "quantity": 1, "unit": "kg", "category_hint": "vegetables"},
+        {"name": "cheese", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
         {"name": "olive oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
     ],
     "pancake": [
-        {"name": "flour", "quantity": 300, "unit": "g", "category_hint": "atta & flours"},
-        {"name": "milk", "quantity": 500, "unit": "ml", "category_hint": "dairy"},
+        {"name": "flour", "quantity": 1, "unit": "kg", "category_hint": "atta & flours"},
+        {"name": "milk", "quantity": 1, "unit": "ltr", "category_hint": "dairy"},
         {"name": "eggs", "quantity": 6, "unit": "unit", "category_hint": "eggs"},
-        {"name": "butter", "quantity": 100, "unit": "g", "category_hint": "dairy"},
+        {"name": "butter", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
     ],
+}
+
+# Goal-based shopping knowledge base — maps wellness/lifestyle goals to curated product needs.
+# This enables the "Goal → Buy" flow where users express an intent like "I want to lose weight"
+# and the system returns a complete shopping list of relevant products.
+_GOAL_BOOK: dict[str, dict] = {
+    "lose weight": {
+        "goal": "lose weight",
+        "needs": [
+            {"name": "oats", "quantity": 1, "unit": "pack", "category_hint": "breakfast cereals"},
+            {"name": "protein bar", "quantity": 4, "unit": "unit", "category_hint": "snacks"},
+            {"name": "green tea", "quantity": 1, "unit": "pack", "category_hint": "tea"},
+            {"name": "brown rice", "quantity": 1, "unit": "pack", "category_hint": "rice"},
+            {"name": "apple", "quantity": 6, "unit": "unit", "category_hint": "fruits"},
+            {"name": "almonds", "quantity": 1, "unit": "pack", "category_hint": "dry fruits"},
+        ],
+    },
+    "gain muscle": {
+        "goal": "gain muscle",
+        "needs": [
+            {"name": "eggs", "quantity": 12, "unit": "unit", "category_hint": "eggs"},
+            {"name": "chicken breast", "quantity": 1, "unit": "pack", "category_hint": "meat"},
+            {"name": "peanut butter", "quantity": 1, "unit": "pack", "category_hint": "spreads"},
+            {"name": "milk", "quantity": 2, "unit": "pack", "category_hint": "dairy"},
+            {"name": "banana", "quantity": 6, "unit": "unit", "category_hint": "fruits"},
+            {"name": "whey protein", "quantity": 1, "unit": "pack", "category_hint": "health foods"},
+        ],
+    },
+    "eat healthy": {
+        "goal": "eat healthy",
+        "needs": [
+            {"name": "quinoa", "quantity": 1, "unit": "pack", "category_hint": "health foods"},
+            {"name": "olive oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+            {"name": "spinach", "quantity": 1, "unit": "pack", "category_hint": "vegetables"},
+            {"name": "avocado", "quantity": 3, "unit": "unit", "category_hint": "fruits"},
+            {"name": "mixed nuts", "quantity": 1, "unit": "pack", "category_hint": "dry fruits"},
+            {"name": "honey", "quantity": 1, "unit": "pack", "category_hint": "spreads"},
+        ],
+    },
+    "boost energy": {
+        "goal": "boost energy",
+        "needs": [
+            {"name": "banana", "quantity": 6, "unit": "unit", "category_hint": "fruits"},
+            {"name": "dates", "quantity": 1, "unit": "pack", "category_hint": "dry fruits"},
+            {"name": "coffee", "quantity": 1, "unit": "pack", "category_hint": "coffee"},
+            {"name": "dark chocolate", "quantity": 2, "unit": "unit", "category_hint": "snacks"},
+            {"name": "energy bar", "quantity": 4, "unit": "unit", "category_hint": "snacks"},
+            {"name": "orange juice", "quantity": 1, "unit": "pack", "category_hint": "beverages"},
+        ],
+    },
+    "manage diabetes": {
+        "goal": "manage diabetes",
+        "needs": [
+            {"name": "oats", "quantity": 1, "unit": "pack", "category_hint": "breakfast cereals"},
+            {"name": "brown bread", "quantity": 1, "unit": "pack", "category_hint": "bakery"},
+            {"name": "bitter gourd", "quantity": 1, "unit": "pack", "category_hint": "vegetables"},
+            {"name": "fenugreek seeds", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+            {"name": "cinnamon", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+            {"name": "walnuts", "quantity": 1, "unit": "pack", "category_hint": "dry fruits"},
+        ],
+    },
+    "high protein": {
+        "goal": "high protein diet",
+        "needs": [
+            {"name": "paneer", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
+            {"name": "lentils", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+            {"name": "chickpeas", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+            {"name": "tofu", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
+            {"name": "greek yogurt", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
+            {"name": "soya chunks", "quantity": 1, "unit": "pack", "category_hint": "health foods"},
+        ],
+    },
 }
 
 
@@ -44,6 +116,13 @@ class MockProvider:
 
     async def complete_json(self, system: str, user: str, schema_hint: str) -> dict:
         text = user.lower()
+
+        # Check goal-based shopping first
+        for goal_key, goal_data in _GOAL_BOOK.items():
+            if goal_key in text:
+                return dict(goal_data)
+
+        # Check recipe book
         for dish, ingredients in _RECIPE_BOOK.items():
             if dish in text:
                 return {"dish": dish, "needs": [dict(i) for i in ingredients]}

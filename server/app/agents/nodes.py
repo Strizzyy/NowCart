@@ -33,6 +33,13 @@ _MODE_KEYWORDS: dict[IntentMode, list[str]] = {
     IntentMode.CART_OP: ["add", "remove", "delete", "update", "total", "what's in my cart"],
     IntentMode.PHOTO: ["photo", "image", "picture", "snap"],
     IntentMode.LINK: ["http", "https", "recipe link", "shared"],
+    IntentMode.GOAL: [
+        "i want to", "my goal", "help me", "i need to",
+        "lose weight", "gain muscle", "build muscle", "eat healthy",
+        "get fit", "stay healthy", "improve", "boost energy",
+        "reduce cholesterol", "manage diabetes", "high protein diet",
+        "low carb", "keto", "vegan lifestyle",
+    ],
     IntentMode.RECIPE: ["making", "cook", "prepare", "recipe", "bake", "fry"],
 }
 
@@ -80,38 +87,58 @@ async def decompose_node(state: AgentState) -> dict:
     """Decompose the outcome into structured needs using the LLM provider."""
     raw = state.get("raw_input", "")
     servings = state.get("servings", 1)
+    mode = state.get("mode", IntentMode.TEXT)
     trail: list[str] = state.get("reasoning_trail", [])
 
     llm = get_text_provider()
 
-    system_prompt = (
-        "You are a grocery assistant. Given a user's food/shopping outcome, "
-        "decompose it into a list of ingredient/item needs. Return JSON with "
-        '"dish" (string or null) and "needs" (array of {name, quantity, unit, category_hint}).'
-    )
-    schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+    # Use a goal-aware prompt when the intent is GOAL mode
+    if mode == IntentMode.GOAL:
+        system_prompt = (
+            "You are a smart grocery wellness assistant. Given a user's health/lifestyle goal, "
+            "recommend a curated grocery shopping list of products that help achieve that goal. "
+            "Think holistically: include staples, snacks, beverages, and fresh produce. "
+            "Return JSON with \"goal\" (string) and \"needs\" (array of "
+            '{name, quantity, unit, category_hint}).'
+        )
+        schema_hint = '{"goal": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+    else:
+        system_prompt = (
+            "You are a grocery assistant. Given a user's food/shopping outcome, "
+            "decompose it into a list of ingredient/item needs. Return JSON with "
+            '"dish" (string or null) and "needs" (array of {name, quantity, unit, category_hint}).'
+        )
+        schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
 
     result = await llm.complete_json(system_prompt, raw, schema_hint)
 
     # Parse needs from LLM response
     raw_needs = result.get("needs", [])
     needs: list[Need] = []
+    # Units that represent discrete packages — don't scale these by servings
+    _NO_SCALE_UNITS = {"pack", "packet", "bottle", "jar", "box", "can", "pouch"}
     for item in raw_needs:
         quantity = float(item.get("quantity", 1))
-        # Scale by servings (base recipe assumes 1 serving unless LLM already accounts for it)
-        scaled_quantity = quantity * servings if servings > 1 else quantity
+        unit = item.get("unit", "unit")
+        # Scale by servings only for countable/weight units, not for packaged goods
+        if servings > 1 and unit.lower() not in _NO_SCALE_UNITS:
+            scaled_quantity = quantity * servings
+        else:
+            scaled_quantity = quantity
         needs.append(
             Need(
                 name=item.get("name", "unknown"),
                 quantity=scaled_quantity,
-                unit=item.get("unit", "unit"),
+                unit=unit,
                 category_hint=item.get("category_hint", ""),
                 status=NeedStatus.PENDING,
             )
         )
 
     dish = result.get("dish")
-    reasoning = f"Decomposed into {len(needs)} needs (dish={dish}, servings={servings})"
+    goal = result.get("goal")
+    label = goal or dish or "unknown"
+    reasoning = f"Decomposed into {len(needs)} needs (label={label}, mode={mode.value}, servings={servings})"
 
     return {
         "needs": needs,

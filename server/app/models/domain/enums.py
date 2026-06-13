@@ -11,6 +11,7 @@ class IntentMode(str, Enum):
     LINK = "link"          # shared recipe URL / pasted text (B4)
     SOS = "sos"            # emergency kit (D4)
     CART_OP = "cart_op"    # voice follow-up: add/remove/update/total (A2)
+    GOAL = "goal"          # goal-based shopping: "I want to lose weight" → AI picks products
     TEXT = "text"          # generic free-text outcome (A1)
 
 

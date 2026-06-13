@@ -47,18 +47,20 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     - [x] 3.2v **Verify**: unit test fuzzy matching with known inputs (e.g. "basmati rice" → matches "Basmati Rice 1kg")
     - _Requirements: 1.2, 1.3, 8.3_
 
-- [-] 4. LangGraph Outcome Engine (A1 backbone)
+- [x] 4. LangGraph Outcome Engine (A1 backbone)
     - [x] 4.1 AgentState + nodes: intent, decompose, match, optimize, substitute, confidence
     - [x] 4.1v **Verify**: instantiate graph nodes individually with mock state; confirm each node transforms state correctly
     - [x] 4.2 Graph wiring with out-of-stock conditional edge + HITL gate; outcome_service persists cart
     - [x] 4.2v **Verify**: run full graph end-to-end with MockProvider input "Biryani for 4"; confirm cart is returned with items
     - _Requirements: 1.1–1.6, 5.x, 6.x_
 
-- [~] 5. Supporting services (front doors + trust/resilience)
-    - [~] 5.1 confidence (C2/C3) + substitution (D2)
-    - [~] 5.1v **Verify**: unit test confidence scoring returns 0–1; substitution picks an in-stock alternative when primary is OOS
-    - [~] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
-    - [ ] 5.2v **Verify**: budget service returns cart ≤ budget; SOS returns a kit; cart ops (add/remove) mutate cart correctly
+- [x] 5. Supporting services (front doors + trust/resilience)
+    - [x] 5.1 confidence (C2/C3) + substitution (D2)
+    - [x] 5.1v **Verify**: unit test confidence scoring returns 0–1; substitution picks an in-stock alternative when primary is OOS
+    - [x] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
+    - [x] 5.2v **Verify**: budget service returns cart ≤ budget; SOS returns a kit; cart ops (add/remove) mutate cart correctly
+    - [x] 5.3 Goal-based shopping: user states a goal (e.g. "I want to lose weight") → AI decomposes into relevant product needs (oats, protein-rich snacks, fruits) and builds a cart. Adds GOAL IntentMode, goal-aware decompose prompt, mock goal book for deterministic demos.
+    - [x] 5.3v **Verify**: run full graph with MockProvider input "I want to lose weight"; confirm cart is returned with health-focused items (oats, protein snacks, fruits)
     - _Requirements: 2.3, 2.4, 3.x, 5.x, 6.x, 7.x_
 
 - [~] 6. REST API + middleware
