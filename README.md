@@ -45,7 +45,18 @@ VoiceShop/
 └── README.md
 ```
 
-## Quick start (dev)
+## Quick start (Docker Compose)
+
+```bash
+docker compose up --build
+# Frontend:  http://localhost:3000
+# Backend:   http://localhost:8000
+# Health:    http://localhost:8000/health
+```
+
+This starts the full stack: FastAPI backend, React frontend (nginx), Redis, and DynamoDB Local.
+
+## Quick start (without Docker)
 
 ```bash
 # Backend (uv manages the venv + deps)
@@ -62,3 +73,13 @@ npm run dev
 ```
 
 See `server/README.md` and `client/README.md` for details.
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full production deployment notes covering:
+- S3 + CloudFront (static frontend)
+- EC2 + Nginx (API server + Redis)
+- DynamoDB (persistent data)
+- Lambda + SQS (async tasks)
+
+All services stay within the AWS free tier.

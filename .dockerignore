@@ -1,0 +1,22 @@
+# Python
+server/.venv/
+server/__pycache__/
+server/**/__pycache__/
+server/*.egg-info/
+server/.pytest_cache/
+
+# Node
+client/node_modules/
+client/dist/
+
+# IDE / OS
+.git/
+.vscode/
+.kiro/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Env files (secrets)
+server/.env
+client/.env

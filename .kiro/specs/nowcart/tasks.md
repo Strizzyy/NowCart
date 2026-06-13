@@ -114,11 +114,11 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     - [x] 8.5v **Verify**: build + dev server run; each door produces a cart; chips visible; SOS triggers; substitution renders; responsive + keyboard-accessible end to end.
     - _Requirements: 10_
 
-- [~] 9. Verify + deploy
-    - [~] 9.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
-    - [~] 9.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
-    - [~] 9.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
-    - [ ] 9.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
+- [x] 9. Verify + deploy
+    - [x] 9.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
+    - [x] 9.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
+    - [x] 9.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
+    - [x] 9.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
     - _Requirements: all, 9.3, 9.4_
 
 ## Notes

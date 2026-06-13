@@ -1,0 +1,113 @@
+# NowCart — Full-stack Docker Compose (AWS Free-Tier Local Dev)
+# Services: backend (FastAPI), frontend (nginx + Vite build), Redis, DynamoDB Local
+#
+# Usage:
+#   docker compose up --build          Start all services
+#   docker compose up backend redis    API + cache only (memory backend)
+#   docker compose up -d               Detached mode
+#
+# Access:
+#   Frontend:  http://localhost:3000  (proxies /api to backend)
+#   Backend:   http://localhost:8000
+#   Redis:     localhost:6379
+#   DynamoDB:  localhost:8001
+
+services:
+  # ---------- Backend (FastAPI) ----------
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=dev
+      - DATA_BACKEND=dynamodb
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - AWS_REGION=ap-south-1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+      - REDIS_URL=redis://redis:6379/0
+      - CACHE_IN_MEMORY=false
+      - LLM_TEXT_PROVIDER=mock
+      - LLM_VISION_PROVIDER=mock
+      - CONFIDENCE_THRESHOLD=0.7
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:80
+    depends_on:
+      redis:
+        condition: service_healthy
+      dynamodb-local:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - nowcart-net
+
+  # ---------- Frontend (nginx serving Vite build) ----------
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - nowcart-net
+
+  # ---------- Redis (cart/session state + LLM cache) ----------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - nowcart-net
+
+  # ---------- DynamoDB Local (product/user/order persistence) ----------
+  dynamodb-local:
+    image: amazon/dynamodb-local:2.5.3
+    ports:
+      - "8001:8000"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/home/dynamodblocal/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - nowcart-net
+
+networks:
+  nowcart-net:
+    driver: bridge
+
+volumes:
+  redis-data:
+  dynamodb-data:
