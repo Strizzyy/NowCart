@@ -33,7 +33,7 @@ Built for **HackOn with Amazon** — theme *"Reimagine Shopping Experience — D
 - **Cache/State:** Redis (Docker on EC2) — cart, sessions, LLM cache
 - **Load balancing:** Nginx on EC2 (not paid ALB)
 - **Async jobs:** Lambda + SQS
-- **Data:** curated real catalog (BigBasket dataset) + deterministic mock users/orders/stock
+- **Data:** curated real grocery catalog + deterministic mock users/orders/stock
 
 ## Repo layout
 

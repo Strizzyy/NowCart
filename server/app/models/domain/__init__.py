@@ -7,6 +7,8 @@ from app.models.domain.enums import IntentMode, NeedStatus
 from app.models.domain.product import Product
 from app.models.domain.need import Need
 from app.models.domain.cart import Cart, CartItem, Substitution
+from app.models.domain.user import User
+from app.models.domain.order import Order
 
 __all__ = [
     "IntentMode",
@@ -16,4 +18,6 @@ __all__ = [
     "Cart",
     "CartItem",
     "Substitution",
+    "User",
+    "Order",
 ]

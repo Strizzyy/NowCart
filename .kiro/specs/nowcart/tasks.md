@@ -31,41 +31,57 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
   - [x] 1.3 LLMProvider/VisionProvider interface + Mock/Groq/Gemini + factory — one `llm/` folder with a simple provider protocol, concrete implementations, and a `get_provider()` selector (no registry pattern, no plugin system).
   - _Requirements: 9.1, 9.2, 9.6, 4.1, 4.5_
 
-- [ ] 2. Data layer + seed
-  - [ ] 2.1 Repository interface, in-memory store, DynamoDB repo; Redis cache + memory fallback
-  - [ ] 2.2 Curated BigBasket catalog seed + deterministic mock users/orders/stock
-  - [ ] 2.3 Seed script `python -m app.seed`
+- [x] 2. Data layer + seed
+  - [x] 2.1 Repository interface, in-memory store, DynamoDB repo; Redis cache + memory fallback
+  - [x] 2.1v **Verify**: import repositories, instantiate in-memory store, confirm CRUD ops pass (`python -c "from app.repositories import ..."`)
+  - [x] 2.2 Curated grocery catalog seed + deterministic mock users/orders/stock
+  - [x] 2.2v **Verify**: run seed load and confirm product count, user count, and stock overrides are correct
+  - [x] 2.3 Seed script `python -m app.seed`
+  - [x] 2.3v **Verify**: run `python -m app.seed` end-to-end; confirm exit 0, expected product count loaded, and app starts with `DATA_BACKEND=memory`
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.3_
 
-- [ ] 3. Catalog service + matching
-  - [ ] 3.1 catalog_service: search, category filter, availability with stock override
-  - [ ] 3.2 Fuzzy + category matching (rapidfuzz) need → product candidates
+- [~] 3. Catalog service + matching
+  - [~] 3.1 catalog_service: search, category filter, availability with stock override
+  - [~] 3.1v **Verify**: run app, hit `/api/catalog/search?q=rice` and `/api/catalog/search?category=Staples`, confirm results
+  - [~] 3.2 Fuzzy + category matching (rapidfuzz) need → product candidates
+  - [ ] 3.2v **Verify**: unit test fuzzy matching with known inputs (e.g. "basmati rice" → matches "Basmati Rice 1kg")
   - _Requirements: 1.2, 1.3, 8.3_
 
-- [ ] 4. LangGraph Outcome Engine (A1 backbone)
-  - [ ] 4.1 AgentState + nodes: intent, decompose, match, optimize, substitute, confidence
-  - [ ] 4.2 Graph wiring with out-of-stock conditional edge + HITL gate; outcome_service persists cart
+- [~] 4. LangGraph Outcome Engine (A1 backbone)
+  - [~] 4.1 AgentState + nodes: intent, decompose, match, optimize, substitute, confidence
+  - [~] 4.1v **Verify**: instantiate graph nodes individually with mock state; confirm each node transforms state correctly
+  - [~] 4.2 Graph wiring with out-of-stock conditional edge + HITL gate; outcome_service persists cart
+  - [ ] 4.2v **Verify**: run full graph end-to-end with MockProvider input "Biryani for 4"; confirm cart is returned with items
   - _Requirements: 1.1–1.6, 5.x, 6.x_
 
-- [ ] 5. Supporting services (front doors + trust/resilience)
-  - [ ] 5.1 confidence (C2/C3) + substitution (D2)
-  - [ ] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
+- [~] 5. Supporting services (front doors + trust/resilience)
+  - [~] 5.1 confidence (C2/C3) + substitution (D2)
+  - [~] 5.1v **Verify**: unit test confidence scoring returns 0–1; substitution picks an in-stock alternative when primary is OOS
+  - [~] 5.2 budget/constraint-first (A3), sos (D4), cart ops (voice follow-ups)
+  - [ ] 5.2v **Verify**: budget service returns cart ≤ budget; SOS returns a kit; cart ops (add/remove) mutate cart correctly
   - _Requirements: 2.3, 2.4, 3.x, 5.x, 6.x, 7.x_
 
-- [ ] 6. REST API + middleware
-  - [ ] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
-  - [ ] 6.2 Middleware: PII redaction, rate limit, request id
+- [~] 6. REST API + middleware
+  - [~] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
+  - [~] 6.1v **Verify**: start server, POST `/api/outcome` with `{"text":"Biryani for 4"}`, confirm 200 + cart JSON
+  - [~] 6.2 Middleware: PII redaction, rate limit, request id
+  - [ ] 6.2v **Verify**: send request with PII in body, confirm it's redacted in logs; confirm rate limit header present
   - _Requirements: 1.x, 2.x, 3.x, 4.x, 7.x, 8.3, 9.5_
 
-- [ ] 7. Frontend (React + Vite + TS, Nest theme)
-  - [ ] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
-  - [ ] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
-  - [ ] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
+- [~] 7. Frontend (React + Vite + TS, Nest theme)
+  - [~] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
+  - [~] 7.1v **Verify**: `npm run build` succeeds; dev server starts; layout renders in browser
+  - [~] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
+  - [~] 7.2v **Verify**: type an outcome in composer, confirm API call fires and cart appears
+  - [~] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
+  - [ ] 7.3v **Verify**: cart drawer opens with items; confidence chips visible; SOS mode triggers emergency UI
   - _Requirements: 1.x–7.x, 9.6_
 
-- [ ] 8. Verify + deploy
-  - [ ] 8.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
-  - [ ] 8.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
+- [~] 8. Verify + deploy
+  - [~] 8.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
+  - [~] 8.1v **Verify**: full test suite passes (`pytest` / `npm test`); no failures
+  - [~] 8.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
+  - [ ] 8.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
   - _Requirements: all, 9.3, 9.4_
 
 ## Notes
@@ -73,4 +89,5 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
 - Baseline demo runs with `DATA_BACKEND=memory`, `LLM_TEXT_PROVIDER=mock`, `LLM_VISION_PROVIDER=mock`.
 - Keep controllers thin; logic in services (testable, microservice-ready).
 - Stock overrides + deterministic mock orders make live demos repeatable.
+- Do NOT mention dataset source (BigBasket) anywhere in code, comments, or UI — keep catalog references generic ("grocery catalog").
 - Bedrock/ALB/ElastiCache appear only in the production diagram, never in the running prototype (free tier).

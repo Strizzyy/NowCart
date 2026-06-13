@@ -1,11 +1,11 @@
-"""Product domain model — sourced from the BigBasket catalog (Requirement 8.1)."""
+"""Product domain model — grocery catalog (Requirement 8.1)."""
 from pydantic import BaseModel, Field
 
 
 class Product(BaseModel):
     """A single catalog product.
 
-    Fields mirror the seeded BigBasket dataset plus a few runtime/demo
+    Fields mirror the seeded grocery dataset plus a few runtime/demo
     attributes (in_stock, delivery_eta_min) controllable via stock override.
     """
 
