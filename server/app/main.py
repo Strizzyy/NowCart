@@ -79,8 +79,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Feature middleware (PII redaction, rate limit, request id) is added in
-    # task 6.2 via app.add_middleware(...).
+    # Feature middleware — order matters: outermost runs first.
+    # RequestId → RateLimit → PII (innermost).
+    from app.middleware import RequestIdMiddleware, RateLimitMiddleware, PiiRedactionMiddleware
+
+    app.add_middleware(PiiRedactionMiddleware)
+    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(RequestIdMiddleware)
 
     app.include_router(api_router)
 

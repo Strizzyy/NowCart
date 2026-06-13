@@ -63,11 +63,11 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     - [x] 5.3v **Verify**: run full graph with MockProvider input "I want to lose weight"; confirm cart is returned with health-focused items (oats, protein snacks, fruits)
     - _Requirements: 2.3, 2.4, 3.x, 5.x, 6.x, 7.x_
 
-- [~] 6. REST API + middleware
-    - [~] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
-    - [~] 6.1v **Verify**: start server, POST `/api/outcome` with `{"text":"Biryani for 4"}`, confirm 200 + cart JSON
-    - [~] 6.2 Middleware: PII redaction, rate limit, request id
-    - [ ] 6.2v **Verify**: send request with PII in body, confirm it's redacted in logs; confirm rate limit header present
+- [x] 6. REST API + middleware
+    - [x] 6.1 Controllers: outcome, voice intent, constraint, vision, share, cart op, sos, catalog, admin stock
+    - [x] 6.1v **Verify**: start server, POST `/api/outcome` with `{"text":"Biryani for 4"}`, confirm 200 + cart JSON
+    - [x] 6.2 Middleware: PII redaction, rate limit, request id
+    - [x] 6.2v **Verify**: send request with PII in body, confirm it's redacted in logs; confirm rate limit header present
     - _Requirements: 1.x, 2.x, 3.x, 4.x, 7.x, 8.3, 9.5_
 
 - [~] 7. Frontend (React + Vite + TS, Nest theme)
