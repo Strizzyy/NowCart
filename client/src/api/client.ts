@@ -54,6 +54,7 @@ export interface Product {
   in_stock: boolean;
   delivery_eta_min: number;
   image_url: string | null;
+  description?: string;
   type?: string;
   tags?: string[];
 }

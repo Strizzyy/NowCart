@@ -120,13 +120,25 @@ export default function ProductPage({ ctx }: Props) {
       {/* Product detail */}
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         {/* Image */}
-        <div className="bg-light-bg rounded-2xl p-8 flex items-center justify-center relative">
+        <div className="bg-light-bg rounded-2xl p-8 flex items-center justify-center relative overflow-hidden">
           {discount > 0 && (
-            <span className="absolute top-4 left-4 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full">
+            <span className="absolute top-4 left-4 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full z-10">
               {discount}% OFF
             </span>
           )}
-          <span className="text-8xl">🥬</span>
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="max-w-full max-h-80 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML('beforeend', '<span class="text-8xl">📦</span>');
+              }}
+            />
+          ) : (
+            <span className="text-8xl">📦</span>
+          )}
         </div>
 
         {/* Info */}
@@ -173,6 +185,14 @@ export default function ProductPage({ ctx }: Props) {
               )}
             </p>
           </div>
+
+          {/* Description */}
+          {product.description && (
+            <div className="mb-6">
+              <h2 className="text-sm font-semibold text-dark mb-1">About this product</h2>
+              <p className="text-sm text-muted leading-relaxed">{product.description}</p>
+            </div>
+          )}
 
           {/* Quantity + Add to cart */}
           <div className="flex items-center gap-4 mb-6">

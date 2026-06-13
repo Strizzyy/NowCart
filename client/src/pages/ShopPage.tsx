@@ -12,15 +12,33 @@ interface Props {
 
 const CATEGORIES = [
   'All',
-  'Fruits & Vegetables',
-  'Staples',
-  'Snacks & Beverages',
-  'Dairy',
-  'Personal Care',
-  'Household',
-  'Baby Care',
-  'Meat & Seafood',
+  'fruits vegetables',
+  'foodgrains oil masala',
+  'snacks branded foods',
+  'beverages',
+  'bakery cakes dairy',
+  'beauty hygiene',
+  'cleaning household',
+  'kitchen garden pets',
+  'eggs meat fish',
+  'baby care',
+  'gourmet world food',
 ];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'All': 'All',
+  'fruits vegetables': 'Fruits & Vegetables',
+  'foodgrains oil masala': 'Foodgrains, Oil & Masala',
+  'snacks branded foods': 'Snacks & Branded Foods',
+  'beverages': 'Beverages',
+  'bakery cakes dairy': 'Bakery, Cakes & Dairy',
+  'beauty hygiene': 'Beauty & Hygiene',
+  'cleaning household': 'Cleaning & Household',
+  'kitchen garden pets': 'Kitchen, Garden & Pets',
+  'eggs meat fish': 'Eggs, Meat & Fish',
+  'baby care': 'Baby Care',
+  'gourmet world food': 'Gourmet & World Food',
+};
 
 export default function ShopPage({ ctx }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -79,7 +97,7 @@ export default function ShopPage({ ctx }: Props) {
       {/* Breadcrumb */}
       <p className="text-sm text-muted mb-4">
         Home / <span className="text-dark font-medium">Shop</span>
-        {category !== 'All' && <> / <span className="text-primary">{category}</span></>}
+        {category !== 'All' && <> / <span className="text-primary">{CATEGORY_LABELS[category] || category}</span></>}
       </p>
 
       <div className="flex gap-6">
@@ -101,7 +119,7 @@ export default function ShopPage({ ctx }: Props) {
                         : 'text-muted hover:bg-light-bg hover:text-dark'
                     }`}
                   >
-                    {cat}
+                    {CATEGORY_LABELS[cat] || cat}
                   </button>
                 </li>
               ))}
@@ -134,7 +152,7 @@ export default function ShopPage({ ctx }: Props) {
               onChange={(e) => handleCategoryClick(e.target.value)}
             >
               {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{CATEGORY_LABELS[cat] || cat}</option>
               ))}
             </select>
           </div>

@@ -44,6 +44,7 @@ class ProductResponse(BaseModel):
     in_stock: bool = True
     delivery_eta_min: int = 30
     image_url: str | None = None
+    description: str = ""
 
     @classmethod
     def from_domain(cls, p: Product) -> "ProductResponse":
@@ -60,6 +61,7 @@ class ProductResponse(BaseModel):
             in_stock=p.in_stock,
             delivery_eta_min=p.delivery_eta_min,
             image_url=p.image_url,
+            description=p.description,
         )
 
 

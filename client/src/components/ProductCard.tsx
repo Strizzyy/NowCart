@@ -21,10 +21,23 @@ export default function ProductCard({ product, onAddToCart }: Props) {
         {!product.in_stock && <Chip tone="neutral" size="xs">Out of stock</Chip>}
       </div>
 
-      {/* Image placeholder */}
+      {/* Product image */}
       <Link to={`/product/${product.product_id}`} aria-label={product.name}>
-        <div className="w-full h-32 bg-light-bg rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light/60 transition">
-          <span className="text-4xl" aria-hidden="true">🥬</span>
+        <div className="w-full h-32 bg-light-bg rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-light/60 transition overflow-hidden">
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-full object-contain p-2"
+              loading="lazy"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="text-4xl" aria-hidden="true">📦</span>';
+              }}
+            />
+          ) : (
+            <span className="text-4xl" aria-hidden="true">📦</span>
+          )}
         </div>
       </Link>
 

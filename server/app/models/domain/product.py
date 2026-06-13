@@ -26,6 +26,7 @@ class Product(BaseModel):
 
     tags: list[str] = Field(default_factory=list)
     image_url: str | None = None
+    description: str = ""
 
     @property
     def price_per_unit_hint(self) -> float:
