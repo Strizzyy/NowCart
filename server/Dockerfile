@@ -36,7 +36,7 @@ COPY server/app/ ./app/
 
 # Copy catalog dataset — seed script resolves Path(__file__).parents[3] which
 # maps to "/" inside the container (/app/app/seed/catalog.py → parents[3] = /)
-COPY Products.csv /Products.csv
+COPY BigBasket.xlsx /BigBasket.xlsx
 
 # Non-root user for security
 RUN adduser --disabled-password --no-create-home nowcart && \

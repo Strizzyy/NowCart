@@ -57,7 +57,11 @@ class GeminiProvider:
 
 
 class GeminiVisionProvider:
-    """Vision via Gemini (used when LLM_VISION_PROVIDER=gemini)."""
+    """Vision via Gemini (used when LLM_VISION_PROVIDER=gemini).
+
+    Handles food/dish identification from photos for the "Show It" feature.
+    Returns structured JSON with dish name, ingredients, and metadata.
+    """
 
     name = "gemini"
 
@@ -66,11 +70,40 @@ class GeminiVisionProvider:
         self._model = genai.GenerativeModel(settings.gemini_model)
 
     async def describe_image(self, image_bytes: bytes, prompt: str) -> dict:
+        """Analyze an image and return structured dish/ingredient data.
+
+        Args:
+            image_bytes: Raw image data (JPEG/PNG).
+            prompt: Analysis prompt requesting specific output format.
+
+        Returns:
+            Dict with dish, ingredients, servings_estimate, cuisine.
+            Returns {'degraded': True} if analysis fails.
+        """
+        if not image_bytes:
+            return {"dish": None, "ingredients": [], "degraded": True}
+
         try:
-            part = {"mime_type": "image/jpeg", "data": image_bytes}
-            resp = await asyncio.to_thread(_generate_sync, self._model, [prompt, part])
+            # Detect MIME type from bytes
+            mime_type = "image/jpeg"
+            if image_bytes[:4] == b"\x89PNG":
+                mime_type = "image/png"
+            elif image_bytes[:4] == b"RIFF":
+                mime_type = "image/webp"
+
+            part = {"mime_type": mime_type, "data": image_bytes}
+
+            # Enhanced prompt for reliable JSON output
+            full_prompt = (
+                f"{prompt}\n\n"
+                "IMPORTANT: Return ONLY valid JSON, no markdown fences, no extra text."
+            )
+
+            resp = await asyncio.to_thread(_generate_sync, self._model, [full_prompt, part])
             data = json.loads(_strip_fences(resp.text))
             data.setdefault("degraded", False)
+            data.setdefault("dish", "unknown dish")
+            data.setdefault("ingredients", [])
             return data
         except Exception as exc:  # noqa: BLE001 — vision down → degrade (4.5)
             logger.warning("Gemini vision failed, degrading: %s", exc)

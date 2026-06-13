@@ -29,8 +29,12 @@ services:
       - AWS_SECRET_ACCESS_KEY=local
       - REDIS_URL=redis://redis:6379/0
       - CACHE_IN_MEMORY=false
-      - LLM_TEXT_PROVIDER=mock
-      - LLM_VISION_PROVIDER=mock
+      - LLM_TEXT_PROVIDER=groq
+      - LLM_VISION_PROVIDER=gemini
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=llama-3.3-70b-versatile
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=gemini-2.0-flash
       - CONFIDENCE_THRESHOLD=0.7
       - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:80
     depends_on:

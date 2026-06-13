@@ -26,6 +26,8 @@ class CatalogService:
     ) -> None:
         self._repo = repo
         self._cache = cache
+        # In-memory product cache to avoid repeated DynamoDB scans
+        self._products_cache: list[Product] | None = None
 
     @property
     def repo(self) -> Repository:
@@ -38,6 +40,12 @@ class CatalogService:
         if self._cache is None:
             self._cache = get_cache()
         return self._cache
+
+    async def _get_all_products(self) -> list[Product]:
+        """Return all products, using an in-memory cache to avoid repeated DynamoDB scans."""
+        if self._products_cache is None:
+            self._products_cache = await self.repo.list_products()
+        return self._products_cache
 
     # ------------------------------------------------------------------
     # Search & filter
@@ -103,14 +111,17 @@ class CatalogService:
             List of (Product, score) tuples sorted by score descending.
             Score is 0-100 (rapidfuzz scale).
         """
-        # Get candidate pool
+        # Get candidate pool from in-memory cache (avoid DynamoDB scan per need)
+        all_products = await self._get_all_products()
+
         if category_hint:
-            candidates = await self.repo.list_products(category=category_hint)
+            cat_lower = category_hint.lower()
+            candidates = [p for p in all_products if cat_lower in p.category.lower() or cat_lower in p.sub_category.lower()]
             # If category filter returns nothing, fall back to full catalog
             if not candidates:
-                candidates = await self.repo.list_products()
+                candidates = all_products
         else:
-            candidates = await self.repo.list_products()
+            candidates = all_products
 
         if not candidates:
             return []

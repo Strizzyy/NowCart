@@ -7,7 +7,10 @@ Only active when DATA_BACKEND=dynamodb in settings.
 """
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+from decimal import Decimal
 from typing import Any
 
 import aioboto3
@@ -19,9 +22,9 @@ from app.models.domain import Product, User, Order
 logger = logging.getLogger(__name__)
 
 # Table names
-PRODUCTS_TABLE = "Products"
-USERS_TABLE = "Users"
-ORDERS_TABLE = "Orders"
+PRODUCTS_TABLE = "NowCart_Products"
+USERS_TABLE = "NowCart_Users"
+ORDERS_TABLE = "NowCart_Orders"
 
 
 def _session_kwargs() -> dict[str, Any]:
@@ -36,6 +39,28 @@ def _session_kwargs() -> dict[str, Any]:
     return kwargs
 
 
+def _convert_floats(obj: Any) -> Any:
+    """Recursively convert Python floats to Decimal for DynamoDB compatibility."""
+    if isinstance(obj, float):
+        return Decimal(str(obj))
+    if isinstance(obj, dict):
+        return {k: _convert_floats(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_convert_floats(i) for i in obj]
+    return obj
+
+
+def _convert_decimals(obj: Any) -> Any:
+    """Recursively convert Decimals back to float when reading from DynamoDB."""
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: _convert_decimals(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_convert_decimals(i) for i in obj]
+    return obj
+
+
 class DynamoDBRepository:
     """DynamoDB-backed implementation of the Repository protocol."""
 
@@ -48,12 +73,15 @@ class DynamoDBRepository:
         return self._session.resource("dynamodb", **_session_kwargs())
 
     async def create_tables_if_not_exist(self) -> None:
-        """Ensure all required tables exist (idempotent)."""
+        """Ensure all required tables exist (idempotent). Waits for ACTIVE status."""
         if self._tables_ensured:
             return
 
+        import asyncio
+
         async with self._session.resource("dynamodb", **_session_kwargs()) as ddb:
             existing = [t.name async for t in ddb.tables.all()]
+            tables_created: list[str] = []
 
             if PRODUCTS_TABLE not in existing:
                 await ddb.create_table(
@@ -68,11 +96,11 @@ class DynamoDBRepository:
                             "IndexName": "category-index",
                             "KeySchema": [{"AttributeName": "category", "KeyType": "HASH"}],
                             "Projection": {"ProjectionType": "ALL"},
-                            "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
                         }
                     ],
-                    ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+                    BillingMode="PAY_PER_REQUEST",
                 )
+                tables_created.append(PRODUCTS_TABLE)
                 logger.info("Created DynamoDB table: %s", PRODUCTS_TABLE)
 
             if USERS_TABLE not in existing:
@@ -82,8 +110,9 @@ class DynamoDBRepository:
                     AttributeDefinitions=[
                         {"AttributeName": "user_id", "AttributeType": "S"},
                     ],
-                    ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+                    BillingMode="PAY_PER_REQUEST",
                 )
+                tables_created.append(USERS_TABLE)
                 logger.info("Created DynamoDB table: %s", USERS_TABLE)
 
             if ORDERS_TABLE not in existing:
@@ -97,9 +126,27 @@ class DynamoDBRepository:
                         {"AttributeName": "user_id", "AttributeType": "S"},
                         {"AttributeName": "order_date", "AttributeType": "S"},
                     ],
-                    ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+                    BillingMode="PAY_PER_REQUEST",
                 )
+                tables_created.append(ORDERS_TABLE)
                 logger.info("Created DynamoDB table: %s", ORDERS_TABLE)
+
+            # Wait for newly created tables to become ACTIVE
+            if tables_created:
+                logger.info("Waiting for tables to become ACTIVE: %s", tables_created)
+                for table_name in tables_created:
+                    # Use waiter via low-level client for reliable status check
+                    for attempt in range(30):
+                        try:
+                            table = await ddb.Table(table_name)
+                            await table.load()
+                            status = table.table_status
+                            if status == "ACTIVE":
+                                break
+                        except Exception:
+                            pass
+                        await asyncio.sleep(2)
+                    logger.info("Table %s is ready", table_name)
 
         self._tables_ensured = True
 
@@ -113,7 +160,7 @@ class DynamoDBRepository:
             item = resp.get("Item")
             if not item:
                 return None
-            return Product(**item)
+            return Product(**_convert_decimals(item))
 
     async def list_products(
         self,
@@ -132,12 +179,24 @@ class DynamoDBRepository:
                     ExpressionAttributeValues={":cat": category},
                 )
                 items = resp.get("Items", [])
+                # Handle pagination for GSI query
+                while resp.get("LastEvaluatedKey"):
+                    resp = await table.query(
+                        IndexName="category-index",
+                        KeyConditionExpression="category = :cat",
+                        ExpressionAttributeValues={":cat": category},
+                        ExclusiveStartKey=resp["LastEvaluatedKey"],
+                    )
+                    items.extend(resp.get("Items", []))
             else:
-                # Full scan (acceptable for ~500 product catalog)
+                # Full scan with pagination
                 resp = await table.scan()
                 items = resp.get("Items", [])
+                while resp.get("LastEvaluatedKey"):
+                    resp = await table.scan(ExclusiveStartKey=resp["LastEvaluatedKey"])
+                    items.extend(resp.get("Items", []))
 
-            products = [Product(**item) for item in items]
+            products = [Product(**_convert_decimals(item)) for item in items]
 
             if search:
                 term = search.lower()
@@ -159,15 +218,18 @@ class DynamoDBRepository:
         await self.create_tables_if_not_exist()
         async with self._session.resource("dynamodb", **_session_kwargs()) as ddb:
             table = await ddb.Table(PRODUCTS_TABLE)
-            await table.put_item(Item=product.model_dump())
+            await table.put_item(Item=_convert_floats(product.model_dump()))
 
     async def bulk_upsert_products(self, products: list[Product]) -> None:
         await self.create_tables_if_not_exist()
         async with self._session.resource("dynamodb", **_session_kwargs()) as ddb:
             table = await ddb.Table(PRODUCTS_TABLE)
+            total = len(products)
             async with table.batch_writer() as batch:
-                for product in products:
-                    await batch.put_item(Item=product.model_dump())
+                for i, product in enumerate(products, 1):
+                    await batch.put_item(Item=_convert_floats(product.model_dump()))
+                    if i % 500 == 0:
+                        logger.info("Batch write progress: %d/%d (%.0f%%)", i, total, i / total * 100)
 
     # --- Users ---
 
@@ -179,13 +241,13 @@ class DynamoDBRepository:
             item = resp.get("Item")
             if not item:
                 return None
-            return User(**item)
+            return User(**_convert_decimals(item))
 
     async def upsert_user(self, user: User) -> None:
         await self.create_tables_if_not_exist()
         async with self._session.resource("dynamodb", **_session_kwargs()) as ddb:
             table = await ddb.Table(USERS_TABLE)
-            await table.put_item(Item=user.model_dump())
+            await table.put_item(Item=_convert_floats(user.model_dump()))
 
     # --- Orders ---
 
@@ -199,10 +261,10 @@ class DynamoDBRepository:
                 ScanIndexForward=False,  # newest first
             )
             items = resp.get("Items", [])
-            return [Order(**item) for item in items]
+            return [Order(**_convert_decimals(item)) for item in items]
 
     async def upsert_order(self, order: Order) -> None:
         await self.create_tables_if_not_exist()
         async with self._session.resource("dynamodb", **_session_kwargs()) as ddb:
             table = await ddb.Table(ORDERS_TABLE)
-            await table.put_item(Item=order.model_dump())
+            await table.put_item(Item=_convert_floats(order.model_dump()))

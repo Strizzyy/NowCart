@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
         settings.data_backend,
     )
 
-    # Auto-seed in-memory backend so the API is usable without a separate seed step
+    # Auto-seed the configured backend so the API is usable immediately
     if settings.data_backend == "memory":
         from app.seed.catalog import load_catalog
         from app.seed.mock_data import create_mock_users, create_mock_orders
@@ -58,6 +58,27 @@ async def lifespan(app: FastAPI):
             await repo.upsert_order(order)
 
         logger.info("Auto-seeded %d products, %d users, %d orders", len(products), len(users), len(orders))
+
+    elif settings.data_backend == "dynamodb":
+        # Auto-seed DynamoDB if tables are empty (first boot)
+        from app.seed.seed_dynamodb import seed_dynamodb
+        from app.seed.stock_overrides import get_override_product_ids
+        from app.repositories import get_repository, get_cache
+
+        try:
+            await seed_dynamodb(force=False)
+
+            # Apply stock overrides to cache
+            repo = get_repository()
+            cache = get_cache()
+            products = await repo.list_products()
+            if products:
+                override_ids = get_override_product_ids([p.product_id for p in products])
+                for pid in override_ids:
+                    await cache.set_stock_override(pid, False)
+                logger.info("DynamoDB ready: %d products, %d stock overrides", len(products), len(override_ids))
+        except Exception as exc:
+            logger.error("DynamoDB seed failed: %s — app will start but catalog may be empty", exc)
 
     yield
     logger.info("NowCart shutting down")
