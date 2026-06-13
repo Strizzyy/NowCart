@@ -69,6 +69,10 @@ class OutcomeService:
             if clarification and not cart.clarification:
                 cart.clarification = clarification
 
+            # Surface the engine's decision log for the comparison-collapse UI (C2/C3)
+            if not cart.reasoning_trail:
+                cart.reasoning_trail = result.get("reasoning_trail", []) or []
+
         except Exception as exc:
             logger.exception("Outcome engine failed: %s", exc)
             # Graceful degradation: return a degraded cart with error info

@@ -24,6 +24,12 @@ The product exposes one engine through several "front doors" and a shared trust/
 - **HITL** — human-in-the-loop; a clarifying question raised when confidence is below threshold.
 - **Substitution** — replacing an out-of-stock product with a functional equivalent.
 - **Stock override** — a demo control to force a product in/out of stock.
+- **Front Door Hub** — the landing/home experience that presents the four front doors and the "four ways in, one brain, one confident cart out" narrative.
+- **Front-door panel** — a dedicated UI surface for one front door (Speak it, Constrain it, Show it, Share it) with its own input, loading, empty, and error states.
+- **Confidence chip** — an always-visible UI badge that shows a recommended product's confidence score and a one-line "why this one" reason.
+- **Reasoning trail** — the ordered list of decision steps the Outcome Engine took, surfaced in the UI on demand (comparison-collapse expansion).
+- **Design system** — the shared set of theme tokens, typography, spacing, color, and component styles that give the revamped frontend a cohesive look.
+- **Contract drift** — a mismatch between the types the frontend expects and the types the backend exposes via the OpenAPI contract.
 
 ## Requirements
 
@@ -134,3 +140,88 @@ compliant, so that it scores on technical quality and scalability.
 4. WHEN deployed THEN it SHALL use only AWS free-tier services (EC2, S3, Lambda, DynamoDB, SQS) with Nginx for load balancing (no paid ALB/ElastiCache/Bedrock).
 5. WHEN PII is present THEN it SHALL be redacted before any external LLM call (privacy-first).
 6. WHEN frontend and backend exchange data THEN types SHALL be derived from a single OpenAPI contract.
+
+## Requirement 10: Frontend Revamp & Backend Sync (experience layer)
+
+**User Story:** As a hackathon judge and a first-time user, I want a beautiful, modern frontend that
+visibly tells the NowCart story and lets me enter through any of the four front doors, so that the
+product's thesis — *"Quick commerce solved delivery. We solve the deciding."* — is obvious within
+seconds, and the backend exposes exactly the data the experience needs.
+
+This requirement revamps the entire frontend so it fully embodies the NowCart ideation
+("four ways in, one brain, one confident cart out") and synchronizes the backend so frontend and
+backend contracts stay aligned. Acceptance criteria are grouped by experience area
+(Front Door Hub, the four front doors, confident cart, substitution, SOS, backend sync, and visual
+quality) but constitute one cohesive revamp requirement.
+
+#### Acceptance Criteria
+
+**Front Door Hub & story-driven landing**
+1. WHEN the application loads the Front Door Hub THEN the system SHALL present the thesis statement "Quick commerce solved delivery. We solve the deciding." and the narrative "Four ways in, one brain, one confident cart out." as primary on-screen content.
+2. WHEN the Front Door Hub is displayed THEN the system SHALL render the four front doors (Speak it, Constrain it, Show it, Share it) as four first-class, visually distinct entry points.
+3. WHEN a user selects a front door THEN the system SHALL open the corresponding front-door panel without a full page reload.
+4. WHILE no front door has been activated THEN the system SHALL display an empty state that explains the "four doors to one brain to one cart" flow.
+5. WHERE the viewport width is below the mobile breakpoint THEN the system SHALL present the four front doors in a single-column responsive layout.
+
+**"Speak it" voice front door**
+6. WHEN a user activates the voice front door THEN the system SHALL display a listening state with a visible recording indicator.
+7. WHILE speech is being captured THEN the system SHALL display incremental live transcription text.
+8. WHEN the transcript is submitted to the intent pipeline THEN the system SHALL display a processing state until a cart or clarification is returned.
+9. WHEN the Outcome Engine returns a result THEN the system SHALL display a confirming state showing the interpreted request alongside the resulting cart.
+10. WHEN the Outcome Engine raises a conversational follow-up THEN the system SHALL display the follow-up question and accept a spoken or typed reply.
+11. IF microphone access is denied or unavailable THEN the system SHALL display a fallback message and a typed-input alternative.
+
+**"Constrain it" budget/text front door**
+12. WHEN a user submits a budget and a serving count THEN the system SHALL display a cart whose total and remaining budget are both shown explicitly.
+13. WHILE the constraint cart is being assembled THEN the system SHALL display a loading state.
+14. IF no cart can satisfy the constraint THEN the system SHALL display the closest cart and a clearly labeled shortfall amount.
+15. IF a user submits an empty or non-numeric budget THEN the system SHALL display an inline validation message and SHALL NOT call the Outcome Engine.
+
+**"Show it" photo front door**
+16. WHEN a user uploads or captures a dish photo THEN the system SHALL display a preview of the selected image before processing.
+17. WHILE the image is being analyzed THEN the system SHALL display a processing state.
+18. WHEN the vision result returns ingredients THEN the system SHALL display the identified dish and the resulting cart.
+19. IF the vision provider is unavailable or returns a degraded result THEN the system SHALL display a friendly message and SHALL offer a typed-input alternative.
+20. WHEN an image is processed THEN the system SHALL discard the raw image at the end of the active session.
+
+**"Share it" recipe link/text front door**
+21. WHEN a user submits a recipe link or recipe text THEN the system SHALL send the content to the share endpoint and display a loading state.
+22. WHEN ingredients are extracted from the shared content THEN the system SHALL display the resulting cart.
+23. IF the shared content cannot be parsed into ingredients THEN the system SHALL display a descriptive error and SHALL offer a typed-input alternative.
+24. WHEN a share result is displayed THEN the system SHALL indicate the source (link or pasted text) that produced the cart.
+
+**One confident cart, confidence & comparison collapse**
+25. WHEN any front door returns a cart THEN the system SHALL display exactly one recommended cart as the primary result.
+26. WHEN a recommended product is displayed THEN the system SHALL show a confidence chip containing the confidence score and a one-line "why this one" reason.
+27. WHEN a user expands a recommendation THEN the system SHALL display the reasoning trail describing the engine's decision path.
+28. IF the confidence score for a pick is below the configured threshold THEN the system SHALL display the clarifying question as a human-in-the-loop prompt instead of presenting the pick as final.
+29. WHEN the cart is displayed THEN the system SHALL show, per item, the price, the confidence, and any substitution note, together with the cart total.
+
+**Substitution notices**
+30. WHEN a cart contains a substituted item THEN the system SHALL display a notice showing the original product, the substitute product, and the reason.
+31. WHEN a substitution notice is displayed THEN the system SHALL visually distinguish substituted items from directly matched items.
+32. WHEN an item is flagged as unmatched THEN the system SHALL display the flagged item in the cart with its unmatched status.
+
+**SOS / emergency mode UI**
+33. WHEN the application is displayed THEN the system SHALL present a prominent one-tap SOS entry point.
+34. WHEN SOS mode is activated THEN the system SHALL display an emergency UI with an urgency indicator and an ETA countdown.
+35. WHEN an SOS cart is displayed THEN the system SHALL prioritize and label fastest-delivery, in-stock items.
+36. WHEN a user proceeds from an SOS cart THEN the system SHALL present a compressed checkout of at most two steps.
+
+**Backend sync & contract alignment**
+37. WHERE the revamped frontend requires data or an endpoint the backend does not yet expose THEN the system SHALL extend the backend so the required data is available through a defined endpoint.
+38. WHEN frontend types are generated THEN the system SHALL derive them from the single OpenAPI contract so that frontend and backend share one source of truth.
+39. WHEN the voice front door requires intermediate states THEN the backend SHALL expose streaming or staged responses sufficient to drive the listening, processing, and confirming UI states.
+40. WHEN the comparison-collapse UI requests reasoning THEN the backend SHALL expose the reasoning trail for the recommendation.
+41. WHEN SOS mode requires timing data THEN the backend SHALL expose ETA and countdown data for the assembled SOS cart.
+42. WHEN constraint mode displays remaining budget THEN the backend SHALL include the remaining-budget value in the constraint response.
+43. WHEN the frontend consumes backend data THEN the system SHALL use the existing endpoints (outcome, voice/intent, constraint, vision/photo, share, cart/op, cart/{session}, sos, catalog/search, admin/stock) for their corresponding front doors and operations.
+44. IF a backend endpoint returns an error or degraded result THEN the corresponding front-door panel SHALL display an error or degraded state with a descriptive message.
+
+**Visual quality, responsiveness & accessibility**
+45. WHEN any screen renders THEN the system SHALL apply a single cohesive design system (theme, typography, color, spacing) across all front doors and the cart.
+46. WHEN a state transition occurs THEN the system SHALL render a transition animation and SHALL provide loading, empty, and error states for the active front door.
+47. WHEN the viewport changes across mobile, tablet, and desktop breakpoints THEN the system SHALL present a responsive layout without horizontal overflow.
+48. WHEN a user navigates with a keyboard THEN the system SHALL expose focusable, operable controls for every interactive element.
+49. WHEN text is rendered THEN the system SHALL meet a contrast ratio of at least 4.5:1 for normal text.
+50. WHERE a user relies on the voice front door THEN the system SHALL support a hands-free path from activation through cart confirmation.

@@ -115,9 +115,11 @@ class CartResponse(BaseModel):
     substitutions: list[SubstitutionResponse] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
     clarification: str | None = None
+    reasoning_trail: list[str] = Field(default_factory=list)
     budget: float | None = None
     remaining_budget: float | None = None
     shortfall: float | None = None
+    eta_minutes: int | None = None
     degraded: bool = False
 
     @classmethod
@@ -132,8 +134,10 @@ class CartResponse(BaseModel):
             substitutions=[SubstitutionResponse.from_domain(s) for s in cart.substitutions],
             notes=cart.notes,
             clarification=cart.clarification,
+            reasoning_trail=cart.reasoning_trail,
             budget=cart.budget,
             remaining_budget=cart.remaining_budget,
             shortfall=cart.shortfall,
+            eta_minutes=cart.eta_minutes,
             degraded=cart.degraded,
         )

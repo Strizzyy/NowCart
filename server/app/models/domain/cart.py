@@ -44,9 +44,11 @@ class Cart(BaseModel):
     substitutions: list[Substitution] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)      # unmatched needs, degraded flags, etc.
     clarification: str | None = None                    # HITL question (C3)
+    reasoning_trail: list[str] = Field(default_factory=list)  # engine decision log (C2/C3)
     budget: float | None = None                         # A3
     remaining_budget: float | None = None               # A3 (3.4)
     shortfall: float | None = None                      # A3 (3.2)
+    eta_minutes: int | None = None                      # SOS/delivery ETA (D4)
     degraded: bool = False                              # graceful degradation flag
 
     def recompute_total(self) -> float:

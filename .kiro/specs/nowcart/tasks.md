@@ -18,7 +18,8 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     { "wave": 5, "tasks": ["5"], "depends_on": ["4"] },
     { "wave": 6, "tasks": ["6"], "depends_on": ["5"] },
     { "wave": 7, "tasks": ["7"], "depends_on": ["6"] },
-    { "wave": 8, "tasks": ["8"], "depends_on": ["7"] }
+    { "wave": 8, "tasks": ["8"], "depends_on": ["6", "7"] },
+    { "wave": 9, "tasks": ["9"], "depends_on": ["7", "8"] }
   ]
 }
 ```
@@ -70,20 +71,54 @@ then services, REST API, and the React/TS frontend (Nest theme). The app always 
     - [x] 6.2v **Verify**: send request with PII in body, confirm it's redacted in logs; confirm rate limit header present
     - _Requirements: 1.x, 2.x, 3.x, 4.x, 7.x, 8.3, 9.5_
 
-- [~] 7. Frontend (React + Vite + TS, Nest theme)
-    - [~] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
-    - [~] 7.1v **Verify**: `npm run build` succeeds; dev server starts; layout renders in browser
-    - [~] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
-    - [~] 7.2v **Verify**: type an outcome in composer, confirm API call fires and cart appears
-    - [~] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
-    - [ ] 7.3v **Verify**: cart drawer opens with items; confidence chips visible; SOS mode triggers emergency UI
+- [x] 7. Frontend (React + Vite + TS, Nest theme)
+    - [x] 7.1 Scaffold + Tailwind theme + typed API client + layout (header, sidebar, grid)
+    - [x] 7.1v **Verify**: `npm run build` succeeds; dev server starts; layout renders in browser
+    - [x] 7.2 Front-door composer (text/budget/voice), voice flow, photo + share input
+    - [x] 7.2v **Verify**: type an outcome in composer, confirm API call fires and cart appears
+    - [x] 7.3 Cart drawer (confidence + substitution), comparison-collapse card, SOS screen
+    - [x] 7.3v **Verify**: cart drawer opens with items; confidence chips visible; SOS mode triggers emergency UI
     - _Requirements: 1.x–7.x, 9.6_
 
-- [~] 8. Verify + deploy
-    - [~] 8.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
-    - [~] 8.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
-    - [~] 8.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
-    - [ ] 8.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
+- [x] 8. Frontend Revamp & Backend Sync (experience layer: "four ways in, one brain, one confident cart out")
+    - [x] 8.1 Design system + Front Door Hub landing:
+        - Theme tokens (color/type/spacing), shared UI primitives (Button, Card, Chip, Panel, Spinner, Toast/empty/error), transition wrappers.
+        - Responsive mobile/tablet/desktop; accessible (keyboard focus rings, contrast ≥ 4.5:1). Refactor Header/Footer/ProductCard/CartDrawer/Composer onto it.
+        - Rebuild HomePage as Front Door Hub: thesis + "four ways in, one brain, one cart" narrative; four distinct front-door entry points opening panels client-side (no reload); empty state explaining the flow; single-column on mobile.
+    - [x] 8.1v **Verify**: build + dev server OK; tokens applied; every control tab-focusable; contrast ≥ 4.5:1; no overflow at mobile/tablet/desktop; thesis + narrative + four distinct doors visible; door opens panel without reload; empty state pre-activation; single-column on mobile.
+    - _Requirements: 10_
+
+    - [x] 8.2 Four front-door panels with loading/empty/error states:
+        - Speak (`voice/intent`): listening/transcription/processing/confirming states, spoken-or-typed follow-ups, mic-denied fallback to typed input.
+        - Constrain (`constraint`): total + remaining budget, closest-cart + labeled shortfall, inline validation for empty/non-numeric (no engine call).
+        - Show (`vision/photo`): image preview, processing, dish + cart, degraded fallback to typed input, discard image at session end.
+        - Share (`share`): loading, extracted cart, parse-error fallback to typed input, source indicator (link/pasted text).
+    - [x] 8.2v **Verify**: each panel yields a cart; voice cycles listening→processing→confirming + mic-denied fallback; constraint shows total/remaining + blocks non-numeric inline; photo previews + degrades; share shows source + handles parse errors.
+    - _Requirements: 10_
+
+    - [x] 8.3 Confident cart + substitution:
+        - Single primary cart from any door; per-item confidence chip (score + one-line why); comparison-collapse card with expandable reasoning trail; HITL clarifying prompt when below threshold; per-item price/confidence/substitution + total.
+        - Substitution notices: original → substitute + reason; substituted items visually distinct from direct matches; unmatched items flagged.
+    - [x] 8.3v **Verify**: single cart per door; chips with score + reason; reasoning trail expands; low-confidence pick shows HITL prompt; per-item price/confidence/substitution + total render; force OOS via `admin/stock` → notice (original → substitute + reason) renders; substituted items distinct; unmatched item flagged.
+    - _Requirements: 10_
+
+    - [x] 8.4 SOS UI + backend sync:
+        - SOS UI: prominent one-tap entry app-wide; emergency UI with urgency indicator + ETA countdown; labeled fastest-delivery in-stock items; ≤ 2-step checkout. Rebuild SosPage on the design system.
+        - Backend sync: expose staged voice states, reasoning trail, SOS ETA/countdown, remaining budget (update Pydantic DTOs); regenerate TS types from OpenAPI (`openapi-typescript`) and refactor `client/src/api/client.ts` to consume them (no drift).
+        - Wire all endpoints (outcome, voice/intent, constraint, vision/photo, share, cart/op, cart/{session}, sos, catalog/search, admin/stock) to their doors; every panel shows a descriptive error/degraded state.
+    - [x] 8.4v **Verify**: one-tap SOS activates; urgency + ETA countdown show; fastest-delivery items labeled; checkout ≤ 2 steps; backend exposes staged voice states/reasoning trail/SOS ETA-countdown/remaining budget; TS types compile with no drift; client.ts uses generated types; each endpoint drives its door; endpoint error shows descriptive degraded state.
+    - _Requirements: 10_
+
+    - [x] 8.5 Final integration checkpoint — Ensure all tests pass, ask the user if questions arise.
+        - Build + dev server run; each door (Speak/Constrain/Show/Share) produces a cart; chips visible; SOS triggers; substitution renders; responsive + keyboard-accessible end to end.
+    - [x] 8.5v **Verify**: build + dev server run; each door produces a cart; chips visible; SOS triggers; substitution renders; responsive + keyboard-accessible end to end.
+    - _Requirements: 10_
+
+- [~] 9. Verify + deploy
+    - [~] 9.1 Tests (confidence, budget, matching, substitution) + agent e2e + seed check
+    - [~] 9.1v **Verify**: full test suite passes (`uv run pytest` / `npm test`); no failures
+    - [~] 9.2 Dockerfile + compose (Redis, DynamoDB Local); S3/CloudFront + EC2/Nginx + Lambda/SQS notes
+    - [ ] 9.2v **Verify**: `docker compose up` starts all services; health endpoint responds 200
     - _Requirements: all, 9.3, 9.4_
 
 ## Notes

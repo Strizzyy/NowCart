@@ -63,6 +63,7 @@ class SosService:
 
         kit = _SOS_KITS[kit_key]
         items: list[CartItem] = []
+        etas: list[int] = []
 
         for need in kit:
             matches = await catalog.fuzzy_match_need(
@@ -71,7 +72,7 @@ class SosService:
                 top_k=3,
             )
 
-            # Pick first available match
+            # Pick first available match (fastest-delivery, in-stock only for SOS)
             for product, score in matches:
                 if await catalog.check_availability(product.product_id):
                     items.append(
@@ -85,12 +86,17 @@ class SosService:
                             confidence=min(score / 100.0, 1.0),
                         )
                     )
+                    etas.append(getattr(product, "delivery_eta_min", 30) or 30)
                     break
+
+        # SOS ETA = the slowest item in the kit (when everything arrives)
+        eta_minutes = max(etas) if etas else 30
 
         cart = Cart(
             session_id=str(uuid.uuid4()),
             items=items,
             mode=IntentMode.SOS,
+            eta_minutes=eta_minutes,
             notes=[f"Emergency kit: {kit_key} ({situation})"],
         )
         cart.recompute_total()
