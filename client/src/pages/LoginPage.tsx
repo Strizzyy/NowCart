@@ -45,6 +45,8 @@ export default function LoginPage({ onLogin }: Props) {
     const trimmedEmail = email.trim().toLowerCase();
     const role = ADMIN_EMAILS.includes(trimmedEmail) ? 'admin' : 'user';
 
+    const destination = role === 'admin' ? '/admin' : '/';
+
     try {
       if (mode === 'signup') {
         const authUser = await registerUser(name.trim(), trimmedEmail, password);
@@ -53,14 +55,14 @@ export default function LoginPage({ onLogin }: Props) {
         const authUser = await loginUser(trimmedEmail, password);
         onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
       }
-      navigate('/');
+      navigate(destination);
     } catch (err: any) {
       // Fallback: if backend auth fails (e.g. seeded users), allow local-only login
       const userName = mode === 'signup' ? name.trim() : email.split('@')[0];
       setError(err.message || 'Auth failed — using local session');
       // Still log them in locally for demo convenience
       onLogin({ name: userName, email: trimmedEmail, role });
-      navigate('/');
+      navigate(destination);
     } finally {
       setLoading(false);
     }
@@ -201,7 +203,7 @@ export default function LoginPage({ onLogin }: Props) {
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
-                onClick={() => { onLogin({ name: 'Admin', email: 'admin@nowcart.app', role: 'admin' }); navigate('/'); }}
+                onClick={() => { onLogin({ name: 'Admin', email: 'admin@nowcart.app', role: 'admin' }); navigate('/admin'); }}
                 className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 border-2 border-purple-200 bg-purple-50 rounded-xl text-xs font-medium hover:border-purple-400 hover:bg-purple-100 transition"
               >
                 <Shield size={20} className="text-purple-600" />

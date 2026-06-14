@@ -157,25 +157,6 @@ export default function ShowPanel({ ctx, onClose }: Props) {
           Recreate
         </Button>
       </div>
-
-      <div className="border-t border-border pt-3">
-        <label htmlFor="show-typed" className="text-xs font-semibold text-dark flex items-center gap-1">
-          <Keyboard size={13} aria-hidden="true" /> No photo? Type the dish
-        </label>
-        <div className="flex gap-2 mt-1.5">
-          <input
-            id="show-typed"
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder="e.g. masala dosa"
-            className="flex-1 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
-          />
-          <Button variant="ghost" size="md" onClick={submit} disabled={!typed.trim()} rightIcon={<Send size={15} />}>
-            Build
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

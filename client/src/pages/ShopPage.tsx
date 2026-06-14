@@ -58,7 +58,7 @@ export default function ShopPage({ ctx }: Props) {
 
   useEffect(() => {
     const cat = searchParams.get('category');
-    if (cat) setCategory(cat);
+    setCategory(cat || 'All');
   }, [searchParams]);
 
   // Reset to page 1 when category or query changes

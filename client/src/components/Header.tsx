@@ -47,18 +47,18 @@ export default function Header({ ctx, onLogout }: Props) {
         {/* Search bar */}
         <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
           <label htmlFor="header-search" className="sr-only">Search for a product</label>
-          <div className="flex items-center border-2 border-primary rounded-xl overflow-hidden bg-surface focus-within:border-primary-dark transition-colors">
+          <div className="flex items-stretch rounded-xl overflow-hidden border-2 border-primary focus-within:border-primary-dark transition-colors">
             <input
               id="header-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Search for "milk", "paneer", "rice"...'
-              className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-dark"
+              className="flex-1 px-4 py-2.5 text-sm outline-none bg-surface text-dark"
             />
             <button
               type="submit"
-              className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 transition-colors"
+              className="bg-primary hover:bg-primary-dark text-white px-5 transition-colors"
               aria-label="Search products"
             >
               <Search size={18} aria-hidden="true" />
@@ -150,10 +150,10 @@ export default function Header({ ctx, onLogout }: Props) {
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 py-2 text-sm font-medium overflow-x-auto">
           <Link to="/" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Home</Link>
           <Link to="/shop" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Shop</Link>
-          <Link to="/shop?category=Fruits%20%26%20Vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits & Veggies</Link>
-          <Link to="/shop?category=Staples" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Staples</Link>
-          <Link to="/shop?category=Snacks%20%26%20Beverages" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
-          <Link to="/shop?category=Dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
+          <Link to="/shop?category=fruits+vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits & Veggies</Link>
+          <Link to="/shop?category=foodgrains+oil+masala" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Staples</Link>
+          <Link to="/shop?category=snacks+branded+foods" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
+          <Link to="/shop?category=bakery+cakes+dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
           <Link to="/sos" className="text-accent-dark hover:text-accent transition whitespace-nowrap font-semibold">SOS Mode</Link>
           {ctx.user?.role === 'admin' && (
             <Link to="/admin" className="ml-auto text-purple-600 hover:text-purple-800 transition whitespace-nowrap font-semibold flex items-center gap-1">

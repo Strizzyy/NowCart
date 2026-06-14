@@ -65,7 +65,11 @@ function App() {
               <Header ctx={ctx} onLogout={handleLogout} />
               <main className="flex-1">
                 <Routes>
-                  <Route path="/" element={<HomePage ctx={ctx} />} />
+                  <Route path="/" element={
+                    user?.role === 'admin'
+                      ? <Navigate to="/admin" replace />
+                      : <HomePage ctx={ctx} />
+                  } />
                   <Route path="/shop" element={<ShopPage ctx={ctx} />} />
                   <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
                   <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />

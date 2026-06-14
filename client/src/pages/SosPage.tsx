@@ -129,10 +129,6 @@ function RecommendationCard({
             </div>
 
             <div className="flex items-center gap-2">
-              <Link to={`/product/${product.product_id}`}>
-                <Button variant="outline" size="sm">Details</Button>
-              </Link>
-
               {isInCart ? (
                 /* Quantity controls + Remove when in cart */
                 <div className="flex items-center gap-1.5">

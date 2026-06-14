@@ -78,9 +78,10 @@ export async function postVoiceIntent(transcript: string, session_id?: string): 
 }
 
 /** Show it (B2) — analyze a dish photo (multipart). Falls back to text when no file. */
-export async function postVisionAnalyze(file?: File | null, text?: string): Promise<CartResponse> {
+export async function postVisionAnalyze(file?: File | null, text?: string, session_id?: string): Promise<CartResponse> {
   const form = new FormData();
   if (file) form.append('file', file);
+  if (session_id) form.append('session_id', session_id);
   // text is an optional query param on the backend route
   const qs = text ? `?text=${encodeURIComponent(text)}` : '';
   const res = await fetch(`${BASE}/vision/analyze${qs}`, {
@@ -95,7 +96,7 @@ export async function postVisionAnalyze(file?: File | null, text?: string): Prom
 }
 
 /** Share it (B4) — parse a recipe link or pasted recipe text. */
-export async function postShareParse(input: { url?: string; text?: string }): Promise<CartResponse> {
+export async function postShareParse(input: { url?: string; text?: string; session_id?: string }): Promise<CartResponse> {
   return request<CartResponse>('/share/parse', {
     method: 'POST',
     body: JSON.stringify(input),

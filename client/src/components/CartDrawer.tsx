@@ -65,7 +65,10 @@ export default function CartDrawer({ ctx }: Props) {
     try {
       const updated = await postCartOp(cart.session_id, 'remove', name);
       setCart(updated);
-    } catch { /* ignore */ }
+    } catch {
+      // Cart session may have been cleared server-side — reset local state
+      setCart(null);
+    }
     setLoading(null);
   };
 
@@ -75,7 +78,10 @@ export default function CartDrawer({ ctx }: Props) {
     try {
       const updated = await postCartOp(cart.session_id, 'update', name, qty);
       setCart(updated);
-    } catch { /* ignore */ }
+    } catch {
+      // Cart session may have been cleared server-side — reset local state
+      setCart(null);
+    }
     setLoading(null);
   };
 
@@ -85,7 +91,9 @@ export default function CartDrawer({ ctx }: Props) {
     try {
       const updated = await postCartOp(cart.session_id, 'clear');
       setCart(updated);
-    } catch { /* ignore */ }
+    } catch {
+      setCart(null);
+    }
     setLoading(null);
   };
 
@@ -417,6 +425,8 @@ export default function CartDrawer({ ctx }: Props) {
                   } catch {
                     // Order placement failed — continue to success page anyway for demo
                   }
+                  // Clear the cart state in the frontend after placing the order
+                  setCart(null);
                   setPlacingOrder(false);
                   setCartOpen(false);
                   navigate('/order-success');
