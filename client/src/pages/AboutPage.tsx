@@ -1,4 +1,4 @@
-import { Github, Mail, Linkedin } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Card, FadeIn } from '../ui';
 
 interface TeamMember {
@@ -17,7 +17,7 @@ const TEAM: TeamMember[] = [
     role: 'Backend + Deployment',
     year: '4th Year, B.Tech',
     college: 'Rajiv Gandhi Institute of Petroleum Technology',
-    location: 'Amethi, Uttar Pradesh, India',
+    location: 'Bangalore, India',
     email: 'rohan.singh200402@gmail.com',
     image: '/team/rohan.jpg',
   },
@@ -52,7 +52,6 @@ export default function AboutPage() {
           </h1>
           <p className="text-muted text-lg max-w-2xl mx-auto">
             We're a team of students building the intent-capture layer for quick commerce.
-            Built during <strong className="text-dark">HackOn with Amazon</strong> (48-hour build).
           </p>
         </div>
       </FadeIn>
@@ -100,17 +99,7 @@ export default function AboutPage() {
           </FadeIn>
         ))}
       </div>
-
-      {/* Project Info */}
-      <FadeIn delay={400}>
-        <div className="mt-12 text-center">
-          <Card padding="lg" className="inline-block">
-            <p className="text-muted text-sm">
-              <strong className="text-dark">NowCart</strong> — Built for HackOn with Amazon 2025
-            </p>
-          </Card>
-        </div>
-      </FadeIn>
+      
     </div>
   );
 }
