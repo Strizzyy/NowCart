@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AppContext } from '../App';
 import { searchCatalog, postCartOp, postOutcome } from '../api/client';
 import type { Product } from '../api/client';
 import ProductCard from '../components/ProductCard';
+
+const ITEMS_PER_PAGE = 12; // 3 rows × 4 columns on large screens
 
 interface Props {
   ctx: AppContext;
@@ -46,18 +48,37 @@ export default function ShopPage({ ctx }: Props) {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'All');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return products.slice(start, start + ITEMS_PER_PAGE);
+  }, [products, currentPage]);
 
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setCategory(cat);
   }, [searchParams]);
 
+  // Reset to page 1 when category or query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, query]);
+
+  // Scroll to top of product grid when page changes
+  useEffect(() => {
+    if (!loading) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
         const cat = category === 'All' ? undefined : category;
-        const results = await searchCatalog(query || undefined, cat, 40);
+        const results = await searchCatalog(query || undefined, cat, 100);
         setProducts(results);
       } catch (err) {
         console.error('Search failed:', err);
@@ -143,7 +164,7 @@ export default function ShopPage({ ctx }: Props) {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted">
-              {loading ? 'Loading...' : `${products.length} products found`}
+              {loading ? 'Loading...' : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1}–${Math.min(currentPage * ITEMS_PER_PAGE, products.length)} of ${products.length} products`}
             </p>
             {/* Mobile filter */}
             <select
@@ -159,7 +180,7 @@ export default function ShopPage({ ctx }: Props) {
 
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 12 }).map((_, i) => (
+              {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                 <div key={i} className="bg-light-bg rounded-xl h-64 animate-pulse" />
               ))}
             </div>
@@ -170,11 +191,52 @@ export default function ShopPage({ ctx }: Props) {
               <p className="text-muted text-sm">Try a different search or category</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((p) => (
-                <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {paginatedProducts.map((p) => (
+                  <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <nav aria-label="Pagination" className="flex items-center justify-center gap-2 mt-8">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft size={16} /> Prev
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                        page === currentPage
+                          ? 'bg-primary text-white'
+                          : 'hover:bg-primary-light text-dark'
+                      }`}
+                      aria-label={`Page ${page}`}
+                      aria-current={page === currentPage ? 'page' : undefined}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark"
+                    aria-label="Next page"
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                </nav>
+              )}
+            </>
           )}
         </div>
       </div>
