@@ -281,6 +281,8 @@ export interface components {
             confidence: number;
             /** Substituted For */
             substituted_for?: string | null;
+            /** Image Url */
+            image_url?: string | null;
         };
         /**
          * CartOpRequest
@@ -311,11 +313,18 @@ export interface components {
             session_id: string;
             /** Items */
             items?: components["schemas"]["CartItemResponse"][];
+            /** Economical Items */
+            economical_items?: components["schemas"]["CartItemResponse"][];
             /**
              * Total
              * @default 0
              */
             total: number;
+            /**
+             * Economical Total
+             * @default 0
+             */
+            economical_total: number;
             /**
              * Currency
              * @default INR

@@ -36,6 +36,8 @@ async def cart_operation(req: CartOpRequest) -> CartResponse:
                 entity=req.entity or "",
                 quantity=req.quantity or 1.0,
             )
+        case "clear":
+            cart = await service.clear_cart(req.session_id)
         case "total":
             total = await service.get_total(req.session_id)
             if total is None:

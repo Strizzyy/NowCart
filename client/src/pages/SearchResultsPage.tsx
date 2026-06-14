@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Star, ShoppingCart, Trophy, Layers, ArrowLeft } from 'lucide-react';
 import type { AppContext } from '../App';
-import { searchRecommend, postCartOp, postOutcome } from '../api/client';
+import { searchRecommend, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
 import { Button, Card, Chip } from '../ui';
 
@@ -139,13 +139,10 @@ export default function SearchResultsPage({ ctx }: Props) {
 
   const handleAddToCart = async (product: Product) => {
     try {
-      if (ctx.cart) {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', product.name, 1);
-        ctx.setCart(updated);
-      } else {
-        const cart = await postOutcome(product.name);
-        ctx.setCart(cart);
-      }
+      // Always use cart/op add — passing empty session_id creates a new cart
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', product.name, 1);
+      ctx.setCart(updated);
       ctx.setCartOpen(true);
     } catch {
       /* ignore */

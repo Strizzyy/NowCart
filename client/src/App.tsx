@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -8,38 +8,79 @@ import ProductPage from './pages/ProductPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import CartDrawer from './components/CartDrawer';
 import SosPage from './pages/SosPage';
+import LoginPage from './pages/LoginPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import { ToastProvider } from './ui';
 import type { CartResponse } from './api/client';
+
+export interface UserInfo {
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+}
 
 export interface AppContext {
   cart: CartResponse | null;
   setCart: (cart: CartResponse | null) => void;
   cartOpen: boolean;
   setCartOpen: (open: boolean) => void;
+  user: UserInfo | null;
 }
 
 function App() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(() => {
+    const stored = localStorage.getItem('nowcart_user');
+    return stored ? JSON.parse(stored) : null;
+  });
 
-  const ctx: AppContext = { cart, setCart, cartOpen, setCartOpen };
+  const handleLogin = (u: UserInfo) => {
+    setUser(u);
+    localStorage.setItem('nowcart_user', JSON.stringify(u));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('nowcart_user');
+  };
+
+  const ctx: AppContext = { cart, setCart, cartOpen, setCartOpen, user };
 
   return (
     <ToastProvider>
       <BrowserRouter>
         <div className="min-h-screen flex flex-col">
-          <Header ctx={ctx} />
-          <main className="flex-1">
+          {!user ? (
             <Routes>
-              <Route path="/" element={<HomePage ctx={ctx} />} />
-              <Route path="/shop" element={<ShopPage ctx={ctx} />} />
-              <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
-              <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
-              <Route path="/sos" element={<SosPage ctx={ctx} />} />
+              <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-          </main>
-          <Footer />
-          <CartDrawer ctx={ctx} />
+          ) : (
+            <>
+              <Header ctx={ctx} onLogout={handleLogout} />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/" element={<HomePage ctx={ctx} />} />
+                  <Route path="/shop" element={<ShopPage ctx={ctx} />} />
+                  <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
+                  <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
+                  <Route path="/sos" element={<SosPage ctx={ctx} />} />
+                  <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
+                  <Route path="/admin" element={
+                    user?.role === 'admin'
+                      ? <AdminDashboardPage ctx={ctx} />
+                      : <Navigate to="/" replace />
+                  } />
+                  <Route path="/login" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+              <Footer />
+              <CartDrawer ctx={ctx} />
+            </>
+          )}
         </div>
       </BrowserRouter>
     </ToastProvider>

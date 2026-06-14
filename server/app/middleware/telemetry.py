@@ -114,20 +114,45 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
 
 def get_metrics_snapshot() -> dict:
     """Return a serializable snapshot of current metrics for the /api/meta/stats endpoint."""
+    uptime_minutes = round(metrics.total_latency_ms / 1000 / 60, 1) if metrics.total_requests > 0 else 0
+    cache_total = metrics.cache_hits + metrics.cache_misses
+    cache_hit_ratio = round(metrics.cache_hits / max(cache_total, 1), 4)
+    
     return {
         "total_requests": metrics.total_requests,
         "total_errors": metrics.total_errors,
         "error_rate": round(metrics.total_errors / max(metrics.total_requests, 1), 4),
+        "error_rate_pct": f"{round(metrics.total_errors / max(metrics.total_requests, 1) * 100, 2)}%",
         "avg_latency_ms": round(metrics.avg_latency_ms, 1),
         "p95_latency_ms": round(metrics.p95_latency_ms, 1),
+        "p50_latency_ms": round(
+            sorted(metrics._recent_latencies)[len(metrics._recent_latencies) // 2]
+            if metrics._recent_latencies else 0.0, 1
+        ),
         "carts_built": metrics.carts_built,
         "cache_hits": metrics.cache_hits,
         "cache_misses": metrics.cache_misses,
+        "cache_hit_ratio": cache_hit_ratio,
+        "cache_hit_ratio_pct": f"{round(cache_hit_ratio * 100, 1)}%",
         "llm_calls": metrics.llm_calls,
         "avg_llm_latency_ms": round(metrics.avg_llm_latency_ms, 1),
         "top_paths": dict(
             sorted(metrics.requests_by_path.items(), key=lambda x: x[1], reverse=True)[:10]
         ),
         "status_codes": dict(metrics.requests_by_status),
-        "uptime_requests": metrics.total_requests,
+        "requests_per_status": {
+            "2xx": sum(v for k, v in metrics.requests_by_status.items() if k.startswith("2")),
+            "4xx": sum(v for k, v in metrics.requests_by_status.items() if k.startswith("4")),
+            "5xx": sum(v for k, v in metrics.requests_by_status.items() if k.startswith("5")),
+        },
+        "throughput_summary": {
+            "total_requests": metrics.total_requests,
+            "carts_built": metrics.carts_built,
+            "avg_response_ms": round(metrics.avg_latency_ms, 1),
+            "p95_response_ms": round(metrics.p95_latency_ms, 1),
+        },
+        "health": {
+            "status": "healthy" if metrics.total_errors / max(metrics.total_requests, 1) < 0.1 else "degraded",
+            "error_budget_remaining": f"{max(0, 100 - round(metrics.total_errors / max(metrics.total_requests, 1) * 100, 1))}%",
+        },
     }

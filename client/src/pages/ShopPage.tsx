@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AppContext } from '../App';
-import { searchCatalog, postCartOp, postOutcome } from '../api/client';
+import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
 import ProductCard from '../components/ProductCard';
 
@@ -89,19 +89,12 @@ export default function ShopPage({ ctx }: Props) {
   }, [query, category]);
 
   const handleAddToCart = async (product: Product) => {
-    if (ctx.cart) {
-      try {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', product.name, 1);
-        ctx.setCart(updated);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    } else {
-      try {
-        const cart = await postOutcome(product.name);
-        ctx.setCart(cart);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    }
+    try {
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', product.name, 1);
+      ctx.setCart(updated);
+      ctx.setCartOpen(true);
+    } catch { /* ignore */ }
   };
 
   const handleCategoryClick = (cat: string) => {

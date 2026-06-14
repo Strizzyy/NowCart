@@ -1,4 +1,5 @@
-import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX } from 'lucide-react';
+import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star, ArrowRight, Truck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postCartOp } from '../api/client';
 import { useEffect, useState } from 'react';
@@ -24,11 +25,15 @@ export default function CartDrawer({ ctx }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const [proceeded, setProceeded] = useState(false);
   const [highlightLow, setHighlightLow] = useState(false);
+  const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const navigate = useNavigate();
 
   // reset the HITL gate whenever a new cart arrives
   useEffect(() => {
     setProceeded(false);
     setHighlightLow(false);
+    setActiveTab('recommended');
   }, [cart?.session_id, cart?.clarification]);
 
   if (!cartOpen) return null;
@@ -48,6 +53,16 @@ export default function CartDrawer({ ctx }: Props) {
     setLoading(name);
     try {
       const updated = await postCartOp(cart.session_id, 'update', name, qty);
+      setCart(updated);
+    } catch { /* ignore */ }
+    setLoading(null);
+  };
+
+  const handleClearCart = async () => {
+    if (!cart) return;
+    setLoading('__clear__');
+    try {
+      const updated = await postCartOp(cart.session_id, 'clear');
       setCart(updated);
     } catch { /* ignore */ }
     setLoading(null);
@@ -75,13 +90,26 @@ export default function CartDrawer({ ctx }: Props) {
             </h2>
             <p className="text-xs text-muted">One pick per need — we already compared the rest.</p>
           </div>
-          <button
-            onClick={() => setCartOpen(false)}
-            className="p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition"
-            aria-label="Close cart"
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            {cart && cart.items.length > 0 && (
+              <button
+                onClick={handleClearCart}
+                disabled={loading === '__clear__'}
+                className="p-1.5 rounded-full text-muted hover:text-accent-dark hover:bg-red-50 transition disabled:opacity-50"
+                aria-label="Clear entire cart"
+                title="Clear cart"
+              >
+                <XCircle size={20} aria-hidden="true" />
+              </button>
+            )}
+            <button
+              onClick={() => setCartOpen(false)}
+              className="p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition"
+              aria-label="Close cart"
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Cart content */}
@@ -116,18 +144,39 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Substitutions summary (D2) */}
+              {/* Substitutions summary (D2) — Enhanced visibility for demo */}
               {cart.substitutions.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-blue-800 mb-1 flex items-center gap-1">
-                    <Repeat size={12} aria-hidden="true" /> We swapped {cart.substitutions.length} out-of-stock item
-                    {cart.substitutions.length === 1 ? '' : 's'}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Repeat size={16} className="text-blue-700" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900">
+                        🧠 Substitution Intelligence Active
+                      </p>
+                      <p className="text-[11px] text-blue-700">
+                        {cart.substitutions.length} item{cart.substitutions.length === 1 ? '' : 's'} auto-swapped for in-stock alternatives
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mt-3">
+                    {cart.substitutions.map((sub, i) => (
+                      <div key={i} className="bg-white/70 rounded-lg p-2.5 border border-blue-100">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-red-500 line-through font-medium">{sub.original_name}</span>
+                          <ArrowRight size={12} className="text-blue-500 shrink-0" />
+                          <span className="text-blue-900 font-bold">{sub.substitute_name}</span>
+                        </div>
+                        <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1">
+                          <Sparkles size={10} /> {sub.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-blue-600 mt-2 italic">
+                    AI matched similar products by category, brand quality, and price range
                   </p>
-                  {cart.substitutions.map((sub, i) => (
-                    <p key={i} className="text-xs text-blue-700">
-                      {sub.original_name} → <strong>{sub.substitute_name}</strong> ({sub.reason})
-                    </p>
-                  ))}
                 </div>
               )}
 
@@ -143,8 +192,60 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Items */}
-              {cart.items.map((item) => {
+              {/* ===== Section Tabs: Recommended vs Economical ===== */}
+              {cart.economical_items && cart.economical_items.length > 0 && (
+                <div className="flex rounded-xl bg-light-bg border border-border p-1 gap-1">
+                  <button
+                    onClick={() => setActiveTab('recommended')}
+                    className={[
+                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition',
+                      activeTab === 'recommended'
+                        ? 'bg-surface text-primary-ink shadow-sm'
+                        : 'text-muted hover:text-dark',
+                    ].join(' ')}
+                  >
+                    <Star size={13} aria-hidden="true" />
+                    Recommended
+                    <span className="text-[10px] font-medium ml-0.5">₹{cart.total.toFixed(0)}</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('economical')}
+                    className={[
+                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition',
+                      activeTab === 'economical'
+                        ? 'bg-surface text-emerald-700 shadow-sm'
+                        : 'text-muted hover:text-dark',
+                    ].join(' ')}
+                  >
+                    <BadgeDollarSign size={13} aria-hidden="true" />
+                    Economical
+                    <span className="text-[10px] font-medium ml-0.5">₹{cart.economical_total.toFixed(0)}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Savings badge when economical tab is active */}
+              {activeTab === 'economical' && cart.economical_items && cart.economical_items.length > 0 && cart.total > cart.economical_total && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
+                  <BadgeDollarSign size={16} className="text-emerald-700 shrink-0" aria-hidden="true" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-800">
+                      Save ₹{(cart.total - cart.economical_total).toFixed(0)} with economical picks
+                    </p>
+                    <p className="text-[11px] text-emerald-700">Same products, lower-priced alternatives from our catalog.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Section header */}
+              {cart.economical_items && cart.economical_items.length > 0 && (
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide pt-1">
+                  {activeTab === 'recommended' ? '⭐ Best quality picks' : '💰 Budget-friendly picks'}
+                </p>
+              )}
+
+              {/* Items — based on active tab */}
+              {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {
                 const substituted = !!item.substituted_for;
                 const low = item.confidence < LOW_CONFIDENCE;
                 return (
@@ -154,10 +255,23 @@ export default function CartDrawer({ ctx }: Props) {
                       'flex items-start gap-3 p-3 rounded-xl transition',
                       substituted ? 'bg-blue-50/60 border-l-4 border-blue-300 pl-2' : 'bg-light-bg',
                       highlightLow && low ? 'ring-2 ring-amber-300' : '',
+                      activeTab === 'economical' ? 'border-l-4 border-emerald-200' : '',
                     ].join(' ')}
                   >
-                    <div className="w-14 h-14 bg-surface rounded-lg border border-border flex items-center justify-center shrink-0">
-                      <span className="text-2xl" aria-hidden="true">🛒</span>
+                    <div className="w-14 h-14 bg-surface rounded-lg border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="text-2xl">📦</span>';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-2xl" aria-hidden="true">📦</span>
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -177,6 +291,11 @@ export default function CartDrawer({ ctx }: Props) {
                         {substituted && (
                           <Chip tone="info" size="xs" icon={<Repeat size={10} />}>
                             Swapped in
+                          </Chip>
+                        )}
+                        {activeTab === 'economical' && item.reason && item.reason.includes('saves') && (
+                          <Chip tone="success" size="xs" icon={<BadgeDollarSign size={10} />}>
+                            {item.reason.match(/saves ₹\d+/)?.[0] || 'Cheaper'}
                           </Chip>
                         )}
                       </div>
@@ -247,10 +366,34 @@ export default function CartDrawer({ ctx }: Props) {
 
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted">Total</p>
-                <p className="text-xl font-bold text-dark">₹{cart.total.toFixed(0)}</p>
+                <p className="text-sm text-muted">
+                  {activeTab === 'recommended' ? 'Total' : 'Economical Total'}
+                </p>
+                <p className="text-xl font-bold text-dark">
+                  ₹{(activeTab === 'recommended' ? cart.total : cart.economical_total).toFixed(0)}
+                </p>
+                {activeTab === 'economical' && cart.total > cart.economical_total && (
+                  <p className="text-xs text-emerald-600 font-medium">
+                    You save ₹{(cart.total - cart.economical_total).toFixed(0)}
+                  </p>
+                )}
               </div>
-              <Button variant="primary" size="md">Checkout →</Button>
+              <Button
+                variant="primary"
+                size="md"
+                loading={placingOrder}
+                onClick={async () => {
+                  setPlacingOrder(true);
+                  // Simulate payment processing
+                  await new Promise((r) => setTimeout(r, 1500));
+                  setPlacingOrder(false);
+                  setCartOpen(false);
+                  navigate('/order-success');
+                }}
+                leftIcon={!placingOrder ? <Truck size={16} /> : undefined}
+              >
+                {placingOrder ? 'Placing Order...' : 'Place Order →'}
+              </Button>
             </div>
 
             <div className="text-center">

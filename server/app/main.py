@@ -80,6 +80,12 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.error("DynamoDB seed failed: %s — app will start but catalog may be empty", exc)
 
+    # Pre-warm catalog cache so first user request is fast
+    from app.services.catalog_service import get_catalog_service
+    catalog = get_catalog_service()
+    all_products = await catalog._get_all_products()
+    logger.info("Catalog cache warmed: %d products in memory", len(all_products))
+
     yield
     logger.info("NowCart shutting down")
 

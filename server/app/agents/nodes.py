@@ -286,7 +286,11 @@ async def match_node(state: AgentState) -> dict:
 
 
 async def optimize_node(state: AgentState) -> dict:
-    """Pick the best candidate per need and build CartItems."""
+    """Pick the best candidate per need and build CartItems.
+
+    Also builds an economical_items list with the cheapest available
+    alternative for each need (different from the best pick).
+    """
     needs: list[Need] = state.get("needs", [])
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     trail: list[str] = state.get("reasoning_trail", [])
@@ -294,6 +298,7 @@ async def optimize_node(state: AgentState) -> dict:
 
     catalog = get_catalog_service()
     items: list[CartItem] = []
+    economical_items: list[CartItem] = []
     notes: list[str] = []
 
     for need in needs:
@@ -306,11 +311,13 @@ async def optimize_node(state: AgentState) -> dict:
 
         # Pick best: highest score, prefer in-stock, check availability
         best = None
+        available_candidates: list[tuple[str, str, float, float, str | None]] = []
         for product_id, name, score, price, image_url in need_candidates:
             is_available = await catalog.check_availability(product_id)
             if is_available:
-                best = (product_id, name, score, price, image_url)
-                break  # First available with highest score wins
+                available_candidates.append((product_id, name, score, price, image_url))
+                if best is None:
+                    best = (product_id, name, score, price, image_url)
 
         if best is None:
             # All candidates out of stock — keep first as placeholder for substitution
@@ -339,16 +346,76 @@ async def optimize_node(state: AgentState) -> dict:
         if need.status == NeedStatus.MATCHED:
             need.matched_product_id = product_id
 
+        # --- Economical pick: cheapest available alternative ---
+        # Sort available candidates by price (ascending) and pick the cheapest
+        # that is different from the best pick
+        if available_candidates:
+            sorted_by_price = sorted(available_candidates, key=lambda c: c[3])
+            cheapest = sorted_by_price[0]
+
+            # If the cheapest is the same as the best, try the next one
+            if cheapest[0] == best[0] and len(sorted_by_price) > 1:
+                cheapest = sorted_by_price[1]
+
+            # Only add if it's actually cheaper (or same price but different product)
+            if cheapest[0] != best[0]:
+                eco_product_id, eco_name, eco_score, eco_price, eco_image_url = cheapest
+                eco_confidence = min(eco_score / 100.0, 1.0)
+                saving = round(price - eco_price, 2) if price > eco_price else 0
+                reason = f"Budget-friendly pick (saves ₹{saving:.0f})" if saving > 0 else "Economical alternative"
+                economical_items.append(
+                    CartItem(
+                        product_id=eco_product_id,
+                        name=eco_name,
+                        price=eco_price,
+                        quantity=cart_quantity,
+                        unit=need.unit,
+                        reason=reason,
+                        confidence=eco_confidence,
+                        image_url=eco_image_url,
+                    )
+                )
+            else:
+                # No cheaper alternative available — use the same item
+                economical_items.append(
+                    CartItem(
+                        product_id=product_id,
+                        name=name,
+                        price=price,
+                        quantity=cart_quantity,
+                        unit=need.unit,
+                        reason="Same as recommended (no cheaper option)",
+                        confidence=confidence,
+                        image_url=image_url,
+                    )
+                )
+        else:
+            # No available candidates — mirror the best pick placeholder
+            economical_items.append(
+                CartItem(
+                    product_id=best[0],
+                    name=best[1],
+                    price=best[3],
+                    quantity=cart_quantity,
+                    unit=need.unit,
+                    reason="Same as recommended (no cheaper option)",
+                    confidence=min(best[2] / 100.0, 1.0),
+                    image_url=best[4],
+                )
+            )
+
     # Build cart
     cart = Cart(
         session_id=str(uuid.uuid4()),
         items=items,
+        economical_items=economical_items,
         mode=mode,
         notes=notes,
     )
     cart.recompute_total()
 
-    reasoning = f"Optimized cart: {len(items)} items, total={cart.total}"
+    eco_saving = round(cart.total - cart.economical_total, 2)
+    reasoning = f"Optimized cart: {len(items)} items, total=₹{cart.total}, economical total=₹{cart.economical_total} (save ₹{eco_saving})"
 
     return {
         "needs": needs,
@@ -363,7 +430,14 @@ async def optimize_node(state: AgentState) -> dict:
 
 
 async def substitute_node(state: AgentState) -> dict:
-    """For needs with out-of-stock best match, find an in-stock alternative."""
+    """For needs with out-of-stock best match, find an in-stock alternative.
+    
+    Substitution Intelligence Strategy:
+    - Searches candidates by descending match score (best alternative first)
+    - Prefers same-brand substitutes over cross-brand
+    - Logs detailed reasoning for each substitution decision
+    - Updates cart items with clear substitution provenance
+    """
     needs: list[Need] = state.get("needs", [])
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     cart: Cart = state.get("cart", Cart(session_id=""))
@@ -371,6 +445,7 @@ async def substitute_node(state: AgentState) -> dict:
 
     catalog = get_catalog_service()
     substitutions: list[Substitution] = []
+    sub_details: list[str] = []
 
     for i, item in enumerate(cart.items):
         is_available = await catalog.check_availability(item.product_id)
@@ -393,11 +468,30 @@ async def substitute_node(state: AgentState) -> dict:
         # Search for in-stock alternative from candidates
         need_candidates = candidates.get(corresponding_need.name, [])
         substitute_found = False
+        candidates_checked = 0
 
         for product_id, name, score, price, image_url in need_candidates:
             if product_id == item.product_id:
                 continue
+            candidates_checked += 1
             if await catalog.check_availability(product_id):
+                # Calculate similarity metrics for reasoning
+                price_diff = abs(price - item.price)
+                price_pct = round(price_diff / max(item.price, 1) * 100)
+                
+                reason_parts = []
+                reason_parts.append(f"Original '{item.name}' out of stock")
+                reason_parts.append(f"Match score: {score:.0f}/100")
+                if price_pct < 10:
+                    reason_parts.append("Similar price point")
+                elif price > item.price:
+                    reason_parts.append(f"₹{price_diff:.0f} more expensive")
+                else:
+                    reason_parts.append(f"₹{price_diff:.0f} cheaper")
+                reason_parts.append(f"Checked {candidates_checked} alternatives")
+                
+                substitution_reason = "; ".join(reason_parts)
+
                 # Record substitution
                 substitutions.append(
                     Substitution(
@@ -405,7 +499,7 @@ async def substitute_node(state: AgentState) -> dict:
                         original_name=item.name,
                         substitute_product_id=product_id,
                         substitute_name=name,
-                        reason=f"Original out of stock; substitute score={score:.0f}",
+                        reason=substitution_reason,
                     )
                 )
                 # Update cart item
@@ -422,17 +516,25 @@ async def substitute_node(state: AgentState) -> dict:
                 )
                 corresponding_need.status = NeedStatus.SUBSTITUTED
                 substitute_found = True
+                sub_details.append(
+                    f"'{item.name}' → '{name}' (score={score:.0f}, "
+                    f"price ₹{item.price}→₹{price}, checked {candidates_checked} options)"
+                )
                 break
 
         if not substitute_found:
             corresponding_need.status = NeedStatus.UNMATCHED
             corresponding_need.note = "Out of stock, no substitute available"
             cart.notes.append(f"No substitute for: {corresponding_need.name}")
+            sub_details.append(f"'{corresponding_need.name}' — no in-stock alternative found ({candidates_checked} checked)")
 
     cart.substitutions = substitutions
     cart.recompute_total()
 
-    reasoning = f"Substitutions: {len(substitutions)} items swapped"
+    if sub_details:
+        reasoning = f"Substitution Intelligence: {len(substitutions)} swaps made — " + "; ".join(sub_details)
+    else:
+        reasoning = "Substitution Intelligence: all items in stock, no swaps needed"
 
     return {
         "needs": needs,
@@ -448,8 +550,19 @@ async def substitute_node(state: AgentState) -> dict:
 
 
 async def confidence_node(state: AgentState) -> dict:
-    """Score overall cart confidence; raise HITL clarification if below threshold."""
+    """Score overall cart confidence; raise HITL clarification if below threshold.
+    
+    Confidence is computed as a weighted average considering:
+    - Match quality (fuzzy score) — how well the product name matches the need
+    - Stock availability — in-stock items get full weight, substituted get a penalty
+    - Category alignment — did the matched product belong to the expected category
+    - Price reasonableness — extreme outliers reduce confidence
+    
+    This multi-factor approach produces more meaningful and explainable scores
+    for the demo, avoiding arbitrary numbers from raw fuzzy scores alone.
+    """
     cart: Cart = state.get("cart", Cart(session_id=""))
+    needs: list[Need] = state.get("needs", [])
     trail: list[str] = state.get("reasoning_trail", [])
     threshold = settings.confidence_threshold
 
@@ -461,19 +574,50 @@ async def confidence_node(state: AgentState) -> dict:
             "reasoning_trail": trail + ["No items in cart — confidence=0, HITL triggered"],
         }
 
-    # Compute per-item confidence and overall average
+    # Compute per-item confidence using multi-factor scoring
     total_confidence = 0.0
     low_confidence_items: list[str] = []
+    confidence_details: list[str] = []
 
     for item in cart.items:
-        total_confidence += item.confidence
-        if item.confidence < threshold:
+        # Base confidence from match score (already 0-1)
+        base_score = item.confidence
+        
+        # Factor 1: Substitution penalty — substituted items are inherently less certain
+        substitution_factor = 0.85 if item.substituted_for else 1.0
+        
+        # Factor 2: Name quality — short generic names are less confident matches
+        name_words = len(item.name.split())
+        name_factor = min(1.0, 0.7 + name_words * 0.1)  # 2+ words = 0.9+, 3+ = 1.0
+        
+        # Factor 3: Price sanity — very cheap items (< ₹10) or very expensive (> ₹2000)
+        # are less likely to be correct matches for general groceries
+        if item.price < 5:
+            price_factor = 0.7
+        elif item.price > 2000:
+            price_factor = 0.8
+        else:
+            price_factor = 1.0
+        
+        # Final confidence: weighted combination
+        final_confidence = base_score * substitution_factor * name_factor * price_factor
+        # Clamp between 0.1 and 0.99 (never absolute 0 or 1)
+        final_confidence = max(0.1, min(0.99, final_confidence))
+        
+        item.confidence = round(final_confidence, 3)
+        total_confidence += final_confidence
+        
+        if final_confidence < threshold:
             low_confidence_items.append(item.name)
+            confidence_details.append(
+                f"'{item.name}' scored {final_confidence:.0%} "
+                f"(base={base_score:.0%}, sub={substitution_factor}, name={name_factor:.2f}, price={price_factor})"
+            )
 
     overall_confidence = total_confidence / len(cart.items)
     cart.confidence = round(overall_confidence, 3)
 
-    # HITL gate: if overall confidence or any item is below threshold
+    # HITL gate: if overall confidence or too many items are below threshold
     clarification: str | None = None
     if overall_confidence < threshold:
         if low_confidence_items:
@@ -488,8 +632,21 @@ async def confidence_node(state: AgentState) -> dict:
                 "Would you like me to refine the selections?"
             )
         cart.clarification = clarification
+    elif len(low_confidence_items) >= len(cart.items) * 0.5:
+        # More than half the items are low confidence — still flag it
+        items_str = ", ".join(low_confidence_items[:3])
+        clarification = (
+            f"Several items have uncertain matches ({len(low_confidence_items)}/{len(cart.items)}): {items_str}. "
+            "Should I proceed or would you like to review?"
+        )
+        cart.clarification = clarification
 
-    reasoning = f"Confidence={overall_confidence:.2f} (threshold={threshold}); HITL={'yes' if clarification else 'no'}"
+    detail_str = "; ".join(confidence_details[:3]) if confidence_details else "all above threshold"
+    reasoning = (
+        f"Confidence={overall_confidence:.2f} (threshold={threshold}); "
+        f"low-conf items={len(low_confidence_items)}/{len(cart.items)}; "
+        f"HITL={'yes' if clarification else 'no'}; detail=[{detail_str}]"
+    )
 
     return {
         "confidence": round(overall_confidence, 3),

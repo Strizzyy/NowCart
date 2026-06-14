@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Brain, ShoppingCart, ArrowRight, Sparkles, DoorOpen } from 'lucide-react';
 import type { AppContext } from '../App';
-import { searchCatalog, postCartOp, postOutcome } from '../api/client';
+import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
 import ProductCard from '../components/ProductCard';
 import { FRONT_DOORS, type FrontDoor } from '../components/frontdoors/doors';
@@ -51,13 +51,9 @@ export default function HomePage({ ctx }: Props) {
 
   const handleAddToCart = async (product: Product) => {
     try {
-      if (ctx.cart) {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', product.name, 1);
-        ctx.setCart(updated);
-      } else {
-        const cart = await postOutcome(product.name);
-        ctx.setCart(cart);
-      }
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', product.name, 1);
+      ctx.setCart(updated);
       ctx.setCartOpen(true);
     } catch {
       /* ignore — cart errors surface in the cart drawer */

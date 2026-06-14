@@ -33,12 +33,14 @@ export type CartItem = Schemas['CartItemResponse'] & {
 
 export type CartResponse = Omit<
   Schemas['CartResponse'],
-  'items' | 'substitutions' | 'notes' | 'reasoning_trail'
+  'items' | 'economical_items' | 'substitutions' | 'notes' | 'reasoning_trail'
 > & {
   items: CartItem[];
+  economical_items: CartItem[];
   substitutions: Substitution[];
   notes: string[];
   reasoning_trail: string[];
+  economical_total: number;
 };
 
 export interface Product {

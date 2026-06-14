@@ -38,7 +38,9 @@ class Cart(BaseModel):
 
     session_id: str
     items: list[CartItem] = Field(default_factory=list)
+    economical_items: list[CartItem] = Field(default_factory=list)  # cheaper alternatives
     total: float = 0.0
+    economical_total: float = 0.0                       # total for economical picks
     currency: str = "INR"
     mode: IntentMode = IntentMode.TEXT
     confidence: float = 1.0
@@ -55,6 +57,7 @@ class Cart(BaseModel):
     def recompute_total(self) -> float:
         """Sum line totals into `total`. Keeps the invariant in one place."""
         self.total = round(sum(item.line_total for item in self.items), 2)
+        self.economical_total = round(sum(item.line_total for item in self.economical_items), 2)
         if self.budget is not None:
             self.remaining_budget = round(self.budget - self.total, 2)
         return self.total

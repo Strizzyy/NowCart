@@ -1,15 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Zap } from 'lucide-react';
+import { ShoppingCart, Search, Zap, LogOut, User, Activity } from 'lucide-react';
 import { useState } from 'react';
 import type { AppContext } from '../App';
 import { Button } from '../ui';
 
 interface Props {
   ctx: AppContext;
+  onLogout: () => void;
 }
 
-export default function Header({ ctx }: Props) {
+export default function Header({ ctx, onLogout }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
 
   const itemCount = ctx.cart?.items.length ?? 0;
@@ -18,7 +20,6 @@ export default function Header({ ctx }: Props) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    // Navigate to the search results page — no direct cart addition
     navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     setSearchQuery('');
   };
@@ -43,7 +44,7 @@ export default function Header({ ctx }: Props) {
           </div>
         </Link>
 
-        {/* Search bar — navigates to search results page */}
+        {/* Search bar */}
         <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
           <label htmlFor="header-search" className="sr-only">Search for a product</label>
           <div className="flex items-center border-2 border-primary rounded-xl overflow-hidden bg-surface focus-within:border-primary-dark transition-colors">
@@ -86,6 +87,54 @@ export default function Header({ ctx }: Props) {
               </span>
             )}
           </button>
+
+          {/* User menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-light-bg transition"
+              aria-label="User menu"
+            >
+              <div className="w-7 h-7 bg-primary-light rounded-full flex items-center justify-center">
+                <User size={14} className="text-primary-ink" />
+              </div>
+              <span className="hidden sm:inline text-sm font-medium text-dark max-w-[80px] truncate">
+                {ctx.user?.name || 'User'}
+              </span>
+            </button>
+
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 w-52 bg-surface border border-border rounded-xl shadow-[var(--shadow-pop)] z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-dark">{ctx.user?.name}</p>
+                      {ctx.user?.role === 'admin' && (
+                        <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">ADMIN</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted truncate">{ctx.user?.email}</p>
+                  </div>
+                  {ctx.user?.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setShowUserMenu(false)}
+                      className="w-full text-left px-4 py-2.5 text-sm text-purple-700 hover:bg-purple-50 transition flex items-center gap-2 border-b border-border"
+                    >
+                      <Activity size={14} /> Observability
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { setShowUserMenu(false); onLogout(); }}
+                    className="w-full text-left px-4 py-3 text-sm text-accent-dark hover:bg-light-bg transition flex items-center gap-2"
+                  >
+                    <LogOut size={14} /> Sign Out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </nav>
       </div>
 
@@ -99,6 +148,11 @@ export default function Header({ ctx }: Props) {
           <Link to="/shop?category=Snacks%20%26%20Beverages" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
           <Link to="/shop?category=Dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
           <Link to="/sos" className="text-accent-dark hover:text-accent transition whitespace-nowrap font-semibold">SOS Mode</Link>
+          {ctx.user?.role === 'admin' && (
+            <Link to="/admin" className="ml-auto text-purple-600 hover:text-purple-800 transition whitespace-nowrap font-semibold flex items-center gap-1">
+              📊 Admin Dashboard
+            </Link>
+          )}
         </div>
       </nav>
     </header>
