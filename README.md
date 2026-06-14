@@ -1,174 +1,214 @@
-# NowCart — The Intent-Capture Layer for Quick Commerce
+# NowCart
 
-> *"Quick commerce solved delivery. We solve the deciding."*
+**The intent-capture layer for quick commerce.**
 
-NowCart removes the search box from grocery shopping. Instead of typing product names, users express a **life moment** — say it, show it, share it, or set a budget — and the AI assembles one confident cart, defends every choice, and handles out-of-stock invisibly.
+> *Quick commerce solved delivery. We solve the deciding.*
 
-**Four ways in. One brain. One confident cart out.**
+NowCart removes the search box from grocery shopping. Instead of typing product names one by one, users express a single outcome — say it, set a budget, snap a photo, share a link, or let the engine predict it — and an AI pipeline assembles **one confident, checkout-ready cart**, defends every choice with a confidence score, surfaces a cheaper alternative for each item, and handles out-of-stock substitutions transparently.
 
-**Live Application:** [https://d2hj5yrm8sue4v.cloudfront.net](https://d2hj5yrm8sue4v.cloudfront.net)
+**Five ways in. One brain. One confident cart out.**
+
+---
+
+## Live Application
+
+| Resource | URL |
+|----------|-----|
+| Web app (CloudFront + S3) | https://d2hj5yrm8sue4v.cloudfront.net |
+| API (EC2 + Nginx) | http://3.106.130.16/api/ |
+| Interactive API docs | http://3.106.130.16/docs |
+| Health check | http://3.106.130.16/health |
+| Live telemetry | http://3.106.130.16/api/meta/stats |
+
+The application runs end-to-end on AWS: a React build served globally through **CloudFront** from an **S3** origin, a **FastAPI** backend on **EC2** (behind **Nginx**, with **Redis** on the same host), and **DynamoDB** (region `ap-southeast-2`) as the persistent store. See [Deployment](#deployment) for the full topology.
 
 ---
 
 ## The Problem
 
-Online grocery shoppers spend **10+ minutes** assembling a cart for something they already know the *outcome* of ("I'm making Biryani for 4"). They manually search each ingredient, compare variants, check stock, substitute when unavailable, and lose confidence in their choices. This is a universal friction point affecting **300M+ online grocery users globally** — the deciding step, not the delivery step.
+Quick commerce solved *delivery* — groceries arrive in ten minutes. But customers still spend **8–12 minutes deciding** what to buy: searching each item, comparing variants, checking stock, substituting when something is unavailable, and second-guessing their choices. The bottleneck moved from the warehouse to the search box. There is no intelligence between *"I'm making biryani for four"* and a ready-to-checkout cart.
 
-## Our Solution
+## The Solution
 
-NowCart is the missing **intelligence layer between a human need and fulfillment**. It provides multiple "front doors" for expressing intent, all routing into one Outcome Engine:
+NowCart is the missing intelligence layer between a human need and fulfillment. It offers multiple front doors for expressing intent, all routing into one Outcome Engine:
 
-| Front Door | Input | Example |
+| Front door | Input | Example |
 |-----------|-------|---------|
-| 🎤 **Speak It** | Voice / text | "I'm making Biryani for 4" |
-| 💰 **Constrain It** | Budget + headcount | "₹500, dinner for 4 tonight" |
-| 📷 **Show It** | Photo of a dish | *snap a plate of Dal Makhani* |
-| 🔗 **Share It** | Recipe URL / text | YouTube recipe link or pasted ingredients |
-| ⚡ **SOS Mode** | Emergency situation | "Guests arriving in 30 minutes" |
+| Speak It | Voice or text | "I'm making biryani for four" |
+| Constrain It | Budget + headcount | "Rs. 1000, dinner for two tonight" |
+| Show It | Photo of a dish | a plate of dal makhani |
+| Share It | Recipe URL, YouTube link, or text | a YouTube recipe link, resolved to ingredients |
+| Zero Door | Nothing | predicts your restock before you ask |
+| SOS Mode | An emergency situation | "guests arriving in 30 minutes" |
 
-Every input produces one **confident cart** with:
-- Per-item confidence scores ("87% confident")
-- One-line reasoning ("picked this because: organic, best price-per-litre, you bought it before")
-- Transparent out-of-stock substitutions
-- HITL (human-in-the-loop) gates when confidence is low
+Every input produces one confident cart with:
+
+- Per-item confidence scores (for example, "97% confident")
+- A one-line justification for each pick ("best match, in stock, you bought it before")
+- A **Recommended** view and an **Economical** view with the savings shown
+- Transparent out-of-stock substitutions with a full audit trail
+- A human-in-the-loop gate when overall confidence falls below threshold
+- Pantry awareness that skips items the user likely already has at home
 
 ---
 
 ## Key Features
 
-### 1. Outcome Engine (LangGraph Multi-Agent Pipeline)
-A 6-node directed acyclic graph that transforms natural language into a fully matched grocery cart:
+### Outcome Engine (LangGraph multi-agent pipeline)
+
+A ten-node directed graph with a conditional re-planning loop that turns natural language into a fully matched cart:
+
 ```
-Intent → Decompose → Match → Optimize → Substitute → Confidence
+intent -> decompose -> pantry_filter -> match -> optimize -> preference_boost
+  -> substitute -> confidence_check -> [replan loop] -> counterfactual -> END
 ```
-- Shared state via TypedDict (not a linear chain — later nodes access earlier state)
-- Mode-aware prompting (recipe, budget, goal, SOS)
-- Graceful degradation at every node
 
-### 2. Hybrid Fuzzy Matching
-- **rapidfuzz WRatio** scoring (picks best from ratio, partial_ratio, token_sort_ratio, token_set_ratio)
-- **Category alias bridging** (30+ aliases map LLM hints to BigBasket taxonomy)
-- **Word-presence re-ranking** with stem-based bonuses (+20/+35) and penalties (-15)
-- Matches against 9,534 real Indian grocery products
+State flows through a shared `TypedDict`, so later nodes read earlier decisions. Prompting is mode-aware (recipe, budget, goal, SOS, link, photo), and every node degrades gracefully. User feedback such as "make it cheaper", "I'm vegan", or "swap the paneer" re-enters the matching pipeline (capped at two iterations and loop-guarded).
 
-### 3. Constraint-First Budget Optimization
-Works **backwards** from money: run full pipeline, then greedy knapsack (sort by confidence descending, keep items until budget exhausted). Highest-confidence items always survive.
+### Hybrid retrieval — semantic plus fuzzy
 
-### 4. Substitution Intelligence
-Out-of-stock items are swapped **functionally and transparently**:
-- Checks remaining fuzzy-match candidates in score order
-- Records substitution metadata (original → substitute + reason)
-- Demo never breaks on stock issues
+- **Semantic layer:** a pure-NumPy TF-IDF index over product name, brand, category, and tags, using character n-grams (2–4) and word unigrams plus a 60-entry Hindi/English synonym table ("malai" to "cream", "cottage cheese" to "paneer"). Cosine-similarity ranking, **zero model download, index builds in under a second for 9,534 products**.
+- **Fuzzy layer:** `rapidfuzz` WRatio (auto-selecting the best of ratio, partial, token-sort, token-set) over the semantic and category-filtered pool.
+- **Merge and re-rank:** both signals are blended into the top five candidates per need.
 
-### 5. Comparison Collapse + Confidence Score
-The AI doesn't dump 6 choices. It shows **one pick + a "why" + a confidence %**. The reasoning trail is a first-class UI element, not hidden debug info.
+### Constraint-first budget optimization
 
-### 6. SOS / Emergency Mode
-One button for genuine urgency. AI analyzes the situation, assembles an emergency kit from in-stock-only items, and shows a countdown to estimated delivery.
+Works backwards from money: the engine runs the full pipeline, then applies a greedy knapsack — items sorted by confidence descending, kept until the budget is exhausted. The highest-confidence items always survive. The response reports remaining budget and any shortfall.
 
-### 7. Multi-Provider LLM Architecture
-Protocol-based abstraction with seamless swapping:
-- **Groq** (Llama 3.3 70B, 200+ tok/s) — current, free tier
-- **Gemini** (2.0 Flash) — vision + text, free tier
-- **Bedrock** (Claude 3 Haiku) — production target, VPC-native
-- **Mock** — deterministic, zero-dependency testing
-- Swap: change one env var (`LLM_TEXT_PROVIDER=bedrock`)
+### Predictive restock (the Zero Door)
 
-### 8. Production-Grade Middleware
-- Token-bucket rate limiting (60 req/min/IP)
-- PII redaction in all logs (phone/email regex masking)
-- Request-level telemetry (latency, P95, cache hit ratio)
-- Unique request correlation IDs
+No input required. The engine analyzes order history: for every product bought twice or more it computes inter-purchase intervals, projects the depletion date, includes items due within about a week, and scores confidence from purchase regularity (coefficient of variation of intervals, boosted by frequency and overdue-ness). It then pre-builds a restock cart, already substituted and scored. Pure statistics, no model training — at scale this becomes a nightly job writing predictions to DynamoDB.
 
-### 9. LLM Response Caching
-SHA-256(prompt) → Redis with 1-hour TTL. Identical queries (100 users asking "Biryani for 4") hit cache on requests 2-100.
+### Pantry awareness
+
+Infers what the user already owns from recent orders and per-category shelf life (rice ~60 days, vegetables ~4–5 days, spices ~90 days). A pantry-filter node subtracts those items from the cart ("skipped two items you likely have: oil, salt").
+
+### Substitution intelligence
+
+Out-of-stock items are swapped functionally and transparently: the engine walks remaining candidates in score order, records the original-to-substitute mapping with a reason and price delta, and applies a confidence penalty. The experience never breaks on stock issues.
+
+### Comparison collapse, confidence, and personalization
+
+The AI shows one pick with a justification and a confidence percentage rather than dumping a list of choices. A preference-boost node raises confidence and enriches reasons for the brands and categories a user buys often, derived from their order history.
+
+### SOS / emergency mode
+
+One screen for genuine urgency — "guests in 30 minutes", "fever at home", or free text such as "exams tomorrow, studying all night". The model analyzes the situation, assembles an in-stock-only kit with a reason and suggested quantity per item, and shows an ETA. Items can be added individually or all at once.
+
+### Authentication and role-based access
+
+Registration and login with hashed passwords, persisted to DynamoDB or the in-memory backend. Two roles — a standard shopping user and an admin with access to the observability dashboard. Sessions are kept client-side, and all personalized features resolve the user from the active session. Orders are persisted and surfaced in a full order-history view, which in turn feeds the Zero Door predictions.
+
+### Multi-provider LLM architecture
+
+A protocol-based abstraction with one-environment-variable swapping:
+
+- **Groq** (Llama 3.3 70B, 200+ tokens/sec) — current text reasoning, with round-robin key rotation
+- **Gemini** (2.0 Flash) — vision and text
+- **Bedrock** (Claude 3 Haiku) — production target, VPC-native with IAM auth
+- **Mock** — deterministic, zero-dependency local development
+
+### Production-grade middleware and observability
+
+Token-bucket rate limiting (60 requests/min per IP), PII redaction in logs, request correlation IDs, and per-request telemetry. An admin dashboard exposes live KPIs — total requests, carts built, average and P95 latency, error rate, cache hit ratio, status-code distribution, and top endpoints — auto-refreshing every three seconds.
+
+### LLM response caching
+
+A SHA-256 hash of the prompt keys a Redis entry with a one-hour TTL, so repeated queries (a hundred users asking for "biryani for four") are served from cache after the first call, saving roughly 800 ms and an API call each time.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Frontend | React 19 + Vite 8 + TailwindCSS 4 | Fastest build tooling, auto-generated types |
-| Backend | FastAPI + Pydantic 2 (async) | Native async, auto OpenAPI, typed validation |
-| AI Pipeline | LangGraph (StateGraph DAG) | Composable multi-step reasoning with state persistence |
-| Text LLM | Groq (Llama 3.3 70B) | Free, fastest inference (200+ tok/sec) |
-| Vision LLM | Google Gemini 2.0 Flash | Free tier, best multimodal for food recognition |
-| Prod LLM | Amazon Bedrock (Claude 3 Haiku) | VPC-native, IAM auth, auto-scaling |
-| Database | DynamoDB (PAY_PER_REQUEST) | 25GB free, auto-scales, GSI for categories |
+| Layer | Technology | Rationale |
+|-------|-----------|-----------|
+| Frontend | React 19, Vite, TailwindCSS | Fast build tooling, type-safe via auto-generated OpenAPI types |
+| Backend | FastAPI, Pydantic 2 (async) | Native async, automatic OpenAPI schema, typed validation |
+| AI pipeline | LangGraph StateGraph | Composable multi-step reasoning with shared state and loops |
+| Text LLM | Groq (Llama 3.3 70B) | Fastest inference (200+ tokens/sec), key rotation |
+| Vision LLM | Google Gemini 2.0 Flash | Strong multimodal food recognition |
+| Production LLM | Amazon Bedrock (Claude 3 Haiku) | VPC-native, IAM auth, managed scaling |
+| Semantic search | Pure-NumPy TF-IDF (char n-grams) | Zero model download, sub-second index over 9,534 products |
+| Fuzzy match | rapidfuzz (C-optimized) | ~100x faster than difflib |
+| Database | DynamoDB (PAY_PER_REQUEST) | Auto-scales, GSI for category queries |
 | Cache | Redis 7 | Sub-ms cart ops, session state, LLM response cache |
-| Matching | rapidfuzz (C-optimized) | 100x faster than difflib for fuzzy matching |
-| Infra | EC2 + Nginx + S3 + CloudFront | Full stack within AWS free tier |
-| Async | Lambda + SQS (designed) | Offload slow LLM calls, auto-scales to 1000 concurrent |
-| Container | Docker Compose (4 services) | One-command full-stack dev environment |
+| Infrastructure | EC2, Nginx, S3, CloudFront | Reverse proxy, global static distribution |
+| Async (designed) | Lambda, SQS | Offload slow LLM calls, scales to 1000 concurrent |
+| Container | Docker Compose | One-command full-stack dev environment |
 
 ---
 
 ## Architecture
 
 ```mermaid
-flowchart TD
-    Speak["🎤 Speak It"]
-    Constrain["💰 Constrain It"]
-    Show["📷 Show It"]
-    Share["🔗 Share It"]
+flowchart TB
+    subgraph Doors["Five front doors + SOS"]
+        Speak["Speak It"]
+        Constrain["Constrain It"]
+        Show["Show It"]
+        Share["Share It"]
+        Zero["Zero Door"]
+        SOS["SOS Mode"]
+    end
 
-    Speak --> Intent
-    Constrain --> Intent
-    Show --> Intent
-    Share --> Intent
+    Speak --> API
+    Constrain --> API
+    Show --> Vision["Gemini Vision"] --> API
+    Share --> Fetch["httpx fetch + LLM extract"] --> API
+    Zero --> Predict["Predictive Service<br/>(interval analysis)"] --> API
+    SOS --> API
 
-    Intent["Intent Normalization Layer"]
+    API["FastAPI Gateway<br/>(RequestID -> Telemetry -> RateLimit -> PII)"]
 
-    Intent --> Engine["Outcome Engine (LangGraph DAG)"]
+    API --> Engine
 
-    Engine --> Compare["Compare Collapse + Confidence"]
-    Engine --> Substitute["Substitution Intelligence"]
-    Engine --> SOS["SOS Mode"]
+    subgraph Engine["Outcome Engine — LangGraph DAG"]
+        direction LR
+        Intent --> Decompose --> Pantry["pantry_filter"] --> Match
+        Match --> Optimize --> Pref["preference_boost"] --> Sub["substitute"]
+        Sub --> Conf["confidence_check"] --> CF["counterfactual"]
+        Conf -. "feedback (replan <= 2)" .-> Match
+    end
 
-    Compare --> Cart["One Confident Cart"]
-    Substitute --> Cart
-    SOS --> Cart
+    Match -.-> Retrieval["Hybrid Retrieval<br/>TF-IDF + rapidfuzz"]
+    Retrieval -.-> Catalog[("9,534 products")]
+
+    Engine --> Cart["One confident cart<br/>Recommended + Economical"]
+
+    Engine --> Groq["Groq Llama 3.3 70B"]
+    API --> DynamoDB[("DynamoDB")]
+    API --> Redis[("Redis cache")]
 ```
 
-See [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) for the full deep-dive with data flow diagrams, node-by-node pipeline details, and infrastructure diagrams.
+See [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) for the full deep-dive: node-by-node pipeline details, data-flow diagrams, and infrastructure diagrams.
 
 ---
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
+
 - Python 3.11+
 - Node.js 20+
-- Docker & Docker Compose (optional, for full stack)
+- Docker and Docker Compose (optional, for the full stack)
 
-### Option 1: Docker Compose (recommended)
+### Zero-dependency demo (fastest)
+
+No API keys, no Redis, no DynamoDB:
 
 ```bash
-# Clone and start everything
-git clone https://github.com/your-team/NowCart.git
-cd NowCart
-
-# Set API keys (optional — works without them using mock providers)
-echo "GROQ_API_KEY=your-groq-key" > .env
-echo "GEMINI_API_KEY=your-gemini-key" >> .env
-
-# Start full stack
-docker compose up --build
-
-# Access:
-#   Frontend:  http://localhost:3000
-#   Backend:   http://localhost:8000
-#   API docs:  http://localhost:8000/docs
+cd server
+DATA_BACKEND=memory LLM_TEXT_PROVIDER=mock CACHE_IN_MEMORY=true \
+  uv run uvicorn app.main:app --port 8000
 ```
 
-### Option 2: Local Development
+### Local development
 
 ```bash
 # Backend
 cd server
-cp .env.example .env     # edit with your API keys
-uv venv && uv pip install -r requirements.txt
+cp .env.example .env     # add GROQ_API_KEY and GEMINI_API_KEY
+uv venv && uv pip install .
 uv run uvicorn app.main:app --reload --port 8000
 
 # Frontend (separate terminal)
@@ -177,76 +217,71 @@ npm install
 npm run dev              # http://localhost:5173 (proxies /api to :8000)
 ```
 
-### Option 3: Zero-Dependency Demo
+### Docker Compose
 
 ```bash
-# No API keys, no Redis, no DynamoDB needed
-cd server
-DATA_BACKEND=memory LLM_TEXT_PROVIDER=mock CACHE_IN_MEMORY=true \
-  uv run uvicorn app.main:app --port 8000
+docker compose up --build
+# Frontend:  http://localhost:3000
+# Backend:   http://localhost:8000
+# API docs:  http://localhost:8000/docs
 ```
+
+> Never commit real API keys. Keep `server/.env` in `.gitignore` and use AWS IAM roles or Secrets Manager in production.
 
 ---
 
-## Environment Configuration
+## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DATA_BACKEND` | `memory` | `memory` or `dynamodb` |
 | `LLM_TEXT_PROVIDER` | `mock` | `groq`, `gemini`, `bedrock`, `mock` |
 | `LLM_VISION_PROVIDER` | `mock` | `gemini`, `mock` |
-| `GROQ_API_KEY` | — | Groq Cloud API key |
-| `GEMINI_API_KEY` | — | Google AI Studio key |
+| `GROQ_API_KEY` / `GROQ_API_KEYS` | — | single key, or comma-separated for round-robin |
+| `GEMINI_API_KEY` / `GEMINI_API_KEYS` | — | single key, or comma-separated for round-robin |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection string |
 | `CACHE_IN_MEMORY` | `true` | `true` to skip Redis |
-| `AWS_REGION` | `ap-south-1` | AWS region for DynamoDB/Bedrock |
-| `CONFIDENCE_THRESHOLD` | `0.7` | Below this, HITL clarification triggers |
-| `CORS_ORIGINS` | `http://localhost:5173,...` | Allowed CORS origins |
-
-### Environment Modes
-
-| Mode | `DATA_BACKEND` | `CACHE_IN_MEMORY` | `LLM_TEXT_PROVIDER` | External Deps |
-|------|---------------|-------------------|---------------------|---------------|
-| Zero-dep demo | `memory` | `true` | `mock` | None |
-| Docker Compose | `dynamodb` | `false` | `groq` | Redis + DynamoDB Local |
-| Production | `dynamodb` | `false` | `groq`/`bedrock` | AWS DynamoDB + Redis |
+| `AWS_REGION` | `ap-south-1` | AWS region for DynamoDB and Bedrock |
+| `SEMANTIC_SEARCH_ENABLED` | `true` | toggle the TF-IDF semantic layer |
+| `PREDICTION_ENABLED` | `true` | toggle the Zero Door predictive restock |
+| `RESTOCK_CONFIDENCE_THRESHOLD` | `0.6` | minimum confidence to include a prediction |
+| `CONFIDENCE_THRESHOLD` | `0.7` | below this, the HITL clarification triggers |
+| `CORS_ORIGINS` | `http://localhost:5173,...` | allowed CORS origins |
 
 ---
 
 ## API Reference
 
-### Core Endpoints
-
-| Method | Path | Description | Input |
-|--------|------|-------------|-------|
-| POST | `/api/outcome` | Text → cart (main engine) | `{text, servings?}` |
-| POST | `/api/voice/intent` | Voice transcript → cart | `{transcript, session_id?}` |
-| POST | `/api/constraint` | Budget-first cart | `{budget, servings, text?}` |
-| POST | `/api/vision/analyze` | Photo → cart (multipart) | `file + text? + session_id?` |
-| POST | `/api/share/parse` | URL/text → cart | `{url?, text?, session_id?}` |
-| POST | `/api/sos` | Emergency kit → cart | `{situation}` |
-| POST | `/api/sos/recommend` | Emergency recommendations | `{situation}` |
-
-### Cart Operations
-
-| Method | Path | Description | Input |
-|--------|------|-------------|-------|
-| POST | `/api/cart/op` | Add/remove/update item | `{session_id, op, entity, quantity?}` |
-| GET | `/api/cart/{session_id}` | Get cart state | — |
-
-### Catalog & Search
-
-| Method | Path | Description | Params |
-|--------|------|-------------|--------|
-| GET | `/api/catalog/search` | Product search | `?q=&category=&limit=` |
-| GET | `/api/catalog/recommend` | Best + alternatives | `?q=&limit=` |
-
-### Observability
+### Front doors and engine
 
 | Method | Path | Description |
 |--------|------|-------------|
+| POST | `/api/outcome` | Text to cart (main engine) |
+| POST | `/api/voice/intent` | Voice transcript to cart |
+| POST | `/api/constraint` | Budget-first cart |
+| POST | `/api/vision/analyze` | Photo to cart (multipart) |
+| POST | `/api/share/parse` | URL, YouTube, or text to cart |
+| POST | `/api/predict/restock` | Zero Door predicted restock cart |
+| POST | `/api/sos`, `/api/sos/recommend` | Emergency kit and recommendations |
+
+### Cart, auth, and orders
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/cart/op` | Add, remove, or update an item |
+| GET | `/api/cart/{session_id}` | Get cart state |
+| POST | `/api/auth/register`, `/api/auth/login` | User authentication |
+| POST | `/api/orders/place` | Persist a cart as an order |
+| GET | `/api/orders/{user_id}` | Order history |
+
+### Catalog and observability
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/catalog/search` | Hybrid product search |
+| GET | `/api/catalog/recommend` | Best pick plus alternatives |
 | GET | `/api/meta/stats` | Real-time metrics (latency, errors, cache) |
-| GET | `/api/meta/info` | System config (providers, backends) |
+| GET | `/api/meta/info` | System config (providers, backends, features) |
 | GET | `/health` | Liveness probe |
 
 ---
@@ -255,56 +290,85 @@ DATA_BACKEND=memory LLM_TEXT_PROVIDER=mock CACHE_IN_MEMORY=true \
 
 ```
 NowCart/
-├── client/                     # React 19 frontend
+├── client/                     # React + Vite frontend
 │   ├── src/
-│   │   ├── api/               # Typed API client + OpenAPI types
-│   │   ├── pages/             # 5 route-level pages
-│   │   ├── components/        # UI components
-│   │   │   ├── frontdoors/    # 4 front door panels
-│   │   │   └── cart/          # WhyThisOne, HitlPrompt, EngineTrail
-│   │   └── ui/                # Design system primitives
-│   ├── Dockerfile             # Multi-stage build
-│   └── nginx.conf             # SPA routing + API proxy
+│   │   ├── api/                # Typed API client + OpenAPI types
+│   │   ├── pages/              # Home, Shop, Search, Product, SOS, Orders, Admin, Login
+│   │   ├── components/
+│   │   │   ├── frontdoors/     # Speak / Constrain / Show / Share / Predict panels
+│   │   │   └── cart/           # WhyThisOne, HitlPrompt, ReplanBar, EngineTrail
+│   │   └── ui/                 # Design system primitives
+│   ├── Dockerfile
+│   └── nginx.conf
 │
 ├── server/                     # FastAPI backend
 │   ├── app/
-│   │   ├── agents/            # LangGraph pipeline (graph + 6 nodes)
-│   │   ├── controllers/       # 11 HTTP routers
-│   │   ├── services/          # Business logic (7 services)
-│   │   ├── llm/               # Provider abstraction (4 providers)
-│   │   ├── repositories/      # Data access (memory + DynamoDB)
-│   │   ├── middleware/        # Rate limit, telemetry, PII, request ID
-│   │   ├── async_jobs/        # Lambda handlers + SQS publisher
-│   │   ├── models/            # Domain + DTO models
-│   │   └── seed/              # Catalog seeding (9,534 products)
+│   │   ├── agents/             # LangGraph pipeline (graph + 10 nodes + state)
+│   │   ├── controllers/        # HTTP routers
+│   │   ├── services/           # Business logic
+│   │   ├── llm/                # Provider abstraction (groq/gemini/bedrock/mock)
+│   │   ├── repositories/       # Data access (memory + DynamoDB + cache)
+│   │   ├── middleware/         # Rate limit, telemetry, PII, request ID
+│   │   ├── async_jobs/         # Lambda handlers + SQS publisher
+│   │   ├── models/             # Domain + DTO models
+│   │   └── seed/               # Catalog + users + orders seeding
 │   └── Dockerfile
 │
-├── docker-compose.yml          # 4-service full stack
+├── docker-compose.yml
 ├── SYSTEM_ARCHITECTURE.md      # Deep technical architecture doc
-└── NowCart_9534.csv            # Real Indian grocery product catalog
+└── BigBasket.csv               # Real Indian grocery catalog (9,534 products)
 ```
 
 ---
 
-## Future Vision
+## Deployment
 
-| Horizon | Milestone | Impact |
-|---------|-----------|--------|
-| 0–3 mo | Food/grocery outcome ordering in one city | 10K users, prove the thesis |
-| 3–6 mo | Pharmacy + emergency kits, multi-language voice | 100K users, SOS saves lives |
-| 6–12 mo | B2B restocking (restaurants, offices), travel/event kits | 1M users, horizontal platform |
+The production stack runs entirely on AWS.
 
-**The big picture:** NowCart becomes the universal **"need → done"** layer on top of any fulfillment network.
+```mermaid
+flowchart TD
+    Users(("Users")) --> CF["CloudFront CDN<br/>d2hj5yrm8sue4v.cloudfront.net"]
+    CF -- "/* static" --> S3["S3 bucket<br/>(React build)"]
+    CF -- "/api/*" --> EC2
+
+    subgraph EC2["EC2 — 3.106.130.16"]
+        Nginx["Nginx :80"] --> Uvicorn["Uvicorn / FastAPI :8000"] --> RedisBox["Redis :6379 (localhost)"]
+    end
+
+    EC2 --> Dynamo[("DynamoDB<br/>ap-southeast-2<br/>Products / Users / Orders")]
+    EC2 -. designed .-> SQS["SQS"] -. designed .-> Lambda["Lambda (async LLM)"]
+```
+
+- **Frontend:** the Vite production build is uploaded to S3 and served globally through CloudFront. Static assets are cached at the edge; `/api/*` is routed to the EC2 origin.
+- **Backend:** FastAPI runs under Uvicorn on an EC2 instance, fronted by Nginx as a reverse proxy, with Redis co-located on the same host for cart, session, and LLM-response caching.
+- **Data:** DynamoDB in `ap-southeast-2` holds the Products, Users, and Orders tables, auto-created and seeded on first boot.
+- **Async (designed):** SQS and Lambda are wired for offloading heavy LLM work as traffic grows.
+
+The full infrastructure topology, request pipeline, and async job flow are documented in [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md).
 
 ---
 
-## Team
+## Scaling
 
-| Name | Role | Contribution |
-|------|------|-------------|
-| [Member 1] | Backend + AI | LangGraph pipeline, LLM providers, services |
-| [Member 2] | Frontend | React app, front door panels, cart UX |
-| [Member 3] | Infrastructure | AWS deployment, Docker, DynamoDB, Redis |
-| [Member 4] | Product + Design | UX flow, presentation, demo script |
+| Layer | Current | 100x | 1000x |
+|-------|---------|------|-------|
+| Frontend | S3 + CloudFront | unchanged (global CDN) | unchanged |
+| API | single EC2 | Auto Scaling Group (stateless) | multi-region ASG + Route 53 |
+| State | Redis on host | ElastiCache | Redis cluster + read replicas |
+| Database | DynamoDB on-demand | native auto-scale | Global Tables (multi-region) |
+| LLM | synchronous in-process | SQS + Lambda | regional Lambda + queue leveling |
+| Cache | Redis + LLM cache | add DAX | L1 memory, L2 Redis, L3 DAX |
+
+The API is stateless — cart state lives in Redis, not in process — so any instance can serve any request, enabling horizontal scaling with no session affinity. DynamoDB on-demand removes capacity planning, heavy LLM work offloads to Lambda via SQS, and the provider abstraction makes a Groq-to-Bedrock switch a single environment-variable change.
 
 ---
+
+## Roadmap
+
+| Horizon | Milestone |
+|---------|-----------|
+| Near term | Grocery intent-capture in one metro, deeper catalog integration |
+| Mid term | Pharmacy SOS, multi-language voice (Hindi, Tamil, Telugu), richer personalization |
+| Long term | B2B restocking (restaurants, offices), event kits, WhatsApp front door |
+
+The long-term direction is a universal "need to done" layer on top of any fulfillment network — the intent-capture engine is category-agnostic and applies anywhere a person has a goal and needs products assembled.
