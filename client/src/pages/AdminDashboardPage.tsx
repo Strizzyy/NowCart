@@ -69,7 +69,7 @@ function ProgressBar({ label, value, max, color }: { label: string; value: numbe
   );
 }
 
-export default function AdminDashboardPage({ ctx }: Props) {
+export default function AdminDashboardPage({ ctx: _ctx }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [info, setInfo] = useState<Info | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
