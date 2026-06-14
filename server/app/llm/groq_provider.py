@@ -90,9 +90,17 @@ class GroqProvider:
             cached = await cache.get_cached_response(key)
             if cached is not None:
                 logger.debug("LLM cache HIT for key=%s", key[:8])
+                # Track cache hit in telemetry
+                from app.middleware.telemetry import metrics as telemetry_metrics
+                telemetry_metrics.cache_hits += 1
                 return cached
         except Exception:
             pass  # Cache miss or error — proceed to LLM call
+
+        # Track cache miss and LLM call in telemetry
+        from app.middleware.telemetry import metrics as telemetry_metrics
+        telemetry_metrics.cache_misses += 1
+        telemetry_metrics.llm_calls += 1
 
         try:
             raw = await self._chat(primed, user, json_mode=True)
@@ -126,9 +134,16 @@ class GroqProvider:
             cached = await cache.get_cached_response(key)
             if cached is not None and isinstance(cached.get("text"), str):
                 logger.debug("LLM text cache HIT for key=%s", key[:8])
+                from app.middleware.telemetry import metrics as telemetry_metrics
+                telemetry_metrics.cache_hits += 1
                 return cached["text"]
         except Exception:
             pass
+
+        # Track cache miss and LLM call
+        from app.middleware.telemetry import metrics as telemetry_metrics
+        telemetry_metrics.cache_misses += 1
+        telemetry_metrics.llm_calls += 1
 
         try:
             result = await self._chat(system, user, json_mode=False)

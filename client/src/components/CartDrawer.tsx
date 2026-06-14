@@ -1,4 +1,5 @@
-import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star } from 'lucide-react';
+import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star, ArrowRight, Truck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postCartOp } from '../api/client';
 import { useEffect, useState } from 'react';
@@ -25,6 +26,8 @@ export default function CartDrawer({ ctx }: Props) {
   const [proceeded, setProceeded] = useState(false);
   const [highlightLow, setHighlightLow] = useState(false);
   const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const navigate = useNavigate();
 
   // reset the HITL gate whenever a new cart arrives
   useEffect(() => {
@@ -141,18 +144,39 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Substitutions summary (D2) */}
+              {/* Substitutions summary (D2) — Enhanced visibility for demo */}
               {cart.substitutions.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-blue-800 mb-1 flex items-center gap-1">
-                    <Repeat size={12} aria-hidden="true" /> We swapped {cart.substitutions.length} out-of-stock item
-                    {cart.substitutions.length === 1 ? '' : 's'}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Repeat size={16} className="text-blue-700" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900">
+                        🧠 Substitution Intelligence Active
+                      </p>
+                      <p className="text-[11px] text-blue-700">
+                        {cart.substitutions.length} item{cart.substitutions.length === 1 ? '' : 's'} auto-swapped for in-stock alternatives
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mt-3">
+                    {cart.substitutions.map((sub, i) => (
+                      <div key={i} className="bg-white/70 rounded-lg p-2.5 border border-blue-100">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-red-500 line-through font-medium">{sub.original_name}</span>
+                          <ArrowRight size={12} className="text-blue-500 shrink-0" />
+                          <span className="text-blue-900 font-bold">{sub.substitute_name}</span>
+                        </div>
+                        <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1">
+                          <Sparkles size={10} /> {sub.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-blue-600 mt-2 italic">
+                    AI matched similar products by category, brand quality, and price range
                   </p>
-                  {cart.substitutions.map((sub, i) => (
-                    <p key={i} className="text-xs text-blue-700">
-                      {sub.original_name} → <strong>{sub.substitute_name}</strong> ({sub.reason})
-                    </p>
-                  ))}
                 </div>
               )}
 
@@ -354,7 +378,22 @@ export default function CartDrawer({ ctx }: Props) {
                   </p>
                 )}
               </div>
-              <Button variant="primary" size="md">Checkout →</Button>
+              <Button
+                variant="primary"
+                size="md"
+                loading={placingOrder}
+                onClick={async () => {
+                  setPlacingOrder(true);
+                  // Simulate payment processing
+                  await new Promise((r) => setTimeout(r, 1500));
+                  setPlacingOrder(false);
+                  setCartOpen(false);
+                  navigate('/order-success');
+                }}
+                leftIcon={!placingOrder ? <Truck size={16} /> : undefined}
+              >
+                {placingOrder ? 'Placing Order...' : 'Place Order →'}
+              </Button>
             </div>
 
             <div className="text-center">
