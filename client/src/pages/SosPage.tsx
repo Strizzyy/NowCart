@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { Zap, Clock, Truck, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Zap, Clock, ShieldCheck, Star, ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { AppContext } from '../App';
-import { postSos, type CartResponse } from '../api/client';
+import { postSosRecommend, postCartOp, postOutcome } from '../api/client';
+import type { SosRecommendation, CartResponse } from '../api/client';
 import { Button, Card, Chip, Spinner, ErrorState } from '../ui';
 
 interface Props {
@@ -17,51 +19,183 @@ const QUICK_SITUATIONS = [
   { label: '📦 Weekly restock', value: 'weekly essentials restock for family of 4' },
 ];
 
-type Step = 'pick' | 'kit' | 'confirm' | 'placed';
+/** Check if a product is currently in the cart by matching product name */
+function getCartItem(cart: CartResponse | null, productName: string) {
+  if (!cart) return null;
+  return cart.items.find(
+    (item) => item.name.toLowerCase() === productName.toLowerCase()
+  ) ?? null;
+}
 
-function useCountdown(minutes: number | null, active: boolean) {
-  const [secondsLeft, setSecondsLeft] = useState<number>((minutes ?? 0) * 60);
-  const ref = useRef<number | null>(null);
+function RecommendationCard({
+  rec,
+  ctx,
+  onAdd,
+  onRemove,
+  onQuantityChange,
+}: {
+  rec: SosRecommendation;
+  ctx: AppContext;
+  onAdd: (rec: SosRecommendation) => void;
+  onRemove: (productName: string) => void;
+  onQuantityChange: (productName: string, qty: number) => void;
+}) {
+  const { product, reason, quantity } = rec;
+  const discount = product.market_price > product.sale_price
+    ? Math.round((1 - product.sale_price / product.market_price) * 100)
+    : 0;
 
-  useEffect(() => {
-    setSecondsLeft((minutes ?? 0) * 60);
-  }, [minutes]);
+  // Sync with actual cart state
+  const cartItem = getCartItem(ctx.cart, product.name);
+  const isInCart = !!cartItem;
 
-  useEffect(() => {
-    if (!active || minutes == null) return;
-    ref.current = window.setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => {
-      if (ref.current) window.clearInterval(ref.current);
-    };
-  }, [active, minutes]);
+  return (
+    <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
+      <div className="flex gap-4">
+        {/* Product image */}
+        <Link to={`/product/${product.product_id}`} className="shrink-0">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-light-bg rounded-xl flex items-center justify-center overflow-hidden">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-contain p-2"
+                loading="lazy"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="text-4xl">📦</span>';
+                }}
+              />
+            ) : (
+              <span className="text-4xl" aria-hidden="true">📦</span>
+            )}
+          </div>
+        </Link>
 
-  const mm = Math.floor(secondsLeft / 60);
-  const ss = secondsLeft % 60;
-  return `${mm}:${ss.toString().padStart(2, '0')}`;
+        {/* Product info */}
+        <div className="flex-1 min-w-0">
+          {/* Badges */}
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {discount > 0 && <Chip tone="accent" size="xs">{discount}% OFF</Chip>}
+            {!product.in_stock && <Chip tone="neutral" size="xs">Out of stock</Chip>}
+            {isInCart && <Chip tone="success" size="xs" icon={<ShoppingCart size={10} />}>In Cart</Chip>}
+          </div>
+
+          {/* Name */}
+          <Link to={`/product/${product.product_id}`}>
+            <h3 className="text-base font-heading font-bold text-dark hover:text-primary-ink transition mb-0.5 line-clamp-2">
+              {product.name}
+            </h3>
+          </Link>
+
+          {/* Brand & unit */}
+          <p className="text-xs text-muted mb-1">{product.brand} · {product.unit}</p>
+
+          {/* Rating */}
+          {product.rating && (
+            <div className="flex items-center gap-1 mb-1.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={12}
+                  className={i < Math.round(product.rating!) ? 'fill-secondary text-secondary' : 'text-gray-200'}
+                  aria-hidden="true"
+                />
+              ))}
+              <span className="text-[11px] text-muted ml-0.5">({product.rating.toFixed(1)})</span>
+            </div>
+          )}
+
+          {/* Description */}
+          {product.description && (
+            <p className="text-xs text-muted line-clamp-1 mb-2">{product.description}</p>
+          )}
+
+          {/* Reason for recommendation */}
+          <div className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 mb-2">
+            <p className="text-xs text-amber-800">
+              <span className="font-semibold">Why:</span> {reason}
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">Suggested qty: {quantity}</p>
+          </div>
+
+          {/* Price + Cart controls */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold text-primary-ink">₹{product.sale_price.toFixed(0)}</span>
+              {product.market_price > product.sale_price && (
+                <span className="text-xs text-muted line-through">₹{product.market_price.toFixed(0)}</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link to={`/product/${product.product_id}`}>
+                <Button variant="outline" size="sm">Details</Button>
+              </Link>
+
+              {isInCart ? (
+                /* Quantity controls + Remove when in cart */
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => onQuantityChange(product.name, Math.max(1, cartItem.quantity - 1))}
+                    className="w-8 h-8 rounded-full bg-light-bg border border-border flex items-center justify-center hover:border-primary transition"
+                    aria-label={`Decrease ${product.name} quantity`}
+                  >
+                    <Minus size={14} aria-hidden="true" />
+                  </button>
+                  <span className="text-sm font-semibold w-6 text-center">{cartItem.quantity}</span>
+                  <button
+                    onClick={() => onQuantityChange(product.name, cartItem.quantity + 1)}
+                    className="w-8 h-8 rounded-full bg-light-bg border border-border flex items-center justify-center hover:border-primary transition"
+                    aria-label={`Increase ${product.name} quantity`}
+                  >
+                    <Plus size={14} aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={() => onRemove(product.name)}
+                    className="w-8 h-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition text-red-600"
+                    aria-label={`Remove ${product.name} from cart`}
+                  >
+                    <Trash2 size={14} aria-hidden="true" />
+                  </button>
+                </div>
+              ) : (
+                /* Add to Cart button when not in cart */
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onAdd(rec)}
+                  disabled={!product.in_stock}
+                  leftIcon={<ShoppingCart size={14} aria-hidden="true" />}
+                >
+                  Add to Cart
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 export default function SosPage({ ctx }: Props) {
   const [situation, setSituation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<Step>('pick');
-  const [cart, setCart] = useState<CartResponse | null>(null);
-
-  const eta = cart?.eta_minutes ?? 30;
-  const countdown = useCountdown(eta, step === 'kit' || step === 'confirm' || step === 'placed');
+  const [recommendations, setRecommendations] = useState<SosRecommendation[]>([]);
+  const [situationText, setSituationText] = useState('');
 
   const triggerSos = async (sit: string) => {
     setLoading(true);
     setError(null);
+    setRecommendations([]);
+    setSituationText(sit);
     try {
-      const result = await postSos(sit);
-      setCart(result);
-      ctx.setCart(result);
-      setStep('kit');
+      const result = await postSosRecommend(sit);
+      setRecommendations(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not build the emergency kit.');
+      setError(err instanceof Error ? err.message : 'Could not analyze the situation.');
     }
     setLoading(false);
   };
@@ -72,91 +206,122 @@ export default function SosPage({ ctx }: Props) {
     triggerSos(situation.trim());
   };
 
-  // ---------------- Kit / confirm / placed (post-build) ----------------
-  if (cart && step !== 'pick') {
+  const handleAddToCart = async (rec: SosRecommendation) => {
+    try {
+      if (ctx.cart) {
+        const updated = await postCartOp(ctx.cart.session_id, 'add', rec.product.name, rec.quantity);
+        ctx.setCart(updated);
+      } else {
+        const cart = await postOutcome(rec.product.name);
+        ctx.setCart(cart);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleRemoveFromCart = async (productName: string) => {
+    if (!ctx.cart) return;
+    try {
+      const updated = await postCartOp(ctx.cart.session_id, 'remove', productName);
+      ctx.setCart(updated);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleQuantityChange = async (productName: string, qty: number) => {
+    if (!ctx.cart) return;
+    try {
+      const updated = await postCartOp(ctx.cart.session_id, 'update', productName, qty);
+      ctx.setCart(updated);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleAddAll = async () => {
+    for (const rec of recommendations) {
+      const inCart = getCartItem(ctx.cart, rec.product.name);
+      if (!inCart) {
+        await handleAddToCart(rec);
+      }
+    }
+  };
+
+  // Count how many recommended items are in cart
+  const inCartCount = recommendations.filter(
+    (rec) => !!getCartItem(ctx.cart, rec.product.name)
+  ).length;
+
+  // ---------------- Recommendations view ----------------
+  if (recommendations.length > 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Urgency banner + ETA countdown */}
-        <div className="bg-accent text-white rounded-2xl p-5 mb-5 flex items-center justify-between shadow-[var(--shadow-pop)]">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        {/* Urgency banner */}
+        <div className="bg-accent text-white rounded-2xl p-5 mb-6 flex items-center justify-between shadow-[var(--shadow-pop)]">
           <div className="flex items-center gap-3">
-            <span className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center nc-pulse">
+            <span className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
               <Zap size={22} aria-hidden="true" />
             </span>
             <div>
-              <p className="font-heading font-bold text-lg leading-tight">Emergency mode</p>
-              <p className="text-xs text-white/85">Fastest-delivery items only</p>
+              <p className="font-heading font-bold text-lg leading-tight">Emergency Recommendations</p>
+              <p className="text-xs text-white/85">"{situationText}"</p>
             </div>
           </div>
-          <div className="text-right" aria-live="polite">
-            <p className="text-xs text-white/85 flex items-center gap-1 justify-end">
-              <Clock size={12} aria-hidden="true" /> Arrives in
-            </p>
-            <p className="text-2xl font-bold tabular-nums">{countdown}</p>
+          <Chip tone="success" size="sm" className="bg-white/20 text-white border-white/30">
+            {recommendations.length} items found
+          </Chip>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading font-bold text-lg text-dark">
+            Recommended Products
+          </h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setRecommendations([]); setSituationText(''); }}
+            >
+              New Search
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleAddAll}
+              disabled={inCartCount === recommendations.length}
+              leftIcon={<ShoppingCart size={14} />}
+            >
+              Add All to Cart
+            </Button>
           </div>
         </div>
 
-        {step === 'placed' ? (
-          <Card padding="lg" className="text-center">
-            <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 size={32} aria-hidden="true" />
-            </div>
-            <h2 className="font-heading font-bold text-xl text-dark mb-1">Emergency order placed</h2>
-            <p className="text-muted text-sm">
-              {cart.items.length} items on the way · arriving in {countdown}.
-            </p>
-            <Button variant="outline" size="md" className="mt-5" onClick={() => { setStep('pick'); setCart(null); }}>
-              Done
+        <p className="text-sm text-muted mb-4">
+          Review the recommendations below. Add items you need, adjust quantity, or remove them.
+        </p>
+
+        {/* Recommendation cards */}
+        <div className="space-y-4">
+          {recommendations.map((rec) => (
+            <RecommendationCard
+              key={rec.product.product_id}
+              rec={rec}
+              ctx={ctx}
+              onAdd={handleAddToCart}
+              onRemove={handleRemoveFromCart}
+              onQuantityChange={handleQuantityChange}
+            />
+          ))}
+        </div>
+
+        {inCartCount > 0 && (
+          <div className="mt-6 text-center">
+            <Button variant="primary" size="lg" onClick={() => ctx.setCartOpen(true)} leftIcon={<ShoppingCart size={18} />}>
+              View Cart ({inCartCount} items added)
             </Button>
-          </Card>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-heading font-bold text-lg text-dark">
-                Your emergency kit ({cart.items.length})
-              </h2>
-              <Chip tone="success" size="sm">{Math.round(cart.confidence * 100)}% confident</Chip>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              {cart.items.map((item) => (
-                <Card key={item.product_id} padding="sm" className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-dark truncate">{item.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Chip tone="success" size="xs" icon={<Truck size={10} />}>Fastest delivery</Chip>
-                      <span className="text-xs text-muted">{item.quantity} {item.unit}</span>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-primary-ink shrink-0">₹{item.line_total.toFixed(0)}</span>
-                </Card>
-              ))}
-            </div>
-
-            <Card padding="md" className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs text-muted">Total</p>
-                <p className="text-xl font-bold text-dark">₹{cart.total.toFixed(0)}</p>
-              </div>
-              {/* 2-tap checkout: kit → confirm → placed */}
-              {step === 'kit' ? (
-                <Button variant="accent" size="lg" onClick={() => setStep('confirm')} leftIcon={<Zap size={18} />}>
-                  Place emergency order
-                </Button>
-              ) : (
-                <Button variant="accent" size="lg" onClick={() => setStep('placed')} leftIcon={<ShieldCheck size={18} />}>
-                  Confirm &amp; pay
-                </Button>
-              )}
-            </Card>
-
-            <button
-              onClick={() => (step === 'confirm' ? setStep('kit') : setStep('pick'))}
-              className="inline-flex items-center gap-1 text-sm text-muted hover:text-dark transition"
-            >
-              <ArrowLeft size={15} aria-hidden="true" />
-              {step === 'confirm' ? 'Back to kit' : 'Pick another situation'}
-            </button>
-          </>
+          </div>
         )}
       </div>
     );
@@ -171,14 +336,14 @@ export default function SosPage({ ctx }: Props) {
         </div>
         <h1 className="text-3xl font-heading font-bold text-dark mb-2">SOS Emergency Mode</h1>
         <p className="text-muted">
-          Describe your situation — we instantly assemble an emergency kit of the
-          fastest-delivery essentials, ready in two taps.
+          Describe your situation — we'll analyze it and recommend the right products.
+          You decide what to add to your cart.
         </p>
       </div>
 
       {error && (
         <div className="mb-5">
-          <ErrorState title="Couldn't build the kit" description={error} onRetry={() => setError(null)} />
+          <ErrorState title="Couldn't analyze the situation" description={error} onRetry={() => setError(null)} />
         </div>
       )}
 
@@ -221,13 +386,14 @@ export default function SosPage({ ctx }: Props) {
           disabled={!situation.trim()}
           leftIcon={!loading ? <Zap size={18} /> : undefined}
         >
-          {loading ? 'Building emergency kit…' : 'Get emergency kit now'}
+          {loading ? 'Analyzing situation…' : 'Get Recommendations'}
         </Button>
       </form>
 
       {loading && (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex flex-col items-center gap-2">
           <Spinner size={24} />
+          <p className="text-sm text-muted">Analyzing your situation and finding the best products...</p>
         </div>
       )}
 
@@ -235,15 +401,15 @@ export default function SosPage({ ctx }: Props) {
         <Card padding="md" className="flex items-start gap-3">
           <Clock size={20} className="text-accent-dark shrink-0 mt-0.5" aria-hidden="true" />
           <div>
-            <p className="text-sm font-semibold text-dark">Express delivery</p>
-            <p className="text-xs text-muted">SOS orders are filtered to the fastest in-stock items.</p>
+            <p className="text-sm font-semibold text-dark">Smart analysis</p>
+            <p className="text-xs text-muted">AI analyzes your situation and picks the most relevant products.</p>
           </div>
         </Card>
         <Card padding="md" className="flex items-start gap-3">
           <ShieldCheck size={20} className="text-primary-ink shrink-0 mt-0.5" aria-hidden="true" />
           <div>
-            <p className="text-sm font-semibold text-dark">Smart substitutions</p>
-            <p className="text-xs text-muted">Anything out of stock is swapped for the best alternative.</p>
+            <p className="text-sm font-semibold text-dark">You decide</p>
+            <p className="text-xs text-muted">Review recommendations and add only what you need to your cart.</p>
           </div>
         </Card>
       </div>

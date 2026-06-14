@@ -35,6 +35,7 @@ class SubstitutionService:
                     "substitute_product_id": product.product_id,
                     "substitute_name": product.name,
                     "substitute_price": product.sale_price,
+                    "substitute_image_url": product.image_url,
                     "score": score,
                     "reason": f"In-stock alternative (score={score:.0f})",
                 }
@@ -81,6 +82,7 @@ class SubstitutionService:
                 reason=f"Substituted (original '{item.name}' out of stock)",
                 confidence=min(sub["score"] / 100.0, 1.0),
                 substituted_for=item.product_id,
+                image_url=sub.get("substitute_image_url"),
             )
 
         cart.substitutions.extend(substitutions)

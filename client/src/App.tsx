@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
+import SearchResultsPage from './pages/SearchResultsPage';
 import CartDrawer from './components/CartDrawer';
 import SosPage from './pages/SosPage';
 import { ToastProvider } from './ui';
@@ -32,6 +33,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage ctx={ctx} />} />
               <Route path="/shop" element={<ShopPage ctx={ctx} />} />
+              <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
               <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
               <Route path="/sos" element={<SosPage ctx={ctx} />} />
             </Routes>

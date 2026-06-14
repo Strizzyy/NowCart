@@ -101,6 +101,7 @@ class SosService:
                             unit="unit",
                             reason=need.get("reason", f"SOS: {situation}"),
                             confidence=min(score / 100.0, 1.0),
+                            image_url=product.image_url,
                         )
                     )
                     etas.append(getattr(product, "delivery_eta_min", 30) or 30)
@@ -166,6 +167,47 @@ class SosService:
                 kit_key = key
                 break
         return _FALLBACK_KITS[kit_key]
+
+
+    async def recommend_sos_products(self, situation: str) -> list[dict]:
+        """Analyze an emergency situation and return product recommendations
+        with full details, without adding anything to cart.
+
+        Returns a list of dicts, each with:
+          - product: full product details (id, name, brand, image, rating, price, etc.)
+          - reason: why this product is recommended for this situation
+          - quantity: suggested quantity
+        """
+        catalog = get_catalog_service()
+        llm = get_text_provider()
+
+        # Try AI-powered kit building
+        kit_items = await self._get_ai_kit(llm, situation)
+
+        if not kit_items:
+            kit_items = self._get_fallback_kit(situation)
+
+        recommendations: list[dict] = []
+
+        for need in kit_items:
+            matches = await catalog.fuzzy_match_need(
+                need_name=need["name"],
+                category_hint=need.get("category_hint"),
+                top_k=3,
+            )
+
+            # Pick first available match (in-stock only for SOS urgency)
+            for product, score in matches:
+                if await catalog.check_availability(product.product_id):
+                    recommendations.append({
+                        "product": product.model_dump(),
+                        "reason": need.get("reason", f"Recommended for: {situation}"),
+                        "quantity": need["quantity"],
+                        "confidence": min(score / 100.0, 1.0),
+                    })
+                    break
+
+        return recommendations
 
 
 _sos_service: SosService | None = None

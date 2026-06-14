@@ -88,6 +88,7 @@ class CartItemResponse(BaseModel):
     reason: str = ""
     confidence: float = 1.0
     substituted_for: str | None = None
+    image_url: str | None = None
 
     @classmethod
     def from_domain(cls, item: CartItem) -> "CartItemResponse":
@@ -102,6 +103,7 @@ class CartItemResponse(BaseModel):
             reason=item.reason,
             confidence=item.confidence,
             substituted_for=item.substituted_for,
+            image_url=item.image_url,
         )
 
 

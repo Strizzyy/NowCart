@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Send, Mic, MicOff, Wallet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postOutcome, postVoiceIntent, postConstraint } from '../api/client';
 import { Button, Card } from '../ui';
@@ -16,6 +17,24 @@ const TABS: { id: Mode; label: string }[] = [
   { id: 'budget', label: '💰 Budget' },
 ];
 
+/**
+ * Heuristic: if the input looks like a single product search (short, no cooking
+ * verbs, no servings mentions), navigate to the search results page.
+ * Otherwise, use the full outcome engine (recipe/meal planning).
+ */
+function looksLikeSingleItemSearch(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const mealKeywords = [
+    'making', 'cook', 'prepare', 'recipe', 'bake', 'fry', 'for ',
+    'biryani', 'dinner', 'lunch', 'breakfast', 'meal', 'dish',
+    'i want to', 'help me', 'my goal', 'i need to',
+    'budget', '₹', 'under', 'within',
+  ];
+  if (mealKeywords.some(kw => lower.includes(kw))) return false;
+  const words = lower.split(/\s+/).filter(Boolean);
+  return words.length <= 5;
+}
+
 export default function Composer({ ctx }: Props) {
   const [mode, setMode] = useState<Mode>('text');
   const [text, setText] = useState('');
@@ -23,13 +42,25 @@ export default function Composer({ ctx }: Props) {
   const [servings, setServings] = useState('2');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const navigate = useNavigate();
 
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || loading) return;
+
+    const query = text.trim();
+
+    // Single product search → navigate to search results page
+    if (looksLikeSingleItemSearch(query)) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+      setText('');
+      return;
+    }
+
+    // Multi-item / meal / recipe query → use the full outcome engine
     setLoading(true);
     try {
-      const cart = await postOutcome(text.trim(), parseInt(servings) || undefined);
+      const cart = await postOutcome(query, parseInt(servings) || undefined);
       ctx.setCart(cart);
       ctx.setCartOpen(true);
       setText('');
@@ -111,16 +142,16 @@ export default function Composer({ ctx }: Props) {
               type="text"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder='e.g. "Biryani for 4" or "I want to eat healthy this week"'
+              placeholder='e.g. "milk", "paneer", or "Biryani for 4"'
               className="flex-1 border border-border rounded-lg px-4 py-3 text-sm outline-none focus:border-primary transition bg-surface text-dark"
               disabled={loading}
             />
             <Button type="submit" loading={loading} disabled={!text.trim()} leftIcon={<Send size={18} aria-hidden="true" />}>
-              <span className="sr-only">Build cart</span>
+              <span className="sr-only">Search</span>
             </Button>
           </div>
           <p className="text-xs text-muted mt-2">
-            Describe a meal, a goal, or just a list. The engine builds your cart instantly.
+            Search for a product to see recommendations, or describe a meal to build a full cart.
           </p>
         </form>
       )}

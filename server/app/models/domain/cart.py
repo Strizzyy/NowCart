@@ -26,6 +26,7 @@ class CartItem(BaseModel):
     reason: str = ""                       # single-line "why this one" (C2)
     confidence: float = 1.0                # 0..1 (C3)
     substituted_for: str | None = None     # original product_id if swapped (D2)
+    image_url: str | None = None           # product image URL
 
     @property
     def line_total(self) -> float:

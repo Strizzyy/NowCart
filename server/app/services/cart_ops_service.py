@@ -61,6 +61,7 @@ class CartOpsService:
                             unit=product.unit or "unit",
                             reason="Added via cart op",
                             confidence=min(score / 100.0, 1.0),
+                            image_url=product.image_url,
                         )
                     )
                 cart.recompute_total()

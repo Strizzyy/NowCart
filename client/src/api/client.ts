@@ -144,3 +144,31 @@ export async function postStockOverride(product_id: string, in_stock: boolean): 
     body: JSON.stringify({ product_id, in_stock }),
   });
 }
+
+/** Recommend best-rated product + alternatives for a search query (without adding to cart). */
+export interface RecommendResponse {
+  best: Product | null;
+  alternatives: Product[];
+}
+
+export async function searchRecommend(q: string, limit = 5): Promise<RecommendResponse> {
+  const params = new URLSearchParams();
+  params.set('q', q);
+  params.set('limit', String(limit));
+  return request<RecommendResponse>(`/catalog/recommend?${params}`);
+}
+
+/** SOS recommend — analyze situation and return product recommendations without adding to cart. */
+export interface SosRecommendation {
+  product: Product;
+  reason: string;
+  quantity: number;
+  confidence: number;
+}
+
+export async function postSosRecommend(situation: string): Promise<SosRecommendation[]> {
+  return request<SosRecommendation[]>('/sos/recommend', {
+    method: 'POST',
+    body: JSON.stringify({ situation }),
+  });
+}

@@ -200,6 +200,9 @@ async def decompose_node(state: AgentState) -> dict:
             f"outcome, decompose it into a shopping list of ingredients. The user is cooking for {servings} people. "
             "Return quantities as number of packs/units to buy from a store "
             "(e.g. 1 kg rice, 2 onions, 1 pack paneer, 1 bottle oil). "
+            "For category_hint, use one of these exact values: rice, grains, pulses, flour, oil, ghee, spices, "
+            "masala, vegetables, fruits, meat, chicken, fish, eggs, dairy, milk, cheese, paneer, "
+            "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs. "
             "Return JSON with \"dish\" (string or null) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
         )
@@ -253,9 +256,9 @@ async def match_node(state: AgentState) -> dict:
             category_hint=need.category_hint or None,
             top_k=5,
         )
-        # Store serializable tuples: (product_id, name, score, price)
-        candidate_list: list[tuple[str, str, float, float]] = [
-            (product.product_id, product.name, score, product.sale_price)
+        # Store serializable tuples: (product_id, name, score, price, image_url)
+        candidate_list: list[tuple[str, str, float, float, str | None]] = [
+            (product.product_id, product.name, score, product.sale_price, product.image_url)
             for product, score in matches
         ]
         candidates[need.name] = candidate_list
@@ -285,7 +288,7 @@ async def match_node(state: AgentState) -> dict:
 async def optimize_node(state: AgentState) -> dict:
     """Pick the best candidate per need and build CartItems."""
     needs: list[Need] = state.get("needs", [])
-    candidates: dict[str, list[tuple[str, str, float, float]]] = state.get("candidates", {})
+    candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     trail: list[str] = state.get("reasoning_trail", [])
     mode = state.get("mode", IntentMode.TEXT)
 
@@ -303,10 +306,10 @@ async def optimize_node(state: AgentState) -> dict:
 
         # Pick best: highest score, prefer in-stock, check availability
         best = None
-        for product_id, name, score, price in need_candidates:
+        for product_id, name, score, price, image_url in need_candidates:
             is_available = await catalog.check_availability(product_id)
             if is_available:
-                best = (product_id, name, score, price)
+                best = (product_id, name, score, price, image_url)
                 break  # First available with highest score wins
 
         if best is None:
@@ -314,7 +317,7 @@ async def optimize_node(state: AgentState) -> dict:
             best = need_candidates[0]
             need.status = NeedStatus.PENDING  # Will be handled by substitute_node
 
-        product_id, name, score, price = best
+        product_id, name, score, price, image_url = best
         confidence = min(score / 100.0, 1.0)
 
         # Normalize quantity: LLM may return raw weights (500 grams, 200 ml)
@@ -330,6 +333,7 @@ async def optimize_node(state: AgentState) -> dict:
                 unit=need.unit,
                 reason=f"Best match (score={score:.0f})",
                 confidence=confidence,
+                image_url=image_url,
             )
         )
         if need.status == NeedStatus.MATCHED:
@@ -361,7 +365,7 @@ async def optimize_node(state: AgentState) -> dict:
 async def substitute_node(state: AgentState) -> dict:
     """For needs with out-of-stock best match, find an in-stock alternative."""
     needs: list[Need] = state.get("needs", [])
-    candidates: dict[str, list[tuple[str, str, float, float]]] = state.get("candidates", {})
+    candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     cart: Cart = state.get("cart", Cart(session_id=""))
     trail: list[str] = state.get("reasoning_trail", [])
 
@@ -390,7 +394,7 @@ async def substitute_node(state: AgentState) -> dict:
         need_candidates = candidates.get(corresponding_need.name, [])
         substitute_found = False
 
-        for product_id, name, score, price in need_candidates:
+        for product_id, name, score, price, image_url in need_candidates:
             if product_id == item.product_id:
                 continue
             if await catalog.check_availability(product_id):
@@ -414,6 +418,7 @@ async def substitute_node(state: AgentState) -> dict:
                     reason=f"Substituted (original '{item.name}' out of stock)",
                     confidence=min(score / 100.0, 1.0),
                     substituted_for=item.product_id,
+                    image_url=image_url,
                 )
                 corresponding_need.status = NeedStatus.SUBSTITUTED
                 substitute_found = True

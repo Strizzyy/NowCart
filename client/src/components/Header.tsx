@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, Zap } from 'lucide-react';
 import { useState } from 'react';
 import type { AppContext } from '../App';
-import { searchCatalog, postOutcome } from '../api/client';
 import { Button } from '../ui';
 
 interface Props {
@@ -11,25 +10,17 @@ interface Props {
 
 export default function Header({ ctx }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searching, setSearching] = useState(false);
+  const navigate = useNavigate();
 
   const itemCount = ctx.cart?.items.length ?? 0;
   const cartTotal = ctx.cart?.total ?? 0;
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    setSearching(true);
-    try {
-      const cart = await postOutcome(searchQuery.trim());
-      ctx.setCart(cart);
-      ctx.setCartOpen(true);
-    } catch {
-      await searchCatalog(searchQuery.trim());
-    } finally {
-      setSearching(false);
-      setSearchQuery('');
-    }
+    // Navigate to the search results page — no direct cart addition
+    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery('');
   };
 
   return (
@@ -52,24 +43,22 @@ export default function Header({ ctx }: Props) {
           </div>
         </Link>
 
-        {/* Search bar — AI-powered shortcut */}
+        {/* Search bar — navigates to search results page */}
         <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
-          <label htmlFor="header-search" className="sr-only">Describe what you need</label>
+          <label htmlFor="header-search" className="sr-only">Search for a product</label>
           <div className="flex items-center border-2 border-primary rounded-xl overflow-hidden bg-surface focus-within:border-primary-dark transition-colors">
             <input
               id="header-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder='Try "Biryani for 4" or "healthy breakfast"...'
+              placeholder='Search for "milk", "paneer", "rice"...'
               className="flex-1 px-4 py-2.5 text-sm outline-none bg-transparent text-dark"
-              disabled={searching}
             />
             <button
               type="submit"
-              disabled={searching}
-              className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 transition-colors disabled:opacity-60"
-              aria-label="Build a cart from your request"
+              className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 transition-colors"
+              aria-label="Search products"
             >
               <Search size={18} aria-hidden="true" />
             </button>
