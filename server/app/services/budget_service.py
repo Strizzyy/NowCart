@@ -48,30 +48,42 @@ class BudgetService:
         return cart
 
     def _trim_to_budget(self, cart: Cart, budget: float) -> Cart:
-        """Remove lowest-confidence items until total ≤ budget."""
+        """Remove lowest-confidence items until total ≤ budget.
+        Also trims the corresponding economical_items to keep them in sync.
+        """
         if cart.total <= budget:
             cart.remaining_budget = round(budget - cart.total, 2)
             return cart
 
         # Sort items by confidence descending — keep high-confidence items
-        sorted_items = sorted(cart.items, key=lambda i: i.confidence, reverse=True)
+        # Track original indices to keep economical_items in sync
+        indexed_items = list(enumerate(cart.items))
+        indexed_items.sort(key=lambda x: x[1].confidence, reverse=True)
 
-        kept: list[CartItem] = []
+        kept_indices: list[int] = []
         running_total = 0.0
 
-        for item in sorted_items:
+        for orig_idx, item in indexed_items:
             item_cost = item.price * item.quantity
             if running_total + item_cost <= budget:
-                kept.append(item)
+                kept_indices.append(orig_idx)
                 running_total += item_cost
             else:
                 cart.notes.append(f"Dropped (over budget): {item.name}")
 
-        cart.items = kept
+        # Rebuild items and economical_items preserving order
+        kept_indices.sort()
+        cart.items = [cart.items[i] for i in kept_indices]
+        if cart.economical_items:
+            cart.economical_items = [
+                cart.economical_items[i] for i in kept_indices
+                if i < len(cart.economical_items)
+            ]
+
         cart.recompute_total()
         cart.remaining_budget = round(budget - cart.total, 2)
 
-        if not kept:
+        if not cart.items:
             cart.shortfall = round(cart.total - budget, 2) if cart.total > budget else None
             cart.notes.append("Budget too low for any items in this outcome.")
             cart.degraded = True

@@ -112,7 +112,9 @@ class CartResponse(BaseModel):
 
     session_id: str
     items: list[CartItemResponse] = Field(default_factory=list)
+    economical_items: list[CartItemResponse] = Field(default_factory=list)
     total: float = 0.0
+    economical_total: float = 0.0
     currency: str = "INR"
     mode: str = "text"
     confidence: float = 1.0
@@ -131,7 +133,9 @@ class CartResponse(BaseModel):
         return cls(
             session_id=cart.session_id,
             items=[CartItemResponse.from_domain(i) for i in cart.items],
+            economical_items=[CartItemResponse.from_domain(i) for i in cart.economical_items],
             total=cart.total,
+            economical_total=cart.economical_total,
             currency=cart.currency,
             mode=cart.mode.value,
             confidence=cart.confidence,

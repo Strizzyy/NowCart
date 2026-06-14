@@ -8,8 +8,11 @@ Uses Groq's fast inference API (Llama 3.3 70B) for:
 
 Includes transparent LLM response caching: identical prompts within TTL
 return cached results without hitting the Groq API (cost + latency savings).
+Supports round-robin key rotation across multiple API keys to distribute
+rate-limit load evenly.
 """
 import hashlib
+import itertools
 import json
 
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -33,11 +36,21 @@ class GroqProvider:
     name = "groq"
 
     def __init__(self) -> None:
-        # Imported lazily so the app boots even if the SDK/key is absent.
         from groq import AsyncGroq
 
-        self._client = AsyncGroq(api_key=settings.groq_api_key)
+        keys = settings.groq_api_key_list
+        if not keys:
+            raise ValueError("No Groq API keys configured. Set GROQ_API_KEYS or GROQ_API_KEY in .env")
+
+        # Create a client per key and cycle through them round-robin
+        self._clients = [AsyncGroq(api_key=k) for k in keys]
+        self._client_cycle = itertools.cycle(self._clients)
         self._model = settings.groq_model
+        logger.info("GroqProvider initialized with %d API key(s)", len(keys))
+
+    def _next_client(self):
+        """Get the next client in the round-robin rotation."""
+        return next(self._client_cycle)
 
     async def _get_cache(self):
         """Lazy import to avoid circular deps at module load time."""
@@ -46,6 +59,7 @@ class GroqProvider:
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=0.5, max=4), reraise=True)
     async def _chat(self, system: str, user: str, json_mode: bool, max_tokens: int = 2048) -> str:
+        client = self._next_client()
         kwargs: dict = {
             "model": self._model,
             "messages": [
@@ -57,7 +71,7 @@ class GroqProvider:
         }
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
-        resp = await self._client.chat.completions.create(**kwargs)
+        resp = await client.chat.completions.create(**kwargs)
         return resp.choices[0].message.content or ""
 
     async def complete_json(self, system: str, user: str, schema_hint: str) -> dict:

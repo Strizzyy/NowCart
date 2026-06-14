@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Star, Truck, Shield } from 'lucide-react';
 import type { AppContext } from '../App';
-import { searchCatalog, postCartOp, postOutcome } from '../api/client';
+import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
 import ProductCard from '../components/ProductCard';
 
@@ -42,35 +42,21 @@ export default function ProductPage({ ctx }: Props) {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    if (ctx.cart) {
-      try {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', product.name, quantity);
-        ctx.setCart(updated);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    } else {
-      try {
-        const cart = await postOutcome(product.name);
-        ctx.setCart(cart);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    }
+    try {
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', product.name, quantity);
+      ctx.setCart(updated);
+      ctx.setCartOpen(true);
+    } catch { /* ignore */ }
   };
 
   const handleAddRelated = async (p: Product) => {
-    if (ctx.cart) {
-      try {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', p.name, 1);
-        ctx.setCart(updated);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    } else {
-      try {
-        const cart = await postOutcome(p.name);
-        ctx.setCart(cart);
-        ctx.setCartOpen(true);
-      } catch { /* ignore */ }
-    }
+    try {
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', p.name, 1);
+      ctx.setCart(updated);
+      ctx.setCartOpen(true);
+    } catch { /* ignore */ }
   };
 
   if (loading) {

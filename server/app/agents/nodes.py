@@ -286,7 +286,11 @@ async def match_node(state: AgentState) -> dict:
 
 
 async def optimize_node(state: AgentState) -> dict:
-    """Pick the best candidate per need and build CartItems."""
+    """Pick the best candidate per need and build CartItems.
+
+    Also builds an economical_items list with the cheapest available
+    alternative for each need (different from the best pick).
+    """
     needs: list[Need] = state.get("needs", [])
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     trail: list[str] = state.get("reasoning_trail", [])
@@ -294,6 +298,7 @@ async def optimize_node(state: AgentState) -> dict:
 
     catalog = get_catalog_service()
     items: list[CartItem] = []
+    economical_items: list[CartItem] = []
     notes: list[str] = []
 
     for need in needs:
@@ -306,11 +311,13 @@ async def optimize_node(state: AgentState) -> dict:
 
         # Pick best: highest score, prefer in-stock, check availability
         best = None
+        available_candidates: list[tuple[str, str, float, float, str | None]] = []
         for product_id, name, score, price, image_url in need_candidates:
             is_available = await catalog.check_availability(product_id)
             if is_available:
-                best = (product_id, name, score, price, image_url)
-                break  # First available with highest score wins
+                available_candidates.append((product_id, name, score, price, image_url))
+                if best is None:
+                    best = (product_id, name, score, price, image_url)
 
         if best is None:
             # All candidates out of stock — keep first as placeholder for substitution
@@ -339,16 +346,76 @@ async def optimize_node(state: AgentState) -> dict:
         if need.status == NeedStatus.MATCHED:
             need.matched_product_id = product_id
 
+        # --- Economical pick: cheapest available alternative ---
+        # Sort available candidates by price (ascending) and pick the cheapest
+        # that is different from the best pick
+        if available_candidates:
+            sorted_by_price = sorted(available_candidates, key=lambda c: c[3])
+            cheapest = sorted_by_price[0]
+
+            # If the cheapest is the same as the best, try the next one
+            if cheapest[0] == best[0] and len(sorted_by_price) > 1:
+                cheapest = sorted_by_price[1]
+
+            # Only add if it's actually cheaper (or same price but different product)
+            if cheapest[0] != best[0]:
+                eco_product_id, eco_name, eco_score, eco_price, eco_image_url = cheapest
+                eco_confidence = min(eco_score / 100.0, 1.0)
+                saving = round(price - eco_price, 2) if price > eco_price else 0
+                reason = f"Budget-friendly pick (saves ₹{saving:.0f})" if saving > 0 else "Economical alternative"
+                economical_items.append(
+                    CartItem(
+                        product_id=eco_product_id,
+                        name=eco_name,
+                        price=eco_price,
+                        quantity=cart_quantity,
+                        unit=need.unit,
+                        reason=reason,
+                        confidence=eco_confidence,
+                        image_url=eco_image_url,
+                    )
+                )
+            else:
+                # No cheaper alternative available — use the same item
+                economical_items.append(
+                    CartItem(
+                        product_id=product_id,
+                        name=name,
+                        price=price,
+                        quantity=cart_quantity,
+                        unit=need.unit,
+                        reason="Same as recommended (no cheaper option)",
+                        confidence=confidence,
+                        image_url=image_url,
+                    )
+                )
+        else:
+            # No available candidates — mirror the best pick placeholder
+            economical_items.append(
+                CartItem(
+                    product_id=best[0],
+                    name=best[1],
+                    price=best[3],
+                    quantity=cart_quantity,
+                    unit=need.unit,
+                    reason="Same as recommended (no cheaper option)",
+                    confidence=min(best[2] / 100.0, 1.0),
+                    image_url=best[4],
+                )
+            )
+
     # Build cart
     cart = Cart(
         session_id=str(uuid.uuid4()),
         items=items,
+        economical_items=economical_items,
         mode=mode,
         notes=notes,
     )
     cart.recompute_total()
 
-    reasoning = f"Optimized cart: {len(items)} items, total={cart.total}"
+    eco_saving = round(cart.total - cart.economical_total, 2)
+    reasoning = f"Optimized cart: {len(items)} items, total=₹{cart.total}, economical total=₹{cart.economical_total} (save ₹{eco_saving})"
 
     return {
         "needs": needs,

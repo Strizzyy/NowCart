@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Zap, Clock, ShieldCheck, Star, ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { AppContext } from '../App';
-import { postSosRecommend, postCartOp, postOutcome } from '../api/client';
+import { postSosRecommend, postCartOp } from '../api/client';
 import type { SosRecommendation, CartResponse } from '../api/client';
 import { Button, Card, Chip, Spinner, ErrorState } from '../ui';
 
@@ -208,13 +208,9 @@ export default function SosPage({ ctx }: Props) {
 
   const handleAddToCart = async (rec: SosRecommendation) => {
     try {
-      if (ctx.cart) {
-        const updated = await postCartOp(ctx.cart.session_id, 'add', rec.product.name, rec.quantity);
-        ctx.setCart(updated);
-      } else {
-        const cart = await postOutcome(rec.product.name);
-        ctx.setCart(cart);
-      }
+      const sessionId = ctx.cart?.session_id || '';
+      const updated = await postCartOp(sessionId, 'add', rec.product.name, rec.quantity);
+      ctx.setCart(updated);
     } catch {
       /* ignore */
     }

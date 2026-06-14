@@ -37,7 +37,7 @@ class ShareRequest(BaseModel):
 class CartOpRequest(BaseModel):
     """Voice/UI follow-up cart operation (A2 follow-ups)."""
 
-    session_id: str
+    session_id: str = Field("", description="Cart session ID. Empty or missing creates a new cart on 'add'.")
     op: str = Field(..., description="add | remove | update | total")
     entity: str | None = Field(None, description="product name or id the op targets")
     quantity: float | None = None

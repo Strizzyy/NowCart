@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # --- LLM ---
     groq_api_key: str = ""
+    groq_api_keys: str = ""  # comma-separated list for round-robin rotation
     groq_model: str = "llama-3.3-70b-versatile"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-1.5-flash"
@@ -39,6 +40,18 @@ class Settings(BaseSettings):
     @property
     def cors_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def groq_api_key_list(self) -> list[str]:
+        """Return list of Groq API keys for round-robin rotation.
+
+        Prefers GROQ_API_KEYS (comma-separated) but falls back to single GROQ_API_KEY.
+        """
+        if self.groq_api_keys:
+            return [k.strip() for k in self.groq_api_keys.split(",") if k.strip()]
+        if self.groq_api_key:
+            return [self.groq_api_key]
+        return []
 
 
 @lru_cache

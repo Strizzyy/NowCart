@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 def get_text_provider() -> LLMProvider:
     choice = settings.llm_text_provider
     try:
-        if choice == "groq" and settings.groq_api_key:
+        if choice == "groq" and settings.groq_api_key_list:
             from app.llm.groq_provider import GroqProvider
 
             logger.info("Text provider: groq (%s)", settings.groq_model)

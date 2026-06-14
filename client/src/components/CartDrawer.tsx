@@ -1,4 +1,4 @@
-import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX } from 'lucide-react';
+import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star } from 'lucide-react';
 import type { AppContext } from '../App';
 import { postCartOp } from '../api/client';
 import { useEffect, useState } from 'react';
@@ -24,11 +24,13 @@ export default function CartDrawer({ ctx }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const [proceeded, setProceeded] = useState(false);
   const [highlightLow, setHighlightLow] = useState(false);
+  const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
 
   // reset the HITL gate whenever a new cart arrives
   useEffect(() => {
     setProceeded(false);
     setHighlightLow(false);
+    setActiveTab('recommended');
   }, [cart?.session_id, cart?.clarification]);
 
   if (!cartOpen) return null;
@@ -48,6 +50,16 @@ export default function CartDrawer({ ctx }: Props) {
     setLoading(name);
     try {
       const updated = await postCartOp(cart.session_id, 'update', name, qty);
+      setCart(updated);
+    } catch { /* ignore */ }
+    setLoading(null);
+  };
+
+  const handleClearCart = async () => {
+    if (!cart) return;
+    setLoading('__clear__');
+    try {
+      const updated = await postCartOp(cart.session_id, 'clear');
       setCart(updated);
     } catch { /* ignore */ }
     setLoading(null);
@@ -75,13 +87,26 @@ export default function CartDrawer({ ctx }: Props) {
             </h2>
             <p className="text-xs text-muted">One pick per need — we already compared the rest.</p>
           </div>
-          <button
-            onClick={() => setCartOpen(false)}
-            className="p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition"
-            aria-label="Close cart"
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            {cart && cart.items.length > 0 && (
+              <button
+                onClick={handleClearCart}
+                disabled={loading === '__clear__'}
+                className="p-1.5 rounded-full text-muted hover:text-accent-dark hover:bg-red-50 transition disabled:opacity-50"
+                aria-label="Clear entire cart"
+                title="Clear cart"
+              >
+                <XCircle size={20} aria-hidden="true" />
+              </button>
+            )}
+            <button
+              onClick={() => setCartOpen(false)}
+              className="p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition"
+              aria-label="Close cart"
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Cart content */}
@@ -143,8 +168,60 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Items */}
-              {cart.items.map((item) => {
+              {/* ===== Section Tabs: Recommended vs Economical ===== */}
+              {cart.economical_items && cart.economical_items.length > 0 && (
+                <div className="flex rounded-xl bg-light-bg border border-border p-1 gap-1">
+                  <button
+                    onClick={() => setActiveTab('recommended')}
+                    className={[
+                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition',
+                      activeTab === 'recommended'
+                        ? 'bg-surface text-primary-ink shadow-sm'
+                        : 'text-muted hover:text-dark',
+                    ].join(' ')}
+                  >
+                    <Star size={13} aria-hidden="true" />
+                    Recommended
+                    <span className="text-[10px] font-medium ml-0.5">₹{cart.total.toFixed(0)}</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('economical')}
+                    className={[
+                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition',
+                      activeTab === 'economical'
+                        ? 'bg-surface text-emerald-700 shadow-sm'
+                        : 'text-muted hover:text-dark',
+                    ].join(' ')}
+                  >
+                    <BadgeDollarSign size={13} aria-hidden="true" />
+                    Economical
+                    <span className="text-[10px] font-medium ml-0.5">₹{cart.economical_total.toFixed(0)}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Savings badge when economical tab is active */}
+              {activeTab === 'economical' && cart.economical_items && cart.economical_items.length > 0 && cart.total > cart.economical_total && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
+                  <BadgeDollarSign size={16} className="text-emerald-700 shrink-0" aria-hidden="true" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-800">
+                      Save ₹{(cart.total - cart.economical_total).toFixed(0)} with economical picks
+                    </p>
+                    <p className="text-[11px] text-emerald-700">Same products, lower-priced alternatives from our catalog.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Section header */}
+              {cart.economical_items && cart.economical_items.length > 0 && (
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide pt-1">
+                  {activeTab === 'recommended' ? '⭐ Best quality picks' : '💰 Budget-friendly picks'}
+                </p>
+              )}
+
+              {/* Items — based on active tab */}
+              {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {
                 const substituted = !!item.substituted_for;
                 const low = item.confidence < LOW_CONFIDENCE;
                 return (
@@ -154,10 +231,23 @@ export default function CartDrawer({ ctx }: Props) {
                       'flex items-start gap-3 p-3 rounded-xl transition',
                       substituted ? 'bg-blue-50/60 border-l-4 border-blue-300 pl-2' : 'bg-light-bg',
                       highlightLow && low ? 'ring-2 ring-amber-300' : '',
+                      activeTab === 'economical' ? 'border-l-4 border-emerald-200' : '',
                     ].join(' ')}
                   >
-                    <div className="w-14 h-14 bg-surface rounded-lg border border-border flex items-center justify-center shrink-0">
-                      <span className="text-2xl" aria-hidden="true">🛒</span>
+                    <div className="w-14 h-14 bg-surface rounded-lg border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="text-2xl">📦</span>';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-2xl" aria-hidden="true">📦</span>
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -177,6 +267,11 @@ export default function CartDrawer({ ctx }: Props) {
                         {substituted && (
                           <Chip tone="info" size="xs" icon={<Repeat size={10} />}>
                             Swapped in
+                          </Chip>
+                        )}
+                        {activeTab === 'economical' && item.reason && item.reason.includes('saves') && (
+                          <Chip tone="success" size="xs" icon={<BadgeDollarSign size={10} />}>
+                            {item.reason.match(/saves ₹\d+/)?.[0] || 'Cheaper'}
                           </Chip>
                         )}
                       </div>
@@ -247,8 +342,17 @@ export default function CartDrawer({ ctx }: Props) {
 
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted">Total</p>
-                <p className="text-xl font-bold text-dark">₹{cart.total.toFixed(0)}</p>
+                <p className="text-sm text-muted">
+                  {activeTab === 'recommended' ? 'Total' : 'Economical Total'}
+                </p>
+                <p className="text-xl font-bold text-dark">
+                  ₹{(activeTab === 'recommended' ? cart.total : cart.economical_total).toFixed(0)}
+                </p>
+                {activeTab === 'economical' && cart.total > cart.economical_total && (
+                  <p className="text-xs text-emerald-600 font-medium">
+                    You save ₹{(cart.total - cart.economical_total).toFixed(0)}
+                  </p>
+                )}
               </div>
               <Button variant="primary" size="md">Checkout →</Button>
             </div>
