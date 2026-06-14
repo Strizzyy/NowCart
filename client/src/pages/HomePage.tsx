@@ -81,14 +81,14 @@ export default function HomePage({ ctx }: Props) {
 
           <FadeIn delay={120}>
             <p className="text-lg md:text-xl text-muted max-w-2xl mx-auto">
-              Four ways in, one brain, one confident cart out.
+              Five ways in, one brain, one confident cart out.
             </p>
           </FadeIn>
 
           {/* the spine of the product, visualized */}
           <FadeIn delay={180}>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
-              <Chip tone="primary" icon={<DoorOpen size={12} />}>Four doors</Chip>
+              <Chip tone="primary" icon={<DoorOpen size={12} />}>Five doors</Chip>
               <ArrowRight size={16} className="text-faint" aria-hidden="true" />
               <Chip tone="secondary" icon={<Brain size={12} />}>One brain</Chip>
               <ArrowRight size={16} className="text-faint" aria-hidden="true" />
@@ -101,7 +101,7 @@ export default function HomePage({ ctx }: Props) {
       {/* ============ The four front doors ============ */}
       <section className="max-w-6xl mx-auto px-4 -mt-4 md:-mt-6 pb-4">
         <h2 className="sr-only">Choose a front door</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {FRONT_DOORS.map((door, i) => (
             <FadeIn key={door.id} delay={i * 70}>
               <button
@@ -152,10 +152,10 @@ export default function HomePage({ ctx }: Props) {
               Pick a door to begin
             </h3>
             <p className="text-muted text-sm max-w-xl mx-auto">
-              However you start — speaking a meal, setting a budget, showing a photo, or sharing a
-              recipe — it all flows into the <strong className="text-dark">same brain</strong>. That
+              However you start — speaking a meal, setting a budget, showing a photo, sharing a
+              recipe, or letting the AI predict — it all flows into the <strong className="text-dark">same brain</strong>. That
               engine decides for you and hands back <strong className="text-dark">one confident
-              cart</strong>, ready to check out. Four doors in, one cart out.
+              cart</strong>, ready to check out. Five doors in, one cart out.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {FRONT_DOORS.map((d) => (

@@ -86,6 +86,16 @@ async def lifespan(app: FastAPI):
     all_products = await catalog._get_all_products()
     logger.info("Catalog cache warmed: %d products in memory", len(all_products))
 
+    # Build semantic search index (lightweight — runs in background thread)
+    if settings.semantic_search_enabled:
+        try:
+            from app.services.semantic_search_service import get_semantic_search_service
+            semantic = get_semantic_search_service()
+            await semantic.build_index(all_products)
+        except Exception as exc:
+            logger.warning("Semantic search index build failed (non-critical): %s", exc)
+            # App continues without semantic search — falls back to fuzzy only
+
     yield
     logger.info("NowCart shutting down")
 

@@ -8,6 +8,7 @@ class OutcomeRequest(BaseModel):
     text: str = Field(..., min_length=1, description="e.g. 'I'm making Biryani for 4'")
     servings: int | None = Field(None, ge=1, description="optional serving count for scaling")
     session_id: str | None = None
+    user_id: str | None = Field(None, description="user ID for personalized matching")
 
 
 class VoiceIntentRequest(BaseModel):

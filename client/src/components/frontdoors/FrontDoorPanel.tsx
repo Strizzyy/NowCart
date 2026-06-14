@@ -5,6 +5,7 @@ import SpeakPanel from './panels/SpeakPanel';
 import ConstrainPanel from './panels/ConstrainPanel';
 import ShowPanel from './panels/ShowPanel';
 import SharePanel from './panels/SharePanel';
+import PredictPanel from './panels/PredictPanel';
 
 interface Props {
   door: FrontDoor | null;
@@ -15,7 +16,7 @@ interface Props {
 /**
  * FrontDoorPanel — opens a selected front door as an accessible client-side
  * panel (no page reload). Each door renders its own live input → loading →
- * result flow; all four route into the same engine and return one cart.
+ * result flow; all five route into the same engine and return one cart.
  */
 export default function FrontDoorPanel({ door, onClose, ctx }: Props) {
   if (!door) return null;
@@ -35,6 +36,7 @@ export default function FrontDoorPanel({ door, onClose, ctx }: Props) {
       {door.id === 'constrain' && <ConstrainPanel ctx={ctx} onClose={onClose} />}
       {door.id === 'show' && <ShowPanel ctx={ctx} onClose={onClose} />}
       {door.id === 'share' && <SharePanel ctx={ctx} onClose={onClose} />}
+      {door.id === 'predict' && <PredictPanel ctx={ctx} />}
     </Panel>
   );
 }

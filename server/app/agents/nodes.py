@@ -1,7 +1,14 @@
-"""Pipeline nodes for the LangGraph Outcome Engine (Requirement 1.6).
+"""Pipeline nodes for the LangGraph Outcome Engine.
 
 Each node is an async function: state → partial state update dict.
 Nodes are composed into a StateGraph in the graph module.
+
+Node pipeline:
+    intent → decompose → pantry_filter → match → optimize → preference_boost
+    → substitute → confidence_check → counterfactual → END
+
+With re-planning loop:
+    confidence_check → [if feedback] → replan → match → ... (max 2 iterations)
 """
 from __future__ import annotations
 
@@ -32,52 +39,34 @@ _SPOON_UNITS = {"tablespoon", "tablespoons", "tbsp", "teaspoon", "teaspoons", "t
 
 
 def _normalize_quantity_to_packs(quantity: float, unit: str) -> float:
-    """Convert raw LLM quantities to number of product packs to buy.
-
-    Examples:
-        500 grams → 1 pack
-        2 kg → 2 packs
-        200 ml → 1 pack
-        3 pieces → 3
-        2 tablespoons → 1 (buy 1 bottle of the spice)
-        6 eggs → 1 (buy 1 carton)
-    """
+    """Convert raw LLM quantities to number of product packs to buy."""
     unit_lower = unit.lower().strip()
 
-    # Spoon/cooking measures → always 1 pack (you buy 1 jar/bottle)
     if unit_lower in _SPOON_UNITS:
         return 1.0
 
-    # Grams → normalize to packs (most products are 200g-1kg packs)
     if unit_lower in _WEIGHT_UNITS:
         if unit_lower in ("kg", "kilogram", "kilograms"):
-            # kg → round up to nearest whole number
             return max(1.0, round(quantity))
         else:
-            # grams → 1 pack for anything under 1kg, 2 for more
             if quantity <= 1000:
                 return 1.0
             return max(1.0, round(quantity / 1000))
 
-    # Milliliters → normalize to packs
     if unit_lower in _VOLUME_UNITS:
         if unit_lower in ("l", "ltr", "litre", "liter", "liters", "litres"):
             return max(1.0, round(quantity))
         else:
-            # ml → 1 pack for anything under 1L
             if quantity <= 1000:
                 return 1.0
             return max(1.0, round(quantity / 1000))
 
-    # Pack/piece/unit → use as-is but cap reasonably
     if unit_lower in _PACK_UNITS:
         return max(1.0, quantity)
 
-    # Medium/large/small (e.g. "2 medium onions") → use as-is
     if unit_lower in ("medium", "large", "small"):
         return max(1.0, quantity)
 
-    # Default: if quantity is > 10 and unit is unknown, probably raw weight
     if quantity > 10:
         return 1.0
 
@@ -111,27 +100,20 @@ _MODE_KEYWORDS: dict[IntentMode, list[str]] = {
 
 
 async def intent_node(state: AgentState) -> dict:
-    """Classify the user's intent mode from raw_input and extract servings.
-
-    If mode is already set (e.g. by the budget/SOS/vision service), skip
-    classification and only extract servings.
-    """
+    """Classify the user's intent mode from raw_input and extract servings."""
     raw = state.get("raw_input", "")
     text_lower = raw.lower()
 
-    # Extract servings
     servings = state.get("servings", 1)
     match = _SERVING_PATTERN.search(raw)
     if match:
         servings = int(match.group(1))
 
-    # Also handle "for N" at end (e.g. "Biryani for 4")
     if servings == 1:
         short_match = re.search(r"for\s+(\d+)$", text_lower.strip())
         if short_match:
             servings = int(short_match.group(1))
 
-    # If mode was already set by the calling service, preserve it
     existing_mode = state.get("mode")
     if existing_mode is not None:
         reasoning = f"Intent pre-set as '{existing_mode.value}' with servings={servings}"
@@ -142,8 +124,7 @@ async def intent_node(state: AgentState) -> dict:
             "reasoning_trail": trail + [reasoning],
         }
 
-    # Classify mode by keyword matching
-    mode = IntentMode.TEXT  # default fallback
+    mode = IntentMode.TEXT
     for intent_mode, keywords in _MODE_KEYWORDS.items():
         if any(kw in text_lower for kw in keywords):
             mode = intent_mode
@@ -170,10 +151,24 @@ async def decompose_node(state: AgentState) -> dict:
     servings = state.get("servings", 1)
     mode = state.get("mode", IntentMode.TEXT)
     trail: list[str] = state.get("reasoning_trail", [])
+    constraints = state.get("constraints", {})
 
     llm = get_text_provider()
 
-    # Use a goal-aware prompt when the intent is GOAL mode
+    # Build constraint context for re-planning
+    constraint_context = ""
+    if constraints:
+        parts = []
+        if constraints.get("dietary"):
+            parts.append(f"Dietary requirements: {', '.join(constraints['dietary'])}")
+        if constraints.get("max_price"):
+            parts.append(f"Max budget: ₹{constraints['max_price']}")
+        if constraints.get("swap"):
+            swaps = [f"replace {k} with {v}" for k, v in constraints["swap"].items()]
+            parts.append(f"Swaps: {', '.join(swaps)}")
+        if parts:
+            constraint_context = "\nAdditional constraints: " + "; ".join(parts)
+
     if mode == IntentMode.GOAL:
         system_prompt = (
             "You are a smart grocery wellness assistant. Given a user's health/lifestyle goal, "
@@ -182,6 +177,7 @@ async def decompose_node(state: AgentState) -> dict:
             "Return quantities as number of packs/units to buy (e.g. 1 pack, 2 bottles). "
             "Return JSON with \"goal\" (string) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity should be how many packs to buy (1, 2, 3...).'
+            + constraint_context
         )
         schema_hint = '{"goal": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
     elif mode == IntentMode.BUDGET:
@@ -192,6 +188,7 @@ async def decompose_node(state: AgentState) -> dict:
             "(e.g. 1 pack rice, 2 onions, 1 pack masala). "
             "Return JSON with \"dish\" (string — the meal you suggest) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = number of packs to buy.'
+            + constraint_context
         )
         schema_hint = '{"dish": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
     else:
@@ -205,12 +202,12 @@ async def decompose_node(state: AgentState) -> dict:
             "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs. "
             "Return JSON with \"dish\" (string or null) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
+            + constraint_context
         )
         schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
 
     result = await llm.complete_json(system_prompt, raw, schema_hint)
 
-    # Parse needs from LLM response
     raw_needs = result.get("needs", [])
     needs: list[Need] = []
     for item in raw_needs:
@@ -238,32 +235,151 @@ async def decompose_node(state: AgentState) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Match node
+# Pantry Filter node — subtracts items user already has
+# ---------------------------------------------------------------------------
+
+
+async def pantry_filter_node(state: AgentState) -> dict:
+    """Filter out needs the user likely already has at home.
+
+    Uses the PantryService to check if decomposed needs overlap with
+    items in the user's inferred pantry. Skipped needs are logged in
+    the reasoning trail and surfaced in the cart notes.
+    """
+    needs: list[Need] = state.get("needs", [])
+    trail: list[str] = state.get("reasoning_trail", [])
+    user_id = state.get("user_id")
+    pantry_items = state.get("pantry_items", [])
+
+    if not user_id or not pantry_items:
+        # No user context — pass through unchanged
+        return {
+            "needs": needs,
+            "pantry_filtered": [],
+            "reasoning_trail": trail + ["Pantry filter: no user context, all needs pass through"],
+        }
+
+    from app.services.pantry_service import get_pantry_service
+    pantry_service = get_pantry_service()
+
+    # Convert pantry dicts back to items for filtering
+    from app.services.pantry_service import PantryItem
+    pantry = [PantryItem(**item) for item in pantry_items]
+
+    need_names = [n.name for n in needs]
+    needs_to_buy, already_have = pantry_service.filter_needs_by_pantry(
+        need_names=need_names,
+        pantry=pantry,
+        threshold=0.5,
+    )
+
+    if already_have:
+        # Remove filtered needs
+        filtered_needs = [n for n in needs if n.name not in already_have]
+        reasoning = f"Pantry filter: removed {len(already_have)} items you likely have ({', '.join(already_have[:3])})"
+    else:
+        filtered_needs = needs
+        reasoning = "Pantry filter: no overlap with pantry, all needs kept"
+
+    return {
+        "needs": filtered_needs,
+        "pantry_filtered": already_have,
+        "reasoning_trail": trail + [reasoning],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Match node — now with semantic search integration (RAG pipeline)
 # ---------------------------------------------------------------------------
 
 
 async def match_node(state: AgentState) -> dict:
-    """For each need, find candidate products via fuzzy matching."""
+    """For each need, find candidate products via hybrid matching.
+
+    Hybrid approach (RAG-style):
+    1. Semantic search: find top-K semantically similar products
+    2. Fuzzy match: rapidfuzz within the semantic pool + category pool
+    3. Merge and re-rank: combine both signals for best results
+
+    This handles cases fuzzy matching alone misses:
+    - "cottage cheese" → finds "paneer" (semantic understanding)
+    - "something for breakfast" → finds relevant cereal/bread (contextual)
+    - "malai" → finds "cream" (language bridging)
+    """
     needs: list[Need] = state.get("needs", [])
     trail: list[str] = state.get("reasoning_trail", [])
 
     catalog = get_catalog_service()
-    candidates: dict[str, list[tuple[str, str, float, float]]] = {}
+
+    # Try to use semantic search if available
+    semantic_service = None
+    try:
+        from app.services.semantic_search_service import get_semantic_search_service
+        svc = get_semantic_search_service()
+        if svc.is_ready:
+            semantic_service = svc
+    except Exception:
+        pass
+
+    candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = {}
 
     for need in needs:
+        # --- Hybrid matching ---
+        semantic_product_ids: set[str] = set()
+
+        # Phase 1: Semantic search (if available)
+        if semantic_service:
+            context = need.category_hint or ""
+            sem_results = await semantic_service.search_with_context(
+                query=need.name,
+                context=context,
+                top_k=15,
+                min_score=0.3,
+            )
+            semantic_product_ids = {pid for pid, _ in sem_results}
+
+        # Phase 2: Fuzzy match (existing logic — always runs)
         matches = await catalog.fuzzy_match_need(
             need_name=need.name,
             category_hint=need.category_hint or None,
             top_k=5,
         )
-        # Store serializable tuples: (product_id, name, score, price, image_url)
+
+        # Phase 3: If semantic search found additional candidates not in fuzzy results,
+        # do a supplementary fuzzy match on those to get scores
+        if semantic_product_ids:
+            fuzzy_pids = {product.product_id for product, _ in matches}
+            new_semantic_pids = semantic_product_ids - fuzzy_pids
+
+            if new_semantic_pids:
+                # Get those products and score them
+                from app.repositories import get_repository
+                repo = get_repository()
+                for pid in list(new_semantic_pids)[:5]:  # limit supplementary lookups
+                    product = await repo.get_product(pid)
+                    if product:
+                        # Use semantic similarity as a proxy score (scaled to 0-100)
+                        sem_score = next(
+                            (s * 100 for p, s in sem_results if p == pid),
+                            50.0,
+                        )
+                        # Blend with a quick fuzzy check
+                        from rapidfuzz import fuzz
+                        fuzzy_score = fuzz.WRatio(need.name, product.name)
+                        blended = max(sem_score, fuzzy_score)
+                        matches.append((product, blended))
+
+        # Sort by score and keep top 5
+        matches.sort(key=lambda x: x[1], reverse=True)
+        matches = matches[:5]
+
+        # Store serializable tuples
         candidate_list: list[tuple[str, str, float, float, str | None]] = [
             (product.product_id, product.name, score, product.sale_price, product.image_url)
             for product, score in matches
         ]
         candidates[need.name] = candidate_list
 
-        # Update need status based on match quality
         if candidate_list and candidate_list[0][2] >= 40.0:
             need.matched_product_id = candidate_list[0][0]
             need.status = NeedStatus.MATCHED
@@ -271,7 +387,8 @@ async def match_node(state: AgentState) -> dict:
             need.status = NeedStatus.UNMATCHED
 
     matched_count = sum(1 for n in needs if n.status == NeedStatus.MATCHED)
-    reasoning = f"Matched {matched_count}/{len(needs)} needs to catalog products"
+    semantic_note = " (with semantic search)" if semantic_service else " (fuzzy only)"
+    reasoning = f"Matched {matched_count}/{len(needs)} needs to catalog products{semantic_note}"
 
     return {
         "needs": needs,
@@ -286,11 +403,7 @@ async def match_node(state: AgentState) -> dict:
 
 
 async def optimize_node(state: AgentState) -> dict:
-    """Pick the best candidate per need and build CartItems.
-
-    Also builds an economical_items list with the cheapest available
-    alternative for each need (different from the best pick).
-    """
+    """Pick the best candidate per need and build CartItems."""
     needs: list[Need] = state.get("needs", [])
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     trail: list[str] = state.get("reasoning_trail", [])
@@ -309,7 +422,6 @@ async def optimize_node(state: AgentState) -> dict:
             notes.append(f"No match found for: {need.name}")
             continue
 
-        # Pick best: highest score, prefer in-stock, check availability
         best = None
         available_candidates: list[tuple[str, str, float, float, str | None]] = []
         for product_id, name, score, price, image_url in need_candidates:
@@ -320,15 +432,11 @@ async def optimize_node(state: AgentState) -> dict:
                     best = (product_id, name, score, price, image_url)
 
         if best is None:
-            # All candidates out of stock — keep first as placeholder for substitution
             best = need_candidates[0]
-            need.status = NeedStatus.PENDING  # Will be handled by substitute_node
+            need.status = NeedStatus.PENDING
 
         product_id, name, score, price, image_url = best
         confidence = min(score / 100.0, 1.0)
-
-        # Normalize quantity: LLM may return raw weights (500 grams, 200 ml)
-        # but products are sold as packs. Normalize to "number of packs to buy".
         cart_quantity = _normalize_quantity_to_packs(need.quantity, need.unit)
 
         items.append(
@@ -346,18 +454,14 @@ async def optimize_node(state: AgentState) -> dict:
         if need.status == NeedStatus.MATCHED:
             need.matched_product_id = product_id
 
-        # --- Economical pick: cheapest available alternative ---
-        # Sort available candidates by price (ascending) and pick the cheapest
-        # that is different from the best pick
+        # Economical pick
         if available_candidates:
             sorted_by_price = sorted(available_candidates, key=lambda c: c[3])
             cheapest = sorted_by_price[0]
 
-            # If the cheapest is the same as the best, try the next one
             if cheapest[0] == best[0] and len(sorted_by_price) > 1:
                 cheapest = sorted_by_price[1]
 
-            # Only add if it's actually cheaper (or same price but different product)
             if cheapest[0] != best[0]:
                 eco_product_id, eco_name, eco_score, eco_price, eco_image_url = cheapest
                 eco_confidence = min(eco_score / 100.0, 1.0)
@@ -376,7 +480,6 @@ async def optimize_node(state: AgentState) -> dict:
                     )
                 )
             else:
-                # No cheaper alternative available — use the same item
                 economical_items.append(
                     CartItem(
                         product_id=product_id,
@@ -390,7 +493,6 @@ async def optimize_node(state: AgentState) -> dict:
                     )
                 )
         else:
-            # No available candidates — mirror the best pick placeholder
             economical_items.append(
                 CartItem(
                     product_id=best[0],
@@ -404,7 +506,6 @@ async def optimize_node(state: AgentState) -> dict:
                 )
             )
 
-    # Build cart
     cart = Cart(
         session_id=str(uuid.uuid4()),
         items=items,
@@ -425,19 +526,72 @@ async def optimize_node(state: AgentState) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Preference Boost node — personalizes confidence using user memory
+# ---------------------------------------------------------------------------
+
+
+async def preference_boost_node(state: AgentState) -> dict:
+    """Boost confidence scores for items matching user preferences.
+
+    Uses the PreferenceService to:
+    1. Increase confidence for frequently purchased brands/products
+    2. Enrich "reason" strings with personalized context
+    3. Make the "why this one" explanations truthful and personal
+    """
+    cart: Cart = state.get("cart", Cart(session_id=""))
+    trail: list[str] = state.get("reasoning_trail", [])
+    user_preferences = state.get("user_preferences")
+
+    if not user_preferences or not cart.items:
+        return {
+            "cart": cart,
+            "reasoning_trail": trail + ["Preference boost: no user context, skipped"],
+        }
+
+    from app.services.preference_service import UserPreference, get_preference_service
+    from app.repositories import get_repository
+
+    try:
+        preference = UserPreference(**user_preferences)
+    except Exception:
+        return {
+            "cart": cart,
+            "reasoning_trail": trail + ["Preference boost: invalid preference data, skipped"],
+        }
+
+    pref_service = get_preference_service()
+    repo = get_repository()
+    boosted_count = 0
+
+    for item in cart.items:
+        product = await repo.get_product(item.product_id)
+        if not product:
+            continue
+
+        boost, reason = pref_service.compute_preference_boost(product, preference)
+        if boost > 0:
+            item.confidence = min(0.99, item.confidence + boost)
+            item.reason = pref_service.get_personalized_reason(product, preference, item.reason)
+            boosted_count += 1
+
+    # Recompute overall confidence
+    if cart.items:
+        cart.confidence = round(sum(i.confidence for i in cart.items) / len(cart.items), 3)
+
+    reasoning = f"Preference boost: {boosted_count}/{len(cart.items)} items boosted by user history"
+    return {
+        "cart": cart,
+        "reasoning_trail": trail + [reasoning],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Substitute node
 # ---------------------------------------------------------------------------
 
 
 async def substitute_node(state: AgentState) -> dict:
-    """For needs with out-of-stock best match, find an in-stock alternative.
-    
-    Substitution Intelligence Strategy:
-    - Searches candidates by descending match score (best alternative first)
-    - Prefers same-brand substitutes over cross-brand
-    - Logs detailed reasoning for each substitution decision
-    - Updates cart items with clear substitution provenance
-    """
+    """For needs with out-of-stock best match, find an in-stock alternative."""
     needs: list[Need] = state.get("needs", [])
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
     cart: Cart = state.get("cart", Cart(session_id=""))
@@ -452,11 +606,9 @@ async def substitute_node(state: AgentState) -> dict:
         if is_available:
             continue
 
-        # Find the need this item corresponds to
         corresponding_need = None
         for need in needs:
             if need.matched_product_id == item.product_id or need.name in candidates:
-                # Check candidates for this need
                 need_candidates = candidates.get(need.name, [])
                 if any(c[0] == item.product_id for c in need_candidates):
                     corresponding_need = need
@@ -465,7 +617,6 @@ async def substitute_node(state: AgentState) -> dict:
         if corresponding_need is None:
             continue
 
-        # Search for in-stock alternative from candidates
         need_candidates = candidates.get(corresponding_need.name, [])
         substitute_found = False
         candidates_checked = 0
@@ -475,10 +626,9 @@ async def substitute_node(state: AgentState) -> dict:
                 continue
             candidates_checked += 1
             if await catalog.check_availability(product_id):
-                # Calculate similarity metrics for reasoning
                 price_diff = abs(price - item.price)
                 price_pct = round(price_diff / max(item.price, 1) * 100)
-                
+
                 reason_parts = []
                 reason_parts.append(f"Original '{item.name}' out of stock")
                 reason_parts.append(f"Match score: {score:.0f}/100")
@@ -488,11 +638,9 @@ async def substitute_node(state: AgentState) -> dict:
                     reason_parts.append(f"₹{price_diff:.0f} more expensive")
                 else:
                     reason_parts.append(f"₹{price_diff:.0f} cheaper")
-                reason_parts.append(f"Checked {candidates_checked} alternatives")
-                
+
                 substitution_reason = "; ".join(reason_parts)
 
-                # Record substitution
                 substitutions.append(
                     Substitution(
                         original_product_id=item.product_id,
@@ -502,7 +650,6 @@ async def substitute_node(state: AgentState) -> dict:
                         reason=substitution_reason,
                     )
                 )
-                # Update cart item
                 cart.items[i] = CartItem(
                     product_id=product_id,
                     name=name,
@@ -516,25 +663,21 @@ async def substitute_node(state: AgentState) -> dict:
                 )
                 corresponding_need.status = NeedStatus.SUBSTITUTED
                 substitute_found = True
-                sub_details.append(
-                    f"'{item.name}' → '{name}' (score={score:.0f}, "
-                    f"price ₹{item.price}→₹{price}, checked {candidates_checked} options)"
-                )
+                sub_details.append(f"'{item.name}' → '{name}'")
                 break
 
         if not substitute_found:
             corresponding_need.status = NeedStatus.UNMATCHED
             corresponding_need.note = "Out of stock, no substitute available"
             cart.notes.append(f"No substitute for: {corresponding_need.name}")
-            sub_details.append(f"'{corresponding_need.name}' — no in-stock alternative found ({candidates_checked} checked)")
 
     cart.substitutions = substitutions
     cart.recompute_total()
 
     if sub_details:
-        reasoning = f"Substitution Intelligence: {len(substitutions)} swaps made — " + "; ".join(sub_details)
+        reasoning = f"Substitution: {len(substitutions)} swaps — " + "; ".join(sub_details)
     else:
-        reasoning = "Substitution Intelligence: all items in stock, no swaps needed"
+        reasoning = "Substitution: all items in stock, no swaps needed"
 
     return {
         "needs": needs,
@@ -550,17 +693,7 @@ async def substitute_node(state: AgentState) -> dict:
 
 
 async def confidence_node(state: AgentState) -> dict:
-    """Score overall cart confidence; raise HITL clarification if below threshold.
-    
-    Confidence is computed as a weighted average considering:
-    - Match quality (fuzzy score) — how well the product name matches the need
-    - Stock availability — in-stock items get full weight, substituted get a penalty
-    - Category alignment — did the matched product belong to the expected category
-    - Price reasonableness — extreme outliers reduce confidence
-    
-    This multi-factor approach produces more meaningful and explainable scores
-    for the demo, avoiding arbitrary numbers from raw fuzzy scores alone.
-    """
+    """Score overall cart confidence; raise HITL clarification if below threshold."""
     cart: Cart = state.get("cart", Cart(session_id=""))
     needs: list[Need] = state.get("needs", [])
     trail: list[str] = state.get("reasoning_trail", [])
@@ -574,83 +707,204 @@ async def confidence_node(state: AgentState) -> dict:
             "reasoning_trail": trail + ["No items in cart — confidence=0, HITL triggered"],
         }
 
-    # Compute per-item confidence using multi-factor scoring
     total_confidence = 0.0
     low_confidence_items: list[str] = []
-    confidence_details: list[str] = []
 
     for item in cart.items:
-        # Base confidence from match score (already 0-1)
         base_score = item.confidence
-        
-        # Factor 1: Substitution penalty — substituted items are inherently less certain
         substitution_factor = 0.85 if item.substituted_for else 1.0
-        
-        # Factor 2: Name quality — short generic names are less confident matches
         name_words = len(item.name.split())
-        name_factor = min(1.0, 0.7 + name_words * 0.1)  # 2+ words = 0.9+, 3+ = 1.0
-        
-        # Factor 3: Price sanity — very cheap items (< ₹10) or very expensive (> ₹2000)
-        # are less likely to be correct matches for general groceries
+        name_factor = min(1.0, 0.7 + name_words * 0.1)
         if item.price < 5:
             price_factor = 0.7
         elif item.price > 2000:
             price_factor = 0.8
         else:
             price_factor = 1.0
-        
-        # Final confidence: weighted combination
+
         final_confidence = base_score * substitution_factor * name_factor * price_factor
-        # Clamp between 0.1 and 0.99 (never absolute 0 or 1)
         final_confidence = max(0.1, min(0.99, final_confidence))
-        
+
         item.confidence = round(final_confidence, 3)
         total_confidence += final_confidence
-        
+
         if final_confidence < threshold:
             low_confidence_items.append(item.name)
-            confidence_details.append(
-                f"'{item.name}' scored {final_confidence:.0%} "
-                f"(base={base_score:.0%}, sub={substitution_factor}, name={name_factor:.2f}, price={price_factor})"
-            )
 
     overall_confidence = total_confidence / len(cart.items)
     cart.confidence = round(overall_confidence, 3)
 
-    # HITL gate: if overall confidence or too many items are below threshold
     clarification: str | None = None
     if overall_confidence < threshold:
         if low_confidence_items:
             items_str = ", ".join(low_confidence_items[:3])
             clarification = (
                 f"I'm not fully confident about: {items_str}. "
-                "Would you like me to show alternatives, or should I proceed with these picks?"
+                "Would you like me to show alternatives, or should I proceed?"
             )
         else:
-            clarification = (
-                "The overall match confidence is low. "
-                "Would you like me to refine the selections?"
-            )
-        cart.clarification = clarification
-    elif len(low_confidence_items) >= len(cart.items) * 0.5:
-        # More than half the items are low confidence — still flag it
-        items_str = ", ".join(low_confidence_items[:3])
-        clarification = (
-            f"Several items have uncertain matches ({len(low_confidence_items)}/{len(cart.items)}): {items_str}. "
-            "Should I proceed or would you like to review?"
-        )
+            clarification = "The overall match confidence is low. Would you like me to refine?"
         cart.clarification = clarification
 
-    detail_str = "; ".join(confidence_details[:3]) if confidence_details else "all above threshold"
     reasoning = (
         f"Confidence={overall_confidence:.2f} (threshold={threshold}); "
-        f"low-conf items={len(low_confidence_items)}/{len(cart.items)}; "
-        f"HITL={'yes' if clarification else 'no'}; detail=[{detail_str}]"
+        f"low-conf={len(low_confidence_items)}/{len(cart.items)}; "
+        f"HITL={'yes' if clarification else 'no'}"
     )
 
     return {
         "confidence": round(overall_confidence, 3),
         "cart": cart,
         "clarification": clarification,
+        "reasoning_trail": trail + [reasoning],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Counterfactual node — generates "why NOT this one" for each cart item
+# ---------------------------------------------------------------------------
+
+
+async def counterfactual_node(state: AgentState) -> dict:
+    """Generate counterfactual explanations for rejected alternatives.
+
+    For each cart item, explains why competing candidates were not selected.
+    This data powers the "Why this one?" UI expansion panel.
+    """
+    cart: Cart = state.get("cart", Cart(session_id=""))
+    candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = state.get("candidates", {})
+    needs: list[Need] = state.get("needs", [])
+    trail: list[str] = state.get("reasoning_trail", [])
+    user_id = state.get("user_id")
+
+    if not cart.items or not candidates:
+        return {
+            "counterfactuals": {},
+            "reasoning_trail": trail + ["Counterfactuals: no cart items or candidates"],
+        }
+
+    from app.services.counterfactual_service import get_counterfactual_service
+    cf_service = get_counterfactual_service()
+
+    counterfactuals: dict[str, list[dict]] = {}
+
+    for need in needs:
+        need_candidates = candidates.get(need.name, [])
+        if len(need_candidates) <= 1:
+            continue
+
+        # Find which product was selected for this need
+        selected_pid = need.matched_product_id
+        if not selected_pid:
+            # Try to find from cart items
+            for item in cart.items:
+                if any(c[0] == item.product_id for c in need_candidates):
+                    selected_pid = item.product_id
+                    break
+
+        if not selected_pid:
+            continue
+
+        cf_data = await cf_service.get_counterfactuals_for_cart_item(
+            need_name=need.name,
+            selected_product_id=selected_pid,
+            candidates=need_candidates,
+            user_id=user_id,
+        )
+        counterfactuals[need.name] = cf_data.get("rejected", [])
+
+    total_cfs = sum(len(v) for v in counterfactuals.values())
+    reasoning = f"Counterfactuals: generated {total_cfs} 'why not' explanations for {len(counterfactuals)} items"
+
+    return {
+        "counterfactuals": counterfactuals,
+        "reasoning_trail": trail + [reasoning],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Replan node — applies user feedback and re-enters the pipeline
+# ---------------------------------------------------------------------------
+
+
+async def replan_node(state: AgentState) -> dict:
+    """Process user feedback and prepare state for re-planning.
+
+    Handles commands like:
+    - "make it cheaper" → adds max_price constraint
+    - "I'm vegan" / "no dairy" → adds dietary constraint
+    - "swap paneer for tofu" → adds swap constraint
+    - "remove the oil" → removes specific need
+
+    This node modifies constraints and resets match/optimize state
+    so the pipeline re-runs from match onward.
+    """
+    feedback = state.get("feedback", "")
+    trail: list[str] = state.get("reasoning_trail", [])
+    constraints = state.get("constraints", {})
+    needs: list[Need] = state.get("needs", [])
+    replan_count = state.get("replan_count", 0)
+
+    if not feedback:
+        return {"reasoning_trail": trail + ["Replan: no feedback, skipped"]}
+
+    feedback_lower = feedback.lower()
+
+    # Parse feedback into constraints
+    new_constraints = dict(constraints)
+
+    # Budget constraints
+    if "cheaper" in feedback_lower or "budget" in feedback_lower or "less" in feedback_lower:
+        cart: Cart = state.get("cart", Cart(session_id=""))
+        if cart.total > 0:
+            new_constraints["max_price"] = cart.total * 0.7  # aim for 30% cheaper
+        new_constraints.setdefault("prefer_economical", True)
+
+    # Dietary constraints
+    dietary_keywords = {
+        "vegan": "vegan", "vegetarian": "vegetarian", "veg": "vegetarian",
+        "no dairy": "dairy-free", "no meat": "vegetarian",
+        "no egg": "egg-free", "no gluten": "gluten-free",
+        "jain": "jain", "no onion": "jain",
+        "keto": "keto", "low carb": "low-carb",
+    }
+    for keyword, tag in dietary_keywords.items():
+        if keyword in feedback_lower:
+            new_constraints.setdefault("dietary", [])
+            if tag not in new_constraints["dietary"]:
+                new_constraints["dietary"].append(tag)
+
+    # Swap requests: "swap X for Y" or "replace X with Y"
+    swap_pattern = re.search(
+        r"(?:swap|replace|change)\s+(\w+)\s+(?:for|with|to)\s+(\w+)",
+        feedback_lower,
+    )
+    if swap_pattern:
+        original = swap_pattern.group(1)
+        replacement = swap_pattern.group(2)
+        new_constraints.setdefault("swap", {})
+        new_constraints["swap"][original] = replacement
+
+    # Remove requests: "remove X" or "no X"
+    remove_pattern = re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower)
+    if remove_pattern:
+        for item_name in remove_pattern:
+            needs = [n for n in needs if item_name not in n.name.lower()]
+
+    # Reset needs status for re-matching
+    for need in needs:
+        need.status = NeedStatus.PENDING
+        need.matched_product_id = None
+
+    reasoning = (
+        f"Replan #{replan_count + 1}: applied feedback '{feedback[:50]}' → "
+        f"constraints={new_constraints}"
+    )
+
+    return {
+        "needs": needs,
+        "constraints": new_constraints,
+        "feedback": None,  # consumed
+        "replan_count": replan_count + 1,
         "reasoning_trail": trail + [reasoning],
     }

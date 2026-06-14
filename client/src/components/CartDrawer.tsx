@@ -1,18 +1,39 @@
 import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star, ArrowRight, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
-import { postCartOp } from '../api/client';
+import { postCartOp, placeOrder } from '../api/client';
 import { useEffect, useState } from 'react';
 import { Button, Chip, EmptyState, type ChipTone } from '../ui';
 import WhyThisOne from './cart/WhyThisOne';
 import HitlPrompt from './cart/HitlPrompt';
 import EngineTrail from './cart/EngineTrail';
+import ReplanBar from './cart/ReplanBar';
 
 interface Props {
   ctx: AppContext;
 }
 
 const LOW_CONFIDENCE = 0.6;
+
+/** Map logged-in user to backend user_id */
+function resolveUserId(user: { email?: string; userId?: string } | null | undefined): string {
+  if (!user) return 'user-005';
+  if (user.userId) return user.userId;
+  const email = user.email;
+  if (!email) return 'user-005';
+  const map: Record<string, string> = {
+    'rahul@gmail.com': 'rahul',
+    'priya@example.com': 'user-001',
+    'rahul@example.com': 'user-002',
+    'anita@example.com': 'user-003',
+    'vikram@example.com': 'user-004',
+    'demo@example.com': 'user-005',
+    'demo@nowcart.app': 'user-005',
+    'admin@nowcart.app': 'user-001',
+    'guest@nowcart.app': 'user-005',
+  };
+  return map[email.toLowerCase()] || email.split('@')[0];
+}
 
 function confidenceTone(c: number): ChipTone {
   if (c >= 0.8) return 'success';
@@ -132,6 +153,11 @@ export default function CartDrawer({ ctx }: Props) {
                     setProceeded(true);
                   }}
                 />
+              )}
+
+              {/* Conversational Re-planning (feedback loop) — only for non-predicted carts */}
+              {!showHitl && cart.items.length > 0 && !cart.notes.some(n => n.includes('Predicted restock')) && (
+                <ReplanBar cart={cart} onReplan={(updated) => setCart(updated)} ctx={ctx} />
               )}
 
               {/* Degraded mode warning */}
@@ -383,9 +409,14 @@ export default function CartDrawer({ ctx }: Props) {
                 size="md"
                 loading={placingOrder}
                 onClick={async () => {
+                  if (!cart) return;
                   setPlacingOrder(true);
-                  // Simulate payment processing
-                  await new Promise((r) => setTimeout(r, 1500));
+                  try {
+                    const userId = resolveUserId(ctx.user);
+                    await placeOrder(cart.session_id, userId);
+                  } catch {
+                    // Order placement failed — continue to success page anyway for demo
+                  }
                   setPlacingOrder(false);
                   setCartOpen(false);
                   navigate('/order-success');

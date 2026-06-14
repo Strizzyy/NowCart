@@ -127,6 +127,7 @@ class CartResponse(BaseModel):
     shortfall: float | None = None
     eta_minutes: int | None = None
     degraded: bool = False
+    pantry_filtered: list[str] = Field(default_factory=list)  # items skipped (user has them)
 
     @classmethod
     def from_domain(cls, cart: Cart) -> "CartResponse":

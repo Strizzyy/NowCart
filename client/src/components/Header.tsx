@@ -125,6 +125,13 @@ export default function Header({ ctx, onLogout }: Props) {
                       <Activity size={14} /> Observability
                     </Link>
                   )}
+                  <Link
+                    to="/orders"
+                    onClick={() => setShowUserMenu(false)}
+                    className="w-full text-left px-4 py-2.5 text-sm text-dark hover:bg-light-bg transition flex items-center gap-2 border-b border-border"
+                  >
+                    <ShoppingCart size={14} /> Order History
+                  </Link>
                   <button
                     onClick={() => { setShowUserMenu(false); onLogout(); }}
                     className="w-full text-left px-4 py-3 text-sm text-accent-dark hover:bg-light-bg transition flex items-center gap-2"

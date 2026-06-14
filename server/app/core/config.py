@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     groq_api_keys: str = ""  # comma-separated list for round-robin rotation
     groq_model: str = "llama-3.3-70b-versatile"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_api_keys: str = ""  # comma-separated list for round-robin rotation
+    gemini_model: str = "gemini-2.0-flash"
     bedrock_model: str = "anthropic.claude-3-haiku-20240307-v1:0"
     llm_text_provider: Literal["groq", "gemini", "bedrock", "mock"] = "mock"
     llm_vision_provider: Literal["gemini", "mock"] = "mock"
@@ -37,6 +38,16 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     cache_in_memory: bool = True
 
+    # --- Semantic Search ---
+    embedding_model: str = "all-MiniLM-L6-v2"  # 80MB, fastest sentence-transformer
+    semantic_search_enabled: bool = True
+    semantic_top_k: int = 20  # candidates from vector search before re-ranking
+
+    # --- Predictive / Zero Door ---
+    prediction_enabled: bool = True
+    depletion_lookback_orders: int = 10  # how many past orders to analyze
+    restock_confidence_threshold: float = 0.6  # min confidence to include in prediction
+
     @property
     def cors_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -51,6 +62,18 @@ class Settings(BaseSettings):
             return [k.strip() for k in self.groq_api_keys.split(",") if k.strip()]
         if self.groq_api_key:
             return [self.groq_api_key]
+        return []
+
+    @property
+    def gemini_api_key_list(self) -> list[str]:
+        """Return list of Gemini API keys for round-robin rotation.
+
+        Prefers GEMINI_API_KEYS (comma-separated) but falls back to single GEMINI_API_KEY.
+        """
+        if self.gemini_api_keys:
+            return [k.strip() for k in self.gemini_api_keys.split(",") if k.strip()]
+        if self.gemini_api_key:
+            return [self.gemini_api_key]
         return []
 
 

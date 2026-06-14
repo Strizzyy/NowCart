@@ -61,10 +61,9 @@ export default function Footer() {
         <div>
           <h4 className="font-heading font-bold text-dark mb-3">Account</h4>
           <ul className="space-y-2 text-sm text-muted">
-            <li><Link to="/" className="hover:text-primary-ink transition">My Cart</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Order History</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Wishlist</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Support</Link></li>
+            <li><Link to="/orders" className="hover:text-primary-ink transition">Order History</Link></li>
+            <li><Link to="/shop" className="hover:text-primary-ink transition">Browse Products</Link></li>
+            <li><Link to="/" className="hover:text-primary-ink transition">Home</Link></li>
           </ul>
         </div>
 

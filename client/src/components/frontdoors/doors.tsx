@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { Mic, Wallet, Camera, Share2 } from 'lucide-react';
+import { Mic, Wallet, Camera, Share2, Zap } from 'lucide-react';
 import type { ChipTone } from '../../ui';
 
-export type DoorId = 'speak' | 'constrain' | 'show' | 'share';
+export type DoorId = 'speak' | 'constrain' | 'show' | 'share' | 'predict';
 
 export interface FrontDoor {
   id: DoorId;
@@ -20,8 +20,8 @@ export interface FrontDoor {
 }
 
 /**
- * The four front doors — "four ways in, one brain, one confident cart out".
- * Each card on the Front Door Hub opens its panel client-side (no reload).
+ * The five front doors — "five ways in, one brain, one confident cart out".
+ * Includes the Zero Door (predictive restock) as the 5th entry point.
  */
 export const FRONT_DOORS: FrontDoor[] = [
   {
@@ -67,5 +67,16 @@ export const FRONT_DOORS: FrontDoor[] = [
     icon: <Share2 size={22} />,
     tone: 'info',
     chipTone: 'info',
+  },
+  {
+    id: 'predict',
+    label: 'Zero Door',
+    tagline: 'We already know what you need',
+    description:
+      'No input needed. NowCart watches your purchase patterns, predicts when you\'ll run out, and pre-builds a confident restock cart before you even ask.',
+    endpoint: 'predict',
+    icon: <Zap size={22} />,
+    tone: 'secondary',
+    chipTone: 'secondary',
   },
 ];

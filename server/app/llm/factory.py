@@ -26,17 +26,17 @@ def get_text_provider() -> LLMProvider:
         if choice == "groq" and settings.groq_api_key_list:
             from app.llm.groq_provider import GroqProvider
 
-            logger.info("Text provider: groq (%s)", settings.groq_model)
+            logger.info("Text provider: groq (%s, %d keys)", settings.groq_model, len(settings.groq_api_key_list))
             return GroqProvider()
         if choice == "bedrock":
             from app.llm.bedrock_provider import BedrockProvider
 
             logger.info("Text provider: bedrock (region=%s)", settings.aws_region)
             return BedrockProvider()
-        if choice == "gemini" and settings.gemini_api_key:
+        if choice == "gemini" and settings.gemini_api_key_list:
             from app.llm.gemini_provider import GeminiProvider
 
-            logger.info("Text provider: gemini (%s)", settings.gemini_model)
+            logger.info("Text provider: gemini (%s, %d keys)", settings.gemini_model, len(settings.gemini_api_key_list))
             return GeminiProvider()
     except Exception as exc:  # noqa: BLE001
         logger.warning("Falling back to mock text provider: %s", exc)
@@ -50,10 +50,10 @@ def get_text_provider() -> LLMProvider:
 def get_vision_provider() -> VisionProvider:
     choice = settings.llm_vision_provider
     try:
-        if choice == "gemini" and settings.gemini_api_key:
+        if choice == "gemini" and settings.gemini_api_key_list:
             from app.llm.gemini_provider import GeminiVisionProvider
 
-            logger.info("Vision provider: gemini (%s)", settings.gemini_model)
+            logger.info("Vision provider: gemini (%s, %d keys)", settings.gemini_model, len(settings.gemini_api_key_list))
             return GeminiVisionProvider()
     except Exception as exc:  # noqa: BLE001
         logger.warning("Falling back to mock vision provider: %s", exc)

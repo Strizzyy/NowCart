@@ -1,7 +1,12 @@
-"""AgentState — the shared state flowing through the LangGraph Outcome Engine (Requirement 1.6).
+"""AgentState — the shared state flowing through the LangGraph Outcome Engine.
 
 Each node reads what it needs from state and returns a partial dict update.
 LangGraph merges the returned dict back into state automatically.
+
+Extended with:
+- User context (preferences, pantry) for personalized matching
+- Re-planning support (feedback loop for conversational refinement)
+- Counterfactual data for "why not" explanations
 """
 from __future__ import annotations
 
@@ -20,12 +25,26 @@ class AgentState(TypedDict, total=False):
         mode: Classified intent mode (recipe, budget, photo, link, sos, cart_op, text).
         servings: Serving count extracted from input (default 1, for scaling).
         needs: Decomposed needs from the outcome.
-        candidates: need_name → list of (product_id, name, score, price) tuples.
+        candidates: need_name → list of (product_id, name, score, price, image_url) tuples.
         cart: The assembled cart.
         substitutions: Substitution records for out-of-stock swaps.
         confidence: Overall cart confidence score (0–1).
         reasoning_trail: Agent decision log.
         clarification: HITL question if confidence below threshold, else None.
+
+        --- User Context (Memory Layer) ---
+        user_id: Authenticated user ID for personalization.
+        user_preferences: Computed preference profile (brand affinity, price tier, etc.).
+        pantry_items: Items the user likely already has at home.
+        pantry_filtered: Names of needs removed because user has them.
+
+        --- Re-planning (Conversational Loop) ---
+        feedback: User feedback for re-planning (e.g., "make it cheaper", "I'm vegan").
+        replan_count: Number of times the graph has re-planned (prevents infinite loops).
+        constraints: Additional constraints from feedback (dietary, price, swap requests).
+
+        --- Counterfactuals ---
+        counterfactuals: need_name → list of rejected alternatives with reasons.
     """
 
     raw_input: str
@@ -38,3 +57,17 @@ class AgentState(TypedDict, total=False):
     confidence: float
     reasoning_trail: list[str]
     clarification: str | None
+
+    # User context
+    user_id: str | None
+    user_preferences: dict  # serialized UserPreference
+    pantry_items: list[dict]  # serialized PantryItem list
+    pantry_filtered: list[str]  # need names removed by pantry filter
+
+    # Re-planning
+    feedback: str | None
+    replan_count: int
+    constraints: dict  # {"dietary": ["vegan"], "max_price": 500, "swap": {"paneer": "tofu"}}
+
+    # Counterfactuals
+    counterfactuals: dict[str, list[dict]]

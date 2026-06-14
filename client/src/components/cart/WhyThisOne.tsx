@@ -7,9 +7,8 @@ interface Props {
 }
 
 /**
- * WhyThisOne — comparison-collapse disclosure (C2/C3). Instead of dumping
- * every candidate, the engine shows one pick + a one-line "why"; expanding
- * reveals the decision detail / reasoning trail for that pick.
+ * WhyThisOne — comparison-collapse disclosure (C2/C3).
+ * Shows one pick + a one-line "why", expanding reveals decision reasoning trail.
  */
 export default function WhyThisOne({ item }: Props) {
   const [open, setOpen] = useState(false);
@@ -26,20 +25,24 @@ export default function WhyThisOne({ item }: Props) {
 
   return (
     <div className="mt-1.5">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-ink hover:underline"
-      >
-        <Sparkles size={11} aria-hidden="true" />
-        Why this one
-        <ChevronDown
-          size={12}
-          className={`transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden="true"
-        />
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-ink hover:underline"
+        >
+          <Sparkles size={11} aria-hidden="true" />
+          Why this one
+          <ChevronDown
+            size={12}
+            className={`transition-transform ${open ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
+      {/* Why THIS one — reasoning trail */}
       {open && (
         <ol className="mt-1.5 ml-1 space-y-1 border-l-2 border-primary-light pl-3">
           {trail.map((step, i) => (

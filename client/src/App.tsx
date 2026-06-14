@@ -10,6 +10,7 @@ import CartDrawer from './components/CartDrawer';
 import SosPage from './pages/SosPage';
 import LoginPage from './pages/LoginPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
+import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import { ToastProvider } from './ui';
 import type { CartResponse } from './api/client';
@@ -18,6 +19,7 @@ export interface UserInfo {
   name: string;
   email: string;
   role: 'admin' | 'user';
+  userId?: string;  // backend user_id from auth
 }
 
 export interface AppContext {
@@ -68,6 +70,7 @@ function App() {
                   <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
                   <Route path="/sos" element={<SosPage ctx={ctx} />} />
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
+                  <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
                   <Route path="/admin" element={
                     user?.role === 'admin'
                       ? <AdminDashboardPage ctx={ctx} />

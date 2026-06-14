@@ -174,3 +174,172 @@ export async function postSosRecommend(situation: string): Promise<SosRecommenda
     body: JSON.stringify({ situation }),
   });
 }
+
+
+
+// ============ NEW FEATURES: Predictive, Preferences, Pantry, Replan, Counterfactuals ============
+
+/** Predictive "Zero Door" — pre-staged restock cart */
+export interface PredictResponse {
+  message: string;
+  cart: CartResponse | null;
+  predictions?: PredictionInsight[];
+}
+
+export interface PredictionInsight {
+  product_id: string;
+  product_name: string;
+  avg_interval_days: number;
+  days_since_last: number;
+  predicted_depletion_days: number;
+  confidence: number;
+  purchase_count: number;
+  reason: string;
+}
+
+export async function getPredictedCart(userId: string): Promise<PredictResponse> {
+  return request<PredictResponse>(`/predict/${userId}`);
+}
+
+export async function getPredictionInsights(userId: string): Promise<{ predictions: PredictionInsight[]; count: number }> {
+  return request<{ predictions: PredictionInsight[]; count: number }>(`/predict/${userId}/insights`);
+}
+
+/** User preferences (taste graph) */
+export interface UserPreference {
+  user_id: string;
+  brand_affinity: Record<string, number>;
+  category_frequency: Record<string, number>;
+  product_loyalty: Record<string, number>;
+  avg_item_price: number;
+  price_tier: string;
+  dietary_tags: string[];
+  total_orders: number;
+  avg_items_per_order: number;
+  top_products: string[];
+  top_brands: string[];
+}
+
+export async function getUserPreferences(userId: string): Promise<{ message: string; preference: UserPreference | null }> {
+  return request<{ message: string; preference: UserPreference | null }>(`/preferences/${userId}`);
+}
+
+/** Pantry — inferred items user already has */
+export interface PantryItem {
+  product_id: string;
+  product_name: string;
+  category: string;
+  estimated_remaining_days: number;
+  confidence: number;
+  source: string;
+}
+
+export async function getUserPantry(userId: string): Promise<{ items: PantryItem[]; count: number }> {
+  return request<{ items: PantryItem[]; count: number }>(`/pantry/${userId}`);
+}
+
+/** Replan — conversational cart refinement */
+export async function postReplan(text: string, feedback: string, userId?: string, servings?: number): Promise<CartResponse> {
+  return request<CartResponse>('/replan', {
+    method: 'POST',
+    body: JSON.stringify({ text, feedback, user_id: userId, servings }),
+  });
+}
+
+/** Outcome with user_id for personalized matching */
+export async function postOutcomePersonalized(text: string, userId: string, servings?: number): Promise<CartResponse> {
+  return request<CartResponse>('/outcome', {
+    method: 'POST',
+    body: JSON.stringify({ text, servings, user_id: userId }),
+  });
+}
+
+/** Counterfactuals — "Why NOT this one?" */
+export interface RejectedAlternative {
+  product_id: string;
+  name: string;
+  brand: string;
+  price: number;
+  match_score: number;
+  rejection_reasons: string[];
+  image_url: string | null;
+}
+
+export interface CounterfactualResponse {
+  need: string;
+  selected_product_id: string;
+  alternatives_considered: number;
+  rejected: RejectedAlternative[];
+}
+
+export async function getCounterfactuals(
+  needName: string,
+  selectedProductId: string,
+  candidates: any[],
+  userId?: string,
+): Promise<CounterfactualResponse> {
+  return request<CounterfactualResponse>('/counterfactuals', {
+    method: 'POST',
+    body: JSON.stringify({
+      need_name: needName,
+      selected_product_id: selectedProductId,
+      candidates,
+      user_id: userId,
+    }),
+  });
+}
+
+
+// ============ ORDER PLACEMENT & HISTORY ============
+
+export interface OrderItem {
+  product_id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderRecord {
+  order_id: string;
+  user_id: string;
+  order_date: string;
+  items: OrderItem[];
+  total: number;
+  status: string;
+}
+
+export async function placeOrder(sessionId: string, userId: string): Promise<OrderRecord> {
+  return request<OrderRecord>('/orders/place', {
+    method: 'POST',
+    body: JSON.stringify({ session_id: sessionId, user_id: userId }),
+  });
+}
+
+export async function getOrderHistory(userId: string): Promise<{ orders: OrderRecord[]; count: number }> {
+  return request<{ orders: OrderRecord[]; count: number }>(`/orders/${userId}`);
+}
+
+
+// ============ AUTH ============
+
+export interface AuthUser {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  preferences: string[];
+}
+
+export async function registerUser(name: string, email: string, password: string): Promise<AuthUser> {
+  return request<AuthUser>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  });
+}
+
+export async function loginUser(email: string, password: string): Promise<AuthUser> {
+  return request<AuthUser>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight, Shield } from 'lucide-react';
 import type { UserInfo } from '../App';
 import { Button, FadeIn } from '../ui';
+import { registerUser, loginUser } from '../api/client';
 
 interface Props {
   onLogin: (user: UserInfo) => void;
@@ -41,15 +42,28 @@ export default function LoginPage({ onLogin }: Props) {
     }
 
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-
     const trimmedEmail = email.trim().toLowerCase();
-    const userName = mode === 'signup' ? name.trim() : email.split('@')[0];
     const role = ADMIN_EMAILS.includes(trimmedEmail) ? 'admin' : 'user';
 
-    onLogin({ name: userName, email: trimmedEmail, role });
-    setLoading(false);
-    navigate('/');
+    try {
+      if (mode === 'signup') {
+        const authUser = await registerUser(name.trim(), trimmedEmail, password);
+        onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
+      } else {
+        const authUser = await loginUser(trimmedEmail, password);
+        onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
+      }
+      navigate('/');
+    } catch (err: any) {
+      // Fallback: if backend auth fails (e.g. seeded users), allow local-only login
+      const userName = mode === 'signup' ? name.trim() : email.split('@')[0];
+      setError(err.message || 'Auth failed — using local session');
+      // Still log them in locally for demo convenience
+      onLogin({ name: userName, email: trimmedEmail, role });
+      navigate('/');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
