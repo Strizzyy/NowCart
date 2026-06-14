@@ -51,7 +51,7 @@ export default function Footer() {
         <div>
           <h4 className="font-heading font-bold text-dark mb-3">Company</h4>
           <ul className="space-y-2 text-sm text-muted">
-            <li><Link to="/" className="hover:text-primary-ink transition">About Us</Link></li>
+            <li><Link to="/about" className="hover:text-primary-ink transition">About Us</Link></li>
             <li><Link to="/" className="hover:text-primary-ink transition">Delivery Info</Link></li>
             <li><Link to="/" className="hover:text-primary-ink transition">Privacy Policy</Link></li>
             <li><Link to="/" className="hover:text-primary-ink transition">Terms & Conditions</Link></li>

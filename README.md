@@ -6,6 +6,8 @@ NowCart removes the search box from grocery shopping. Instead of typing product 
 
 **Four ways in. One brain. One confident cart out.**
 
+**Live Application:** [https://d2hj5yrm8sue4v.cloudfront.net](https://d2hj5yrm8sue4v.cloudfront.net)
+
 ---
 
 ## The Problem
@@ -284,22 +286,6 @@ NowCart/
 
 ---
 
-## Deployment
-
-**Live Application:** [https://d2hj5yrm8sue4v.cloudfront.net](https://d2hj5yrm8sue4v.cloudfront.net)
-
-### Free Tier Coverage
-| Service | Free Tier Limit | Our Usage |
-|---------|----------------|-----------|
-| EC2 t2.micro | 750 hrs/month | 1 instance always-on |
-| S3 | 5 GB, 20K GET | ~5 MB frontend build |
-| CloudFront | 1 TB, 10M requests | Well within for demo |
-| DynamoDB | 25 GB, 25 RCU/WCU | 9,534 products, light traffic |
-| Lambda | 1M requests, 400K GB-s | Async LLM offloading |
-| SQS | 1M requests | Job queuing |
-
----
-
 ## Future Vision
 
 | Horizon | Milestone | Impact |
@@ -322,7 +308,3 @@ NowCart/
 | [Member 4] | Product + Design | UX flow, presentation, demo script |
 
 ---
-
-## License
-
-This project was built for the **HackOn with Amazon** hackathon (48-hour build).

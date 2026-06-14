@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AboutPage from './pages/AboutPage';
 import { ToastProvider } from './ui';
 import type { CartResponse } from './api/client';
 
@@ -71,6 +72,7 @@ function App() {
                   <Route path="/sos" element={<SosPage ctx={ctx} />} />
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
                   <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
+                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/admin" element={
                     user?.role === 'admin'
                       ? <AdminDashboardPage ctx={ctx} />
