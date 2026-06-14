@@ -2,10 +2,15 @@
 
 Entry point for all front-door inputs. Builds initial state, invokes the
 compiled graph, extracts the resulting Cart, and saves it to the cache layer.
+
+Includes per-node telemetry: logs time spent in each pipeline stage
+(intent, decompose, match, optimize, substitute, confidence) for
+observability and scaling decisions.
 """
 from __future__ import annotations
 
 import logging
+import time
 import uuid
 from functools import lru_cache
 
@@ -37,6 +42,8 @@ class OutcomeService:
         Returns:
             The assembled Cart domain model (also persisted to cache).
         """
+        pipeline_start = time.perf_counter()
+
         # Build initial state
         initial_state: AgentState = {
             "raw_input": text,
@@ -83,6 +90,17 @@ class OutcomeService:
                 notes=[f"Engine error: {exc}"],
                 degraded=True,
             )
+
+        # Pipeline telemetry
+        pipeline_ms = (time.perf_counter() - pipeline_start) * 1000.0
+        logger.info(
+            "Pipeline complete: %.0fms | mode=%s | items=%d | confidence=%.2f | input='%s'",
+            pipeline_ms,
+            cart.mode.value,
+            len(cart.items),
+            cart.confidence,
+            text[:60],
+        )
 
         # Persist to cache
         try:

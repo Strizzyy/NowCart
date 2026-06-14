@@ -1,26 +1,39 @@
-"""Catalog loader — reads BigBasket.xlsx grocery dataset and maps to Product models (Requirement 8.1).
+"""Catalog loader — reads BigBasket grocery dataset and maps to Product models (Requirement 8.1).
 
-Reads the BigBasket.xlsx dataset (Excel format, ~18k products), maps columns
+Reads the BigBasket dataset (CSV or Excel format, ~18k products), maps columns
 to the Product domain model fields, and returns a list of Product instances.
 Each row includes brand, product name, quantity/unit, price, MRP, category,
 sub-category, and a product image URL.
+
+Supports both .csv and .xlsx formats — auto-detects by file extension.
 """
 from __future__ import annotations
 
+import csv
 import hashlib
 import logging
 import random
 import re
 from pathlib import Path
 
-import openpyxl
-
 from app.models.domain import Product
 
 logger = logging.getLogger(__name__)
 
 # Default path to the dataset file (one level above server/)
-_DEFAULT_DATASET_PATH = Path(__file__).resolve().parents[3] / "BigBasket.xlsx"
+# Tries CSV first, falls back to XLSX
+_DEFAULT_CSV_PATH = Path(__file__).resolve().parents[3] / "BigBasket.csv"
+_DEFAULT_XLSX_PATH = Path(__file__).resolve().parents[3] / "BigBasket.xlsx"
+
+
+def _get_default_dataset_path() -> Path:
+    """Return the first existing dataset path (CSV preferred over XLSX)."""
+    if _DEFAULT_CSV_PATH.exists():
+        return _DEFAULT_CSV_PATH
+    if _DEFAULT_XLSX_PATH.exists():
+        return _DEFAULT_XLSX_PATH
+    # Fall back to CSV path for error messaging
+    return _DEFAULT_CSV_PATH
 
 
 def _safe_float(value: object, default: float = 0.0) -> float:
@@ -177,32 +190,33 @@ def _random_description(seed: int, category: str) -> str:
 
 
 def load_catalog(dataset_path: Path | str | None = None) -> list[Product]:
-    """Load the grocery catalog from the BigBasket Excel dataset file.
+    """Load the grocery catalog from the BigBasket dataset file.
+
+    Supports both .csv and .xlsx formats (auto-detected by extension).
 
     Args:
-        dataset_path: Optional override path to the .xlsx file.
-                      Defaults to <project_root>/BigBasket.xlsx
+        dataset_path: Optional override path to the dataset file.
+                      Defaults to <project_root>/BigBasket.csv (or .xlsx)
 
     Returns:
         List of Product domain objects ready for repository seeding.
     """
-    path = Path(dataset_path) if dataset_path else _DEFAULT_DATASET_PATH
+    path = Path(dataset_path) if dataset_path else _get_default_dataset_path()
 
     if not path.exists():
         raise FileNotFoundError(f"Dataset file not found: {path}")
 
     logger.info("Loading catalog from %s ...", path)
 
-    wb = openpyxl.load_workbook(path, read_only=True)
-    ws = wb.active
+    if path.suffix.lower() == ".csv":
+        rows = _read_csv(path)
+    else:
+        rows = _read_xlsx(path)
 
     products: list[Product] = []
     skipped = 0
 
-    # BigBasket.xlsx columns (0-indexed):
-    #   0: index (row number), 1: Brand, 2: Product, 3: Quantity,
-    #   4: Price, 5: MRP, 6: Category, 7: Sub-Category, 8: image_small
-    for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=1):
+    for row_num, row in enumerate(rows, start=1):
         name = _safe_str(row[2])  # Product column
         if not name:
             skipped += 1
@@ -221,7 +235,7 @@ def load_catalog(dataset_path: Path | str | None = None) -> list[Product]:
         quantity = _safe_str(row[3])       # Quantity (e.g. "1 Kg Pouch", "500 ml")
         category = _safe_str(row[6])       # Category
         sub_category = _safe_str(row[7])   # Sub-Category
-        image_url = _safe_str(row[8])      # image_small URL
+        image_url = _safe_str(row[8]) if len(row) > 8 else ""  # image_small URL
 
         sale_price = _safe_float(row[4])   # Price (selling price)
         market_price = _safe_float(row[5]) # MRP
@@ -250,11 +264,33 @@ def load_catalog(dataset_path: Path | str | None = None) -> list[Product]:
         )
         products.append(product)
 
-    wb.close()
-
     logger.info(
         "Catalog loaded: %d products (%d rows skipped)",
         len(products),
         skipped,
     )
     return products
+
+
+def _read_csv(path: Path) -> list[list]:
+    """Read CSV file and return rows (list of lists), skipping the header."""
+    rows = []
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header
+        for row in reader:
+            rows.append(row)
+    return rows
+
+
+def _read_xlsx(path: Path) -> list[list]:
+    """Read XLSX file and return rows (list of lists), skipping the header."""
+    import openpyxl
+
+    wb = openpyxl.load_workbook(path, read_only=True)
+    ws = wb.active
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        rows.append(list(row))
+    wb.close()
+    return rows

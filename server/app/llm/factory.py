@@ -2,6 +2,12 @@
 
 Falls back to the mock provider if a real provider can't be constructed
 (e.g. missing key/SDK), so the app always boots and the demo never hard-fails.
+
+Supported text providers:
+- groq    : Groq Cloud (Llama 3.3 70B) — free tier, fastest inference
+- bedrock : Amazon Bedrock (Claude 3 / Titan) — production target, VPC-native
+- gemini  : Google Gemini — free tier, good quality
+- mock    : Deterministic mock responses for zero-dep testing
 """
 from functools import lru_cache
 
@@ -22,6 +28,11 @@ def get_text_provider() -> LLMProvider:
 
             logger.info("Text provider: groq (%s)", settings.groq_model)
             return GroqProvider()
+        if choice == "bedrock":
+            from app.llm.bedrock_provider import BedrockProvider
+
+            logger.info("Text provider: bedrock (region=%s)", settings.aws_region)
+            return BedrockProvider()
         if choice == "gemini" and settings.gemini_api_key:
             from app.llm.gemini_provider import GeminiProvider
 

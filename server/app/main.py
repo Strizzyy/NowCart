@@ -101,11 +101,12 @@ def create_app() -> FastAPI:
     )
 
     # Feature middleware — order matters: outermost runs first.
-    # RequestId → RateLimit → PII (innermost).
-    from app.middleware import RequestIdMiddleware, RateLimitMiddleware, PiiRedactionMiddleware
+    # RequestId → Telemetry → RateLimit → PII (innermost).
+    from app.middleware import RequestIdMiddleware, TelemetryMiddleware, RateLimitMiddleware, PiiRedactionMiddleware
 
     app.add_middleware(PiiRedactionMiddleware)
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(TelemetryMiddleware)
     app.add_middleware(RequestIdMiddleware)
 
     app.include_router(api_router)

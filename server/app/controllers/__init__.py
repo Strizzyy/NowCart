@@ -17,6 +17,7 @@ from app.controllers import (
     cart,
     sos,
     admin,
+    meta,
 )
 
 api_router = APIRouter()
@@ -30,5 +31,6 @@ api_router.include_router(share.router)
 api_router.include_router(cart.router)
 api_router.include_router(sos.router)
 api_router.include_router(admin.router)
+api_router.include_router(meta.router)
 
 __all__ = ["api_router"]

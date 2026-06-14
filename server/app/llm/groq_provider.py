@@ -5,7 +5,11 @@ Uses Groq's fast inference API (Llama 3.3 70B) for:
 - URL/recipe content extraction (share service)
 - Emergency kit generation (SOS service)
 - Confidence scoring and substitution reasoning
+
+Includes transparent LLM response caching: identical prompts within TTL
+return cached results without hitting the Groq API (cost + latency savings).
 """
+import hashlib
 import json
 
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -14,6 +18,15 @@ from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+# Cache TTL for LLM responses (1 hour — same recipe = same decomposition)
+_LLM_CACHE_TTL = 3600
+
+
+def _cache_key(system: str, user: str) -> str:
+    """Deterministic cache key from system + user prompts."""
+    content = f"{system}||{user}"
+    return hashlib.sha256(content.encode()).hexdigest()[:32]
 
 
 class GroqProvider:
@@ -25,6 +38,11 @@ class GroqProvider:
 
         self._client = AsyncGroq(api_key=settings.groq_api_key)
         self._model = settings.groq_model
+
+    async def _get_cache(self):
+        """Lazy import to avoid circular deps at module load time."""
+        from app.repositories import get_cache
+        return get_cache()
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=0.5, max=4), reraise=True)
     async def _chat(self, system: str, user: str, json_mode: bool, max_tokens: int = 2048) -> str:
@@ -46,12 +64,35 @@ class GroqProvider:
         """Return a parsed JSON object from Groq.
 
         Uses JSON mode for reliable structured output.
+        Checks cache first — identical prompts return cached results.
         Falls back to {} on any failure to keep the pipeline running.
         """
         primed = f"{system}\n\nReturn ONLY valid JSON matching: {schema_hint}"
+        key = _cache_key(primed, user)
+
+        # Check cache first
+        try:
+            cache = await self._get_cache()
+            cached = await cache.get_cached_response(key)
+            if cached is not None:
+                logger.debug("LLM cache HIT for key=%s", key[:8])
+                return cached
+        except Exception:
+            pass  # Cache miss or error — proceed to LLM call
+
         try:
             raw = await self._chat(primed, user, json_mode=True)
-            return json.loads(raw)
+            result = json.loads(raw)
+
+            # Store in cache for future identical prompts
+            try:
+                cache = await self._get_cache()
+                await cache.set_cached_response(key, result, ttl=_LLM_CACHE_TTL)
+                logger.debug("LLM cache SET for key=%s", key[:8])
+            except Exception:
+                pass  # Non-critical — caching failure doesn't break the pipeline
+
+            return result
         except Exception as exc:  # noqa: BLE001 — degrade, never crash the pipeline
             logger.warning("Groq complete_json failed, returning empty: %s", exc)
             return {}
@@ -60,10 +101,32 @@ class GroqProvider:
         """Return a plain-text completion from Groq.
 
         Used for recipe extraction from URLs, text summarization, etc.
+        Checks cache first for identical prompts.
         Falls back to empty string on failure.
         """
+        key = _cache_key(system, user)
+
+        # Check cache first
         try:
-            return await self._chat(system, user, json_mode=False)
+            cache = await self._get_cache()
+            cached = await cache.get_cached_response(key)
+            if cached is not None and isinstance(cached.get("text"), str):
+                logger.debug("LLM text cache HIT for key=%s", key[:8])
+                return cached["text"]
+        except Exception:
+            pass
+
+        try:
+            result = await self._chat(system, user, json_mode=False)
+
+            # Cache the text response
+            try:
+                cache = await self._get_cache()
+                await cache.set_cached_response(key, {"text": result}, ttl=_LLM_CACHE_TTL)
+            except Exception:
+                pass
+
+            return result
         except Exception as exc:  # noqa: BLE001
             logger.warning("Groq complete_text failed: %s", exc)
             return ""

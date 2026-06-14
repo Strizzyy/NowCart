@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-1.5-flash"
-    llm_text_provider: Literal["groq", "gemini", "mock"] = "mock"
+    bedrock_model: str = "anthropic.claude-3-haiku-20240307-v1:0"
+    llm_text_provider: Literal["groq", "gemini", "bedrock", "mock"] = "mock"
     llm_vision_provider: Literal["gemini", "mock"] = "mock"
 
     # --- Data backend ---
