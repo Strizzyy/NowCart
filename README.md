@@ -12,15 +12,9 @@ NowCart removes the search box from grocery shopping. Instead of typing product 
 
 ## Live Application
 
-| Resource | URL |
-|----------|-----|
-| Web app (CloudFront + S3) | https://d2hj5yrm8sue4v.cloudfront.net |
-| API (EC2 + Nginx) | http://3.106.130.16/api/ |
-| Interactive API docs | http://3.106.130.16/docs |
-| Health check | http://3.106.130.16/health |
-| Live telemetry | http://3.106.130.16/api/meta/stats |
+Deployed and running on AWS (S3 + CloudFront, EC2, DynamoDB):
 
-The application runs end-to-end on AWS: a React build served globally through **CloudFront** from an **S3** origin, a **FastAPI** backend on **EC2** (behind **Nginx**, with **Redis** on the same host), and **DynamoDB** (region `ap-southeast-2`) as the persistent store. See [Deployment](#deployment) for the full topology.
+**https://d2hj5yrm8sue4v.cloudfront.net**
 
 ---
 
