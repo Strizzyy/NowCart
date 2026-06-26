@@ -1,8 +1,27 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
-import { Button } from '../ui';
+import { Button, useToast } from '../ui';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const { notify } = useToast();
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      notify('Please enter a valid email address.', 'error');
+      return;
+    }
+    const stored = JSON.parse(localStorage.getItem('nowcart_subscribers') || '[]') as string[];
+    if (stored.includes(email.toLowerCase())) {
+      notify('You have already subscribed.', 'info');
+      return;
+    }
+    localStorage.setItem('nowcart_subscribers', JSON.stringify([...stored, email.toLowerCase()]));
+    notify('You are now subscribed to NowCart. You will receive emails until you choose to unsubscribe.', 'success');
+    setEmail('');
+  };
   return (
     <footer className="bg-light-bg border-t border-border mt-12">
       {/* Newsletter */}
@@ -14,12 +33,14 @@ export default function Footer() {
           <p className="text-white/90 text-sm mb-4">
             Get tips on shopping by intent with NowCart
           </p>
-          <form className="flex max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex max-w-md mx-auto" onSubmit={handleSubscribe}>
             <label htmlFor="newsletter-email" className="sr-only">Your email address</label>
             <input
               id="newsletter-email"
               type="email"
               placeholder="Your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="flex-1 px-4 py-2.5 rounded-l-lg text-dark text-sm outline-none bg-white"
             />
             <Button type="submit" variant="secondary" size="md" className="rounded-l-none rounded-r-lg">
