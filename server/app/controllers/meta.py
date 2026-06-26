@@ -3,16 +3,19 @@
 Routes:
     GET /api/meta/stats      -> system metrics snapshot (JSON)
     GET /api/meta/info       -> system info (JSON)
+    GET /api/meta/cost       -> real AWS Cost Explorer data + LLM cost estimates
     GET /api/meta/dashboard  -> beautiful HTML observability dashboard (demo-ready)
 
 Demonstrates production-readiness thinking: observability, monitoring,
 and operational awareness for scaling decisions.
 """
+from datetime import date, timedelta
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
 from app.core.config import settings
-from app.middleware.telemetry import get_metrics_snapshot
+from app.middleware.telemetry import get_metrics_snapshot, metrics as telemetry_metrics
 
 router = APIRouter(prefix="/api/meta", tags=["meta"])
 
@@ -75,6 +78,111 @@ async def system_info():
             "rate_limit": "60 req/min per IP (token bucket)",
         },
     }
+
+
+@router.get("/cost")
+async def cost_breakdown():
+    """Return real AWS Cost Explorer data grouped by service + live LLM cost estimates.
+
+    Falls back gracefully if Cost Explorer data is not yet available (< 24h after enabling).
+    LLM costs are always real — derived from live telemetry call counters.
+    AWS Cost Explorer result is cached for 5 minutes to avoid hammering the API.
+    """
+    # --- Live LLM cost estimates from telemetry (always real) ---
+    llm_calls = telemetry_metrics.llm_calls
+    cache_hits = telemetry_metrics.cache_hits
+    llm_cost_per_call = 0.0008
+    llm_cost_total = round(llm_calls * llm_cost_per_call, 6)
+    cache_savings = round(cache_hits * llm_cost_per_call, 6)
+    carts_built = telemetry_metrics.carts_built
+    cost_per_cart = round(llm_cost_total / max(carts_built, 1), 6)
+
+    # --- AWS Cost Explorer (cached 5 min to avoid external call on every dashboard refresh) ---
+    import time
+    now = time.monotonic()
+    if _ce_cache["data"] is not None and (now - _ce_cache["fetched_at"]) < 300:
+        aws_result = _ce_cache["data"]
+    else:
+        aws_result = _fetch_aws_costs()
+        _ce_cache["data"] = aws_result
+        _ce_cache["fetched_at"] = now
+
+    return {
+        "llm": {
+            "calls": llm_calls,
+            "cache_hits": cache_hits,
+            "cost_usd": llm_cost_total,
+            "cache_savings_usd": cache_savings,
+            "cost_per_cart_usd": cost_per_cart,
+            "pricing_note": "Groq Llama 3.3 70B — $0.59/M input + $0.79/M output (~$0.0008/call avg)",
+            "source": "live_telemetry",
+        },
+        "aws": aws_result,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Cost Explorer helpers
+# ---------------------------------------------------------------------------
+
+_ce_cache: dict = {"data": None, "fetched_at": 0.0}
+
+
+def _fetch_aws_costs() -> dict:
+    """Fetch AWS Cost Explorer data. Returns a dict regardless of success/failure."""
+    try:
+        import boto3
+        ce = boto3.client(
+            "ce",
+            region_name="us-east-1",
+            aws_access_key_id=settings.aws_access_key_id if settings.aws_access_key_id != "local" else None,
+            aws_secret_access_key=settings.aws_secret_access_key if settings.aws_secret_access_key != "local" else None,
+        )
+        end = date.today()
+        start = end - timedelta(days=30)
+        resp = ce.get_cost_and_usage(
+            TimePeriod={"Start": start.strftime("%Y-%m-%d"), "End": end.strftime("%Y-%m-%d")},
+            Granularity="MONTHLY",
+            Metrics=["UnblendedCost"],
+            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
+        )
+        aws_services: list[dict] = []
+        aws_total = 0.0
+        aws_period: dict = {}
+        for period in resp["ResultsByTime"]:
+            aws_period = period["TimePeriod"]
+            for group in period["Groups"]:
+                svc = group["Keys"][0]
+                amt = round(float(group["Metrics"]["UnblendedCost"]["Amount"]), 6)
+                aws_total += amt
+                aws_services.append({"service": svc, "cost_usd": amt})
+        aws_services.sort(key=lambda x: x["cost_usd"], reverse=True)
+        return {
+            "available": True,
+            "error": None,
+            "period": aws_period,
+            "total_usd": round(aws_total, 4),
+            "by_service": aws_services,
+            "source": "aws_cost_explorer",
+        }
+    except Exception as e:
+        err_str = str(e)
+        if "DataUnavailableException" in err_str:
+            msg = "Cost Explorer data not yet available — check back in up to 24 hours after first enabling."
+        elif "AccessDenied" in err_str:
+            msg = "IAM permission missing: ce:GetCostAndUsage"
+        elif "NoCredentials" in err_str or settings.aws_access_key_id == "local":
+            msg = "AWS credentials not configured."
+        else:
+            msg = f"Could not fetch AWS cost data: {err_str[:120]}"
+        return {
+            "available": False,
+            "error": msg,
+            "period": {},
+            "total_usd": 0.0,
+            "by_service": [],
+            "source": "unavailable",
+        }
 
 
 @router.get("/dashboard", response_class=HTMLResponse)

@@ -51,7 +51,7 @@ def create_mock_users() -> list[User]:
         User(
             user_id="admin",
             name="Admin",
-            email="admin@nowcart.in",
+            email="admin@nowcart.app",
             preferences=[],
         ),
         # Rahul user (matches the user created by the developer: rahul@gmail.com)

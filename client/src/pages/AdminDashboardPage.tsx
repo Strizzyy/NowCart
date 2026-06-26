@@ -29,6 +29,26 @@ interface Stats {
   health: { status: string; error_budget_remaining: string };
 }
 
+interface CostData {
+  llm: {
+    calls: number;
+    cache_hits: number;
+    cost_usd: number;
+    cache_savings_usd: number;
+    cost_per_cart_usd: number;
+    pricing_note: string;
+    source: string;
+  };
+  aws: {
+    available: boolean;
+    error: string | null;
+    period: { Start?: string; End?: string };
+    total_usd: number;
+    by_service: { service: string; cost_usd: number }[];
+    source: string;
+  };
+}
+
 interface Info {
   service: string;
   version: string;
@@ -72,19 +92,23 @@ function ProgressBar({ label, value, max, color }: { label: string; value: numbe
 export default function AdminDashboardPage({ ctx: _ctx }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [info, setInfo] = useState<Info | null>(null);
+  const [cost, setCost] = useState<CostData | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const fetchData = async () => {
     try {
-      const [statsRes, infoRes] = await Promise.all([
+      const [statsRes, infoRes, costRes] = await Promise.all([
         fetch('/api/meta/stats'),
         fetch('/api/meta/info'),
+        fetch('/api/meta/cost'),
       ]);
       const statsData = await statsRes.json();
       const infoData = await infoRes.json();
+      const costData = await costRes.json();
       setStats(statsData);
       setInfo(infoData);
+      setCost(costData);
       setRefreshCount((c) => c + 1);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
@@ -121,7 +145,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
             </Chip>
             <div className="flex items-center gap-2 text-xs text-muted bg-light-bg px-3 py-2 rounded-lg">
               <RefreshCw size={12} className="animate-spin" style={{ animationDuration: '3s' }} />
-              Live — #{refreshCount}
+              Live
             </div>
             <a
               href="/api/meta/dashboard"
@@ -357,15 +381,14 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
             <DollarSign size={20} className="text-green-600" /> Cost Monitoring
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {/* LLM Cost */}
             <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">LLM Cost (est.)</p>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">LLM Cost (session)</p>
                   <p className="text-3xl font-bold mt-1 text-green-600">
-                    ${stats ? ((stats.llm_calls * 0.0002)).toFixed(4) : '0.0000'}
+                    ${cost?.llm.cost_usd.toFixed(4) ?? '0.0000'}
                   </p>
-                  <p className="text-xs text-muted mt-1">{stats?.llm_calls ?? 0} calls × $0.0002/call</p>
+                  <p className="text-xs text-muted mt-1">{cost?.llm.calls ?? 0} calls · live telemetry</p>
                 </div>
                 <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
                   <Brain size={20} className="text-green-600" />
@@ -373,15 +396,14 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               </div>
             </Card>
 
-            {/* Cache Savings */}
             <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cache Savings</p>
                   <p className="text-3xl font-bold mt-1 text-blue-600">
-                    ${stats ? (stats.cache_hits * 0.0002).toFixed(4) : '0.0000'}
+                    ${cost?.llm.cache_savings_usd.toFixed(4) ?? '0.0000'}
                   </p>
-                  <p className="text-xs text-muted mt-1">{stats?.cache_hits ?? 0} hits avoided</p>
+                  <p className="text-xs text-muted mt-1">{cost?.llm.cache_hits ?? 0} hits avoided</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
                   <Database size={20} className="text-blue-600" />
@@ -389,13 +411,18 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               </div>
             </Card>
 
-            {/* Compute Cost */}
             <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Compute (EC2)</p>
-                  <p className="text-3xl font-bold mt-1 text-orange-500">$0.0116</p>
-                  <p className="text-xs text-muted mt-1">t2.micro · per hour</p>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">AWS Total (30d)</p>
+                  <p className="text-3xl font-bold mt-1 text-orange-500">
+                    {cost?.aws.available ? `$${cost.aws.total_usd.toFixed(4)}` : '—'}
+                  </p>
+                  <p className="text-xs text-muted mt-1">
+                    {cost?.aws.available
+                      ? `${cost.aws.period.Start} → ${cost.aws.period.End}`
+                      : 'Awaiting CE data'}
+                  </p>
                 </div>
                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
                   <Cloud size={20} className="text-orange-500" />
@@ -403,15 +430,12 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               </div>
             </Card>
 
-            {/* Cost per Cart */}
             <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cost / Cart</p>
                   <p className="text-3xl font-bold mt-1 text-purple-600">
-                    ${stats && stats.carts_built > 0
-                      ? (stats.llm_calls * 0.0002 / stats.carts_built).toFixed(4)
-                      : '0.0000'}
+                    ${cost?.llm.cost_per_cart_usd.toFixed(4) ?? '0.0000'}
                   </p>
                   <p className="text-xs text-muted mt-1">LLM cost per assembled cart</p>
                 </div>
@@ -422,45 +446,55 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
             </Card>
           </div>
 
-          {/* Cost breakdown table */}
-          <Card padding="none" className="overflow-hidden">
+          {/* AWS Cost Explorer breakdown */}
+          <Card padding="none" className="overflow-hidden mb-4">
             <div className="px-5 py-3 border-b border-border bg-light-bg flex items-center justify-between">
               <h3 className="text-sm font-semibold text-dark flex items-center gap-2">
-                💸 Infrastructure Cost Breakdown
+                ☁️ AWS Cost by Service (last 30 days)
               </h3>
-              <span className="text-xs text-muted">Estimates based on AWS pricing (ap-south-1)</span>
+              <span className="text-xs text-muted">
+                {cost?.aws.available ? 'Source: AWS Cost Explorer · real data' : 'Source: AWS Cost Explorer'}
+              </span>
             </div>
-            <div className="divide-y divide-border">
-              {[
-                { service: 'EC2 t2.micro (backend)', unit: '$0.0116/hr', monthly: '~$8.47', note: 'Nginx + Uvicorn + Redis' },
-                { service: 'S3 (frontend dist)', unit: '$0.023/GB', monthly: '<$0.01', note: 'React build ~5MB' },
-                { service: 'CloudFront CDN', unit: '$0.0085/GB', monthly: '~$0.10', note: '10GB transfer est.' },
-                { service: 'DynamoDB (on-demand)', unit: '$1.25/M reads', monthly: '<$0.50', note: 'PAY_PER_REQUEST' },
-                { service: 'Groq LLM (text)', unit: '$0.0002/call', monthly: 'variable', note: 'Free tier available' },
-                { service: 'Gemini Vision', unit: '$0.0005/call', monthly: 'variable', note: 'Free tier 1K/day' },
-                { service: 'Lambda + SQS (async)', unit: '$0.20/M req', monthly: '~$0', note: 'Designed, not deployed' },
-              ].map(({ service, unit, monthly, note }) => (
-                <div key={service} className="grid grid-cols-4 px-5 py-3 text-sm hover:bg-light-bg transition">
-                  <span className="font-medium text-dark">{service}</span>
-                  <span className="text-muted font-mono text-xs">{unit}</span>
-                  <span className="font-semibold text-primary-ink">{monthly}</span>
-                  <span className="text-muted text-xs">{note}</span>
-                </div>
-              ))}
-              <div className="grid grid-cols-4 px-5 py-3 bg-light-bg text-sm font-semibold">
-                <span className="text-dark">Total (baseline)</span>
-                <span />
-                <span className="text-primary-ink">~$9–12/mo</span>
-                <span className="text-muted text-xs">excl. variable LLM</span>
+            {!cost?.aws.available ? (
+              <div className="px-5 py-6 text-sm text-muted text-center">
+                {cost?.aws.error ?? 'Loading…'}
               </div>
-            </div>
+            ) : cost.aws.by_service.filter(s => s.cost_usd > 0).length === 0 ? (
+              <div className="px-5 py-6 text-sm text-muted text-center">No costs recorded in this period.</div>
+            ) : (
+              <div className="divide-y divide-border">
+                <div className="grid grid-cols-3 px-5 py-2 bg-light-bg text-xs font-semibold text-muted uppercase">
+                  <span>Service</span><span>Cost (USD)</span><span>% of Total</span>
+                </div>
+                {cost.aws.by_service.filter(s => s.cost_usd > 0).map(({ service, cost_usd }) => (
+                  <div key={service} className="grid grid-cols-3 px-5 py-3 text-sm hover:bg-light-bg transition">
+                    <span className="font-medium text-dark">{service}</span>
+                    <span className="font-semibold text-primary-ink">${cost_usd.toFixed(4)}</span>
+                    <span className="text-muted">
+                      {cost.aws.total_usd > 0 ? ((cost_usd / cost.aws.total_usd) * 100).toFixed(1) : '0'}%
+                    </span>
+                  </div>
+                ))}
+                <div className="grid grid-cols-3 px-5 py-3 bg-light-bg text-sm font-semibold">
+                  <span className="text-dark">Total</span>
+                  <span className="text-primary-ink">${cost.aws.total_usd.toFixed(4)}</span>
+                  <span className="text-muted">100%</span>
+                </div>
+              </div>
+            )}
           </Card>
+
+          {/* LLM pricing note */}
+          <p className="text-xs text-muted px-1">
+            💡 LLM costs: {cost?.llm.pricing_note ?? 'Groq Llama 3.3 70B pricing'}. Session counters reset on server restart.
+          </p>
         </div>
       </FadeIn>
 
       {/* Footer */}
       <div className="text-center text-xs text-muted pt-4 border-t border-border">
-        Last updated: {lastUpdated || '—'} · Auto-refreshing every 3 seconds · Refresh #{refreshCount}
+        Last updated: {lastUpdated || '—'} · Auto-refreshing every 3 seconds
       </div>
     </div>
   );

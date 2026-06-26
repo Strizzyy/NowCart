@@ -43,7 +43,7 @@ class AuthResponse(BaseModel):
     preferences: list[str] = Field(default_factory=list)
 
 
-ADMIN_EMAILS = {"admin@nowcart.in", "admin@example.com"}
+ADMIN_EMAILS = {"admin@nowcart.in", "admin@nowcart.app", "admin@example.com"}
 
 
 def _get_role(email: str) -> str:

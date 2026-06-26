@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight, Shield } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight } from 'lucide-react';
 import type { UserInfo } from '../App';
 import { Button, FadeIn } from '../ui';
 import { registerUser, loginUser } from '../api/client';
@@ -198,38 +198,16 @@ export default function LoginPage({ onLogin }: Props) {
             </div>
 
             {/* Quick login buttons */}
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => { onLogin({ name: 'Admin', email: 'admin@nowcart.app', role: 'admin' }); navigate('/'); }}
-                className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 border-2 border-purple-200 bg-purple-50 rounded-xl text-xs font-medium hover:border-purple-400 hover:bg-purple-100 transition"
-              >
-                <Shield size={20} className="text-purple-600" />
-                <span className="text-purple-700">Admin</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { onLogin({ name: 'Demo User', email: 'demo@nowcart.app', role: 'user' }); navigate('/'); }}
-                className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 border border-border rounded-xl text-xs font-medium hover:bg-light-bg transition"
-              >
-                <span className="text-xl">🚀</span>
-                <span className="text-dark">Demo</span>
-              </button>
+            <div className="grid grid-cols-1 gap-3">
               <button
                 type="button"
                 onClick={() => { onLogin({ name: 'Guest', email: 'guest@nowcart.app', role: 'user' }); navigate('/'); }}
-                className="flex flex-col items-center justify-center gap-1.5 py-3 px-2 border border-border rounded-xl text-xs font-medium hover:bg-light-bg transition"
+                className="flex items-center justify-center gap-2 py-3 px-4 border border-border rounded-xl text-sm font-medium hover:bg-light-bg transition"
               >
                 <span className="text-xl">👤</span>
-                <span className="text-dark">Guest</span>
+                <span className="text-dark">Continue as Guest</span>
               </button>
             </div>
-
-            {/* Admin hint */}
-            <p className="text-center text-[11px] text-muted mt-4">
-              <Shield size={10} className="inline text-purple-500 mr-1" />
-              Admin login gives access to observability dashboard & system metrics
-            </p>
           </div>
 
           {/* Footer */}
