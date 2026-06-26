@@ -79,7 +79,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-border py-4 text-center text-xs text-muted">
-        © 2024 NowCart. Four ways in, one brain, one confident cart out.
+        © 2026 NowCart. Five ways in, one brain, one confident cart out.
       </div>
     </footer>
   );

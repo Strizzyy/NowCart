@@ -40,7 +40,7 @@ export default function Header({ ctx, onLogout }: Props) {
           </div>
           <div className="hidden sm:block">
             <h1 className="text-xl font-bold text-dark font-heading leading-tight">NowCart</h1>
-            <p className="text-xs text-muted -mt-0.5">Four ways in, one cart out</p>
+            <p className="text-xs text-muted -mt-0.5">Five ways in, one cart out</p>
           </div>
         </Link>
 
