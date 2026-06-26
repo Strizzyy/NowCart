@@ -70,9 +70,9 @@ export default function Footer() {
         <div>
           <h4 className="font-heading font-bold text-dark mb-3">Popular</h4>
           <ul className="space-y-2 text-sm text-muted">
-            <li><Link to="/shop?category=Staples" className="hover:text-primary-ink transition">Staples</Link></li>
-            <li><Link to="/shop?category=Snacks%20%26%20Beverages" className="hover:text-primary-ink transition">Snacks & Beverages</Link></li>
-            <li><Link to="/shop?category=Fruits%20%26%20Vegetables" className="hover:text-primary-ink transition">Fruits & Veggies</Link></li>
+            <li><Link to="/shop?category=foodgrains%20oil%20masala" className="hover:text-primary-ink transition">Staples</Link></li>
+            <li><Link to="/shop?category=snacks%20branded%20foods" className="hover:text-primary-ink transition">Snacks & Beverages</Link></li>
+            <li><Link to="/shop?category=fruits%20vegetables" className="hover:text-primary-ink transition">Fruits & Veggies</Link></li>
             <li><Link to="/sos" className="hover:text-primary-ink transition">SOS Emergency Kit</Link></li>
           </ul>
         </div>
