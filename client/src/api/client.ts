@@ -140,6 +140,10 @@ export async function searchCatalog(q?: string, category?: string, limit = 20): 
   return request<Product[]>(`/catalog/search?${params}`);
 }
 
+export async function getProduct(productId: string): Promise<Product> {
+  return request<Product>(`/catalog/product/${productId}`);
+}
+
 export async function postStockOverride(product_id: string, in_stock: boolean): Promise<{ ok: boolean }> {
   return request<{ ok: boolean }>('/admin/stock', {
     method: 'POST',

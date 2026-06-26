@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Star, Truck, Shield } from 'lucide-react';
 import type { AppContext } from '../App';
-import { searchCatalog, postCartOp } from '../api/client';
+import { getProduct, searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
 import ProductCard from '../components/ProductCard';
 
@@ -21,19 +21,17 @@ export default function ProductPage({ ctx }: Props) {
     async function load() {
       setLoading(true);
       try {
-        // Search for the product by ID (search all and filter)
-        const all = await searchCatalog(undefined, undefined, 100);
-        const found = all.find((p) => p.product_id === id);
-        setProduct(found || null);
+        // Fetch the product directly by ID
+        const found = await getProduct(id!);
+        setProduct(found);
 
         if (found) {
-          const rel = all
-            .filter((p) => p.category === found.category && p.product_id !== found.product_id)
-            .slice(0, 4);
-          setRelated(rel);
+          const rel = await searchCatalog(undefined, found.category, 20);
+          setRelated(rel.filter((p) => p.product_id !== found.product_id).slice(0, 4));
         }
       } catch (err) {
         console.error('Failed to load product:', err);
+        setProduct(null);
       }
       setLoading(false);
     }
