@@ -13,6 +13,9 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AboutPage from './pages/AboutPage';
+import DeliveryInfoPage from './pages/DeliveryInfoPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
 import { ToastProvider } from './ui';
 import type { CartResponse } from './api/client';
 
@@ -82,6 +85,9 @@ function App() {
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
                   <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/delivery-info" element={<DeliveryInfoPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
                   <Route path="/admin" element={
                     user?.role === 'admin'
                       ? <AdminDashboardPage ctx={ctx} />

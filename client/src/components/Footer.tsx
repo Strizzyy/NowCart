@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { Button, useToast } from '../ui';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const { notify } = useToast();
+  const navigate = useNavigate();
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,12 @@ export default function Footer() {
     localStorage.setItem('nowcart_subscribers', JSON.stringify([...stored, email.toLowerCase()]));
     notify('You are now subscribed to NowCart. You will receive emails until you choose to unsubscribe.', 'success');
     setEmail('');
+  };
+
+  const handleHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   return (
     <footer className="bg-light-bg border-t border-border mt-12">
@@ -64,7 +71,7 @@ export default function Footer() {
           </p>
           <div className="space-y-2 text-sm text-muted">
             <p className="flex items-center gap-2"><MapPin size={14} aria-hidden="true" /> Mumbai, India</p>
-            <p className="flex items-center gap-2"><Phone size={14} aria-hidden="true" /> 1800-NowCart</p>
+            <p className="flex items-center gap-2"><Phone size={14} aria-hidden="true" /> 1800-266-2278</p>
             <p className="flex items-center gap-2"><Mail size={14} aria-hidden="true" /> hello@nowcart.in</p>
           </div>
         </div>
@@ -73,9 +80,9 @@ export default function Footer() {
           <h4 className="font-heading font-bold text-dark mb-3">Company</h4>
           <ul className="space-y-2 text-sm text-muted">
             <li><Link to="/about" className="hover:text-primary-ink transition">About Us</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Delivery Info</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Privacy Policy</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Terms & Conditions</Link></li>
+            <li><Link to="/delivery-info" className="hover:text-primary-ink transition">Delivery Info</Link></li>
+            <li><Link to="/privacy-policy" className="hover:text-primary-ink transition">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-primary-ink transition">Terms & Conditions</Link></li>
           </ul>
         </div>
 
@@ -84,7 +91,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-muted">
             <li><Link to="/orders" className="hover:text-primary-ink transition">Order History</Link></li>
             <li><Link to="/shop" className="hover:text-primary-ink transition">Browse Products</Link></li>
-            <li><Link to="/" className="hover:text-primary-ink transition">Home</Link></li>
+            <li><a href="/" onClick={handleHome} className="hover:text-primary-ink transition cursor-pointer">Home</a></li>
           </ul>
         </div>
 
