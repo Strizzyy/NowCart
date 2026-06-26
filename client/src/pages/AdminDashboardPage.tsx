@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Shield, Activity, Server, Zap, Database, Brain, RefreshCw, ExternalLink } from 'lucide-react';
+import { Shield, Activity, Server, Zap, Database, Brain, RefreshCw, ExternalLink, DollarSign, TrendingUp, Cloud } from 'lucide-react';
 import type { AppContext } from '../App';
 import { Card, Chip, FadeIn } from '../ui';
 
@@ -346,6 +346,114 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
                 </div>
               </div>
             )}
+          </Card>
+        </div>
+      </FadeIn>
+
+      {/* Cost Monitoring */}
+      <FadeIn delay={240}>
+        <div className="mb-6">
+          <h2 className="text-lg font-heading font-bold text-dark mb-4 flex items-center gap-2">
+            <DollarSign size={20} className="text-green-600" /> Cost Monitoring
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* LLM Cost */}
+            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">LLM Cost (est.)</p>
+                  <p className="text-3xl font-bold mt-1 text-green-600">
+                    ${stats ? ((stats.llm_calls * 0.0002)).toFixed(4) : '0.0000'}
+                  </p>
+                  <p className="text-xs text-muted mt-1">{stats?.llm_calls ?? 0} calls × $0.0002/call</p>
+                </div>
+                <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Brain size={20} className="text-green-600" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Cache Savings */}
+            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cache Savings</p>
+                  <p className="text-3xl font-bold mt-1 text-blue-600">
+                    ${stats ? (stats.cache_hits * 0.0002).toFixed(4) : '0.0000'}
+                  </p>
+                  <p className="text-xs text-muted mt-1">{stats?.cache_hits ?? 0} hits avoided</p>
+                </div>
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Database size={20} className="text-blue-600" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Compute Cost */}
+            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Compute (EC2)</p>
+                  <p className="text-3xl font-bold mt-1 text-orange-500">$0.0116</p>
+                  <p className="text-xs text-muted mt-1">t2.micro · per hour</p>
+                </div>
+                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Cloud size={20} className="text-orange-500" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Cost per Cart */}
+            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cost / Cart</p>
+                  <p className="text-3xl font-bold mt-1 text-purple-600">
+                    ${stats && stats.carts_built > 0
+                      ? (stats.llm_calls * 0.0002 / stats.carts_built).toFixed(4)
+                      : '0.0000'}
+                  </p>
+                  <p className="text-xs text-muted mt-1">LLM cost per assembled cart</p>
+                </div>
+                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
+                  <TrendingUp size={20} className="text-purple-600" />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Cost breakdown table */}
+          <Card padding="none" className="overflow-hidden">
+            <div className="px-5 py-3 border-b border-border bg-light-bg flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-dark flex items-center gap-2">
+                💸 Infrastructure Cost Breakdown
+              </h3>
+              <span className="text-xs text-muted">Estimates based on AWS pricing (ap-south-1)</span>
+            </div>
+            <div className="divide-y divide-border">
+              {[
+                { service: 'EC2 t2.micro (backend)', unit: '$0.0116/hr', monthly: '~$8.47', note: 'Nginx + Uvicorn + Redis' },
+                { service: 'S3 (frontend dist)', unit: '$0.023/GB', monthly: '<$0.01', note: 'React build ~5MB' },
+                { service: 'CloudFront CDN', unit: '$0.0085/GB', monthly: '~$0.10', note: '10GB transfer est.' },
+                { service: 'DynamoDB (on-demand)', unit: '$1.25/M reads', monthly: '<$0.50', note: 'PAY_PER_REQUEST' },
+                { service: 'Groq LLM (text)', unit: '$0.0002/call', monthly: 'variable', note: 'Free tier available' },
+                { service: 'Gemini Vision', unit: '$0.0005/call', monthly: 'variable', note: 'Free tier 1K/day' },
+                { service: 'Lambda + SQS (async)', unit: '$0.20/M req', monthly: '~$0', note: 'Designed, not deployed' },
+              ].map(({ service, unit, monthly, note }) => (
+                <div key={service} className="grid grid-cols-4 px-5 py-3 text-sm hover:bg-light-bg transition">
+                  <span className="font-medium text-dark">{service}</span>
+                  <span className="text-muted font-mono text-xs">{unit}</span>
+                  <span className="font-semibold text-primary-ink">{monthly}</span>
+                  <span className="text-muted text-xs">{note}</span>
+                </div>
+              ))}
+              <div className="grid grid-cols-4 px-5 py-3 bg-light-bg text-sm font-semibold">
+                <span className="text-dark">Total (baseline)</span>
+                <span />
+                <span className="text-primary-ink">~$9–12/mo</span>
+                <span className="text-muted text-xs">excl. variable LLM</span>
+              </div>
+            </div>
           </Card>
         </div>
       </FadeIn>

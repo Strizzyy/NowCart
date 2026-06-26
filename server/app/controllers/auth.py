@@ -43,7 +43,11 @@ class AuthResponse(BaseModel):
     preferences: list[str] = Field(default_factory=list)
 
 
-# In-memory password store (for memory backend) and user-email index
+ADMIN_EMAILS = {"admin@nowcart.in", "admin@example.com"}
+
+
+def _get_role(email: str) -> str:
+    return "admin" if email.strip().lower() in ADMIN_EMAILS else "user"
 _passwords: dict[str, str] = {}  # user_id -> hashed password
 _email_index: dict[str, str] = {}  # email -> user_id
 
@@ -88,7 +92,7 @@ async def register(req: RegisterRequest) -> AuthResponse:
         user_id=user.user_id,
         name=user.name,
         email=user.email,
-        role="user",
+        role=_get_role(user.email),
         preferences=user.preferences,
     )
 
@@ -132,7 +136,7 @@ async def login(req: LoginRequest) -> AuthResponse:
         user_id=user.user_id,
         name=user.name,
         email=user.email,
-        role="user",
+        role=_get_role(user.email),
         preferences=user.preferences,
     )
 

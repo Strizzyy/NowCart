@@ -150,10 +150,10 @@ export default function Header({ ctx, onLogout }: Props) {
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 py-2 text-sm font-medium overflow-x-auto">
           <Link to="/" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Home</Link>
           <Link to="/shop" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Shop</Link>
-          <Link to="/shop?category=Fruits%20%26%20Vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits & Veggies</Link>
-          <Link to="/shop?category=Staples" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Staples</Link>
-          <Link to="/shop?category=Snacks%20%26%20Beverages" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
-          <Link to="/shop?category=Dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
+          <Link to="/shop?category=fruits%20vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits & Veggies</Link>
+          <Link to="/shop?category=foodgrains%20oil%20masala" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Staples</Link>
+          <Link to="/shop?category=snacks%20branded%20foods" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
+          <Link to="/shop?category=bakery%20cakes%20dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
           <Link to="/sos" className="text-accent-dark hover:text-accent transition whitespace-nowrap font-semibold">SOS Mode</Link>
           {ctx.user?.role === 'admin' && (
             <Link to="/admin" className="ml-auto text-purple-600 hover:text-purple-800 transition whitespace-nowrap font-semibold flex items-center gap-1">
