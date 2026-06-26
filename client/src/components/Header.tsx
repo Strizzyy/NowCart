@@ -58,7 +58,7 @@ export default function Header({ ctx, onLogout }: Props) {
             />
             <button
               type="submit"
-              className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 transition-colors"
+              className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 transition-colors self-stretch"
               aria-label="Search products"
             >
               <Search size={18} aria-hidden="true" />
