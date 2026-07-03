@@ -101,7 +101,7 @@ export default function SharePanel({ ctx, onClose }: Props) {
         onChange={(e) => setValue(e.target.value)}
         data-autofocus
         placeholder="https://example.com/biryani-recipe  —  or paste the ingredients + steps here"
-        className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary resize-none h-32"
+        className="w-full border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary resize-none h-32 min-h-[100px]"
       />
 
       <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={!value.trim()} rightIcon={<Send size={16} />}>

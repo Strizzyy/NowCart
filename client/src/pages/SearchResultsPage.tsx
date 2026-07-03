@@ -80,16 +80,16 @@ function ProductResultCard({ product, isBest, onAdd }: { product: Product; isBes
           )}
 
           {/* Price + Add to cart */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-bold text-primary-ink">₹{product.sale_price.toFixed(0)}</span>
               {product.market_price > product.sale_price && (
                 <span className="text-sm text-muted line-through">₹{product.market_price.toFixed(0)}</span>
               )}
             </div>
-            <div className="flex gap-2">
-              <Link to={`/product/${product.product_id}`}>
-                <Button variant="outline" size="sm">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Link to={`/product/${product.product_id}`} className="flex-1 sm:flex-initial">
+                <Button variant="outline" size="sm" fullWidth>
                   View Details
                 </Button>
               </Link>
@@ -99,8 +99,10 @@ function ProductResultCard({ product, isBest, onAdd }: { product: Product; isBes
                 onClick={() => onAdd(product)}
                 disabled={!product.in_stock}
                 leftIcon={<ShoppingCart size={14} aria-hidden="true" />}
+                className="flex-1 sm:flex-initial"
               >
-                Add to Cart
+                <span className="hidden sm:inline">Add to Cart</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
           </div>

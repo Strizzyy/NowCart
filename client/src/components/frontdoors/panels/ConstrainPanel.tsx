@@ -105,7 +105,7 @@ export default function ConstrainPanel({ ctx, onClose }: Props) {
             placeholder="500"
             data-autofocus
             aria-invalid={!!fieldError}
-            className="w-full mt-1.5 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+            className="w-full mt-1.5 border border-border rounded-lg px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
           />
         </div>
         <div>
@@ -122,7 +122,7 @@ export default function ConstrainPanel({ ctx, onClose }: Props) {
             }}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
             placeholder="4"
-            className="w-full mt-1.5 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+            className="w-full mt-1.5 border border-border rounded-lg px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
           />
         </div>
       </div>

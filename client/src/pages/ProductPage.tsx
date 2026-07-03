@@ -179,18 +179,20 @@ export default function ProductPage({ ctx }: Props) {
           )}
 
           {/* Quantity + Add to cart */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center border border-border rounded-md">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+            <div className="flex items-center border border-border rounded-lg">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 hover:bg-light-bg transition"
+                className="px-4 py-3 hover:bg-light-bg transition min-h-[48px] flex items-center justify-center"
+                aria-label="Decrease quantity"
               >
                 −
               </button>
-              <span className="px-4 py-2 font-medium border-x border-border">{quantity}</span>
+              <span className="px-6 py-3 font-medium border-x border-border min-w-[60px] text-center">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 hover:bg-light-bg transition"
+                className="px-4 py-3 hover:bg-light-bg transition min-h-[48px] flex items-center justify-center"
+                aria-label="Increase quantity"
               >
                 +
               </button>
@@ -198,7 +200,7 @@ export default function ProductPage({ ctx }: Props) {
             <button
               onClick={handleAddToCart}
               disabled={!product.in_stock}
-              className="flex-1 bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-md font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
             >
               <ShoppingCart size={18} />
               Add to Cart
@@ -223,7 +225,7 @@ export default function ProductPage({ ctx }: Props) {
       {related.length > 0 && (
         <section>
           <h2 className="text-xl font-heading font-bold text-dark mb-4">Related Products</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {related.map((p) => (
               <ProductCard key={p.product_id} product={p} onAddToCart={handleAddRelated} />
             ))}

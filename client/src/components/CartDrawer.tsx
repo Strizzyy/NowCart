@@ -104,12 +104,12 @@ export default function CartDrawer({ ctx }: Props) {
       {/* Backdrop */}
       <div className="fixed inset-0 bg-dark/45 z-50 nc-fade-in" onClick={() => setCartOpen(false)} aria-hidden="true" />
 
-      {/* Drawer */}
+      {/* Drawer - bottom sheet on mobile, side panel on desktop */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Your confident cart"
-        className="fixed top-0 right-0 h-full w-full max-w-md bg-surface z-50 shadow-[var(--shadow-pop)] flex flex-col"
+        className="fixed top-0 right-0 h-full w-full md:max-w-md bg-surface z-50 shadow-[var(--shadow-pop)] flex flex-col md:top-0 md:bottom-auto"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -331,27 +331,27 @@ export default function CartDrawer({ ctx }: Props) {
                         <button
                           onClick={() => handleQuantity(item.name, Math.max(1, item.quantity - 1))}
                           disabled={loading === item.name}
-                          className="w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center hover:border-primary transition disabled:opacity-50"
+                          className="w-10 h-10 md:w-9 md:h-9 rounded-full bg-surface border border-border flex items-center justify-center hover:border-primary transition disabled:opacity-50"
                           aria-label={`Decrease ${item.name} quantity`}
                         >
-                          <Minus size={12} aria-hidden="true" />
+                          <Minus size={14} aria-hidden="true" />
                         </button>
-                        <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
+                        <span className="text-sm font-medium min-w-[24px] text-center">{item.quantity}</span>
                         <button
                           onClick={() => handleQuantity(item.name, item.quantity + 1)}
                           disabled={loading === item.name}
-                          className="w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center hover:border-primary transition disabled:opacity-50"
+                          className="w-10 h-10 md:w-9 md:h-9 rounded-full bg-surface border border-border flex items-center justify-center hover:border-primary transition disabled:opacity-50"
                           aria-label={`Increase ${item.name} quantity`}
                         >
-                          <Plus size={12} aria-hidden="true" />
+                          <Plus size={14} aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => handleRemove(item.name)}
                           disabled={loading === item.name}
-                          className="ml-auto p-1 text-muted hover:text-accent-dark transition disabled:opacity-50"
+                          className="ml-auto p-2 text-muted hover:text-accent-dark transition disabled:opacity-50"
                           aria-label={`Remove ${item.name}`}
                         >
-                          <Trash2 size={14} aria-hidden="true" />
+                          <Trash2 size={16} aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -390,20 +390,20 @@ export default function CartDrawer({ ctx }: Props) {
             {/* Payment method selector */}
             <div>
               <p className="text-xs font-semibold text-dark mb-2">Payment method</p>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {PAYMENT_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => setPaymentMethod(opt.value)}
                     className={[
-                      'flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl border text-center transition',
+                      'flex flex-col items-center gap-1 py-3 px-2 rounded-xl border text-center transition min-h-[60px]',
                       paymentMethod === opt.value
                         ? 'border-primary bg-primary-light text-primary-ink font-semibold'
                         : 'border-border text-muted hover:border-primary/40',
                     ].join(' ')}
                   >
-                    <span className="text-base leading-none">{opt.icon}</span>
-                    <span className="text-[10px] leading-tight">{opt.label}</span>
+                    <span className="text-lg leading-none">{opt.icon}</span>
+                    <span className="text-[11px] leading-tight">{opt.label}</span>
                   </button>
                 ))}
               </div>

@@ -68,7 +68,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     setPhase('processing');
     setError(null);
     try {
-      const result = await postVoiceIntent(text.trim(), cart?.session_id);
+      const result = await postVoiceIntent(text.trim(), cart?.session_id ?? ctx.cart?.session_id);
       setCart(result);
       ctx.setCart(result);
       setPhase('confirming');
@@ -238,7 +238,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
             placeholder="e.g. I'm making pasta for 3"
             data-autofocus={showTypedFallback || undefined}
-            className="flex-1 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+            className="flex-1 border border-border rounded-lg px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
           />
           <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
             Build

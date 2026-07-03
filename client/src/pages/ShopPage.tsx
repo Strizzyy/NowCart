@@ -155,13 +155,13 @@ export default function ShopPage({ ctx }: Props) {
 
         {/* Products grid */}
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
             <p className="text-sm text-muted">
               {loading ? 'Loading...' : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1}–${Math.min(currentPage * ITEMS_PER_PAGE, products.length)} of ${products.length} products`}
             </p>
             {/* Mobile filter */}
             <select
-              className="md:hidden border border-border rounded-md px-3 py-2 text-sm"
+              className="md:hidden border border-border rounded-lg px-3 py-2.5 text-sm min-h-[44px] w-full sm:w-auto"
               value={category}
               onChange={(e) => handleCategoryClick(e.target.value)}
             >
@@ -172,9 +172,9 @@ export default function ShopPage({ ctx }: Props) {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <div key={i} className="bg-light-bg rounded-xl h-64 animate-pulse" />
+                <div key={i} className="bg-light-bg rounded-xl h-52 sm:h-64 animate-pulse" />
               ))}
             </div>
           ) : products.length === 0 ? (
@@ -185,7 +185,7 @@ export default function ShopPage({ ctx }: Props) {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {paginatedProducts.map((p) => (
                   <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
                 ))}
@@ -193,39 +193,41 @@ export default function ShopPage({ ctx }: Props) {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <nav aria-label="Pagination" className="flex items-center justify-center gap-2 mt-8">
+                <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2 mt-8">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark min-h-[44px]"
                     aria-label="Previous page"
                   >
-                    <ChevronLeft size={16} /> Prev
+                    <ChevronLeft size={16} /> <span className="hidden xs:inline">Prev</span>
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
-                        page === currentPage
-                          ? 'bg-primary text-white'
-                          : 'hover:bg-primary-light text-dark'
-                      }`}
-                      aria-label={`Page ${page}`}
-                      aria-current={page === currentPage ? 'page' : undefined}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  <div className="flex gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-11 h-11 rounded-lg text-sm font-medium transition ${
+                          page === currentPage
+                            ? 'bg-primary text-white'
+                            : 'hover:bg-primary-light text-dark'
+                        }`}
+                        aria-label={`Page ${page}`}
+                        aria-current={page === currentPage ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
 
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-light text-dark min-h-[44px]"
                     aria-label="Next page"
                   >
-                    Next <ChevronRight size={16} />
+                    <span className="hidden xs:inline">Next</span> <ChevronRight size={16} />
                   </button>
                 </nav>
               )}

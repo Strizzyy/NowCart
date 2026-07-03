@@ -129,7 +129,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
       <FadeIn>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <Shield size={24} className="text-purple-600" />
@@ -139,7 +139,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               <p className="text-sm text-muted">Real-time observability & system metrics</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <Chip tone="success" size="sm" icon={<Activity size={12} />}>
               {stats?.health.status === 'healthy' ? '● Healthy' : '● Degraded'}
             </Chip>
@@ -153,7 +153,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               rel="noopener"
               className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 px-3 py-2 rounded-lg transition"
             >
-              <ExternalLink size={12} /> Full Dashboard
+              <ExternalLink size={12} /> <span className="hidden sm:inline">Full Dashboard</span><span className="sm:hidden">Dashboard</span>
             </a>
           </div>
         </div>
@@ -161,7 +161,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
 
       {/* KPI Cards */}
       <FadeIn delay={60}>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             icon={<Activity size={20} className="text-primary-ink" />}
             title="Total Requests"
@@ -295,18 +295,20 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
             {topPaths.length === 0 ? (
               <p className="px-5 py-6 text-sm text-muted text-center">No traffic yet — start using the app!</p>
             ) : (
-              <div className="divide-y divide-border">
-                {topPaths.map(([path, count]) => (
-                  <div key={path} className="flex items-center justify-between px-5 py-2.5 hover:bg-light-bg transition">
-                    <code className="text-xs text-primary-ink font-mono">{path}</code>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold bg-light-bg px-2.5 py-0.5 rounded-md border border-border">{count}</span>
-                      <span className="text-[11px] text-muted w-12 text-right">
-                        {stats ? ((count / stats.total_requests) * 100).toFixed(1) : 0}%
-                      </span>
+              <div className="overflow-x-auto">
+                <div className="divide-y divide-border min-w-full">
+                  {topPaths.map(([path, count]) => (
+                    <div key={path} className="flex items-center justify-between px-5 py-2.5 hover:bg-light-bg transition min-w-[300px]">
+                      <code className="text-xs text-primary-ink font-mono truncate flex-1 mr-3">{path}</code>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs font-semibold bg-light-bg px-2.5 py-0.5 rounded-md border border-border">{count}</span>
+                        <span className="text-[11px] text-muted w-12 text-right">
+                          {stats ? ((count / stats.total_requests) * 100).toFixed(1) : 0}%
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </Card>
@@ -348,8 +350,8 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
                 {/* Scaling info */}
                 <div className="border-t border-border pt-3 space-y-1.5">
                   {Object.entries(info.scaling).map(([key, val]) => (
-                    <div key={key} className="flex items-start gap-2">
-                      <span className="text-[10px] text-muted uppercase min-w-[70px]">{key.replace(/_/g, ' ')}</span>
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                      <span className="text-[10px] text-muted uppercase sm:min-w-[70px]">{key.replace(/_/g, ' ')}</span>
                       <span className="text-xs text-dark">{val}</span>
                     </div>
                   ))}
@@ -380,7 +382,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
           <h2 className="text-lg font-heading font-bold text-dark mb-4 flex items-center gap-2">
             <DollarSign size={20} className="text-green-600" /> Cost Monitoring
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
               <div className="flex items-start justify-between">
                 <div>
@@ -452,7 +454,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
               <h3 className="text-sm font-semibold text-dark flex items-center gap-2">
                 ☁️ AWS Cost by Service (last 30 days)
               </h3>
-              <span className="text-xs text-muted">
+              <span className="text-xs text-muted hidden sm:inline">
                 {cost?.aws.available ? 'Source: AWS Cost Explorer · real data' : 'Source: AWS Cost Explorer'}
               </span>
             </div>
@@ -463,23 +465,25 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
             ) : cost.aws.by_service.filter(s => s.cost_usd > 0).length === 0 ? (
               <div className="px-5 py-6 text-sm text-muted text-center">No costs recorded in this period.</div>
             ) : (
-              <div className="divide-y divide-border">
-                <div className="grid grid-cols-3 px-5 py-2 bg-light-bg text-xs font-semibold text-muted uppercase">
-                  <span>Service</span><span>Cost (USD)</span><span>% of Total</span>
-                </div>
-                {cost.aws.by_service.filter(s => s.cost_usd > 0).map(({ service, cost_usd }) => (
-                  <div key={service} className="grid grid-cols-3 px-5 py-3 text-sm hover:bg-light-bg transition">
-                    <span className="font-medium text-dark">{service}</span>
-                    <span className="font-semibold text-primary-ink">${cost_usd.toFixed(4)}</span>
-                    <span className="text-muted">
-                      {cost.aws.total_usd > 0 ? ((cost_usd / cost.aws.total_usd) * 100).toFixed(1) : '0'}%
-                    </span>
+              <div className="overflow-x-auto">
+                <div className="divide-y divide-border min-w-full">
+                  <div className="grid grid-cols-3 px-5 py-2 bg-light-bg text-xs font-semibold text-muted uppercase min-w-[400px]">
+                    <span>Service</span><span>Cost (USD)</span><span>% of Total</span>
                   </div>
-                ))}
-                <div className="grid grid-cols-3 px-5 py-3 bg-light-bg text-sm font-semibold">
-                  <span className="text-dark">Total</span>
-                  <span className="text-primary-ink">${cost.aws.total_usd.toFixed(4)}</span>
-                  <span className="text-muted">100%</span>
+                  {cost.aws.by_service.filter(s => s.cost_usd > 0).map(({ service, cost_usd }) => (
+                    <div key={service} className="grid grid-cols-3 px-5 py-3 text-sm hover:bg-light-bg transition min-w-[400px]">
+                      <span className="font-medium text-dark">{service}</span>
+                      <span className="font-semibold text-primary-ink">${cost_usd.toFixed(4)}</span>
+                      <span className="text-muted">
+                        {cost.aws.total_usd > 0 ? ((cost_usd / cost.aws.total_usd) * 100).toFixed(1) : '0'}%
+                      </span>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-3 px-5 py-3 bg-light-bg text-sm font-semibold min-w-[400px]">
+                    <span className="text-dark">Total</span>
+                    <span className="text-primary-ink">${cost.aws.total_usd.toFixed(4)}</span>
+                    <span className="text-muted">100%</span>
+                  </div>
                 </div>
               </div>
             )}

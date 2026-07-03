@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, ShoppingCart, ArrowRight, Sparkles, DoorOpen } from 'lucide-react';
+import { Brain, ShoppingCart, ArrowRight, Sparkles, DoorOpen, Star } from 'lucide-react';
 import type { AppContext } from '../App';
 import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
@@ -19,6 +19,16 @@ const DOOR_ACCENT: Record<FrontDoor['tone'], string> = {
   accent: 'bg-accent/10 text-accent-dark',
   info: 'bg-blue-100 text-blue-800',
 };
+
+const DOOR_FEATURED_RING: Record<FrontDoor['tone'], string> = {
+  primary: 'border-primary/50',
+  secondary: 'border-secondary/40',
+  accent: 'border-accent/50',
+  info: 'border-blue-300/60',
+};
+
+const featuredDoors = FRONT_DOORS.filter((d) => d.featured);
+const secondaryDoors = FRONT_DOORS.filter((d) => !d.featured);
 
 export default function HomePage({ ctx }: Props) {
   const [activeDoor, setActiveDoor] = useState<FrontDoor | null>(null);
@@ -47,9 +57,7 @@ export default function HomePage({ ctx }: Props) {
   const openDoor = (door: FrontDoor) => {
     setActiveDoor(door);
     setHasActivated(true);
-  };
-
-  const handleAddToCart = async (product: Product) => {
+  };  const handleAddToCart = async (product: Product) => {
     try {
       const sessionId = ctx.cart?.session_id || '';
       const updated = await postCartOp(sessionId, 'add', product.name, 1);
@@ -73,17 +81,17 @@ export default function HomePage({ ctx }: Props) {
 
           <FadeIn delay={60}>
             <h1 className="text-3xl md:text-5xl font-heading font-bold text-dark leading-tight mb-4">
-              Quick commerce solved delivery.
+              NowCart
               <br />
               <span className="text-primary-ink">We solve the deciding.</span>
             </h1>
           </FadeIn>
 
-          <FadeIn delay={120}>
+          {/* <FadeIn delay={120}>
             <p className="text-lg md:text-xl text-muted max-w-2xl mx-auto">
               Five ways in, one brain, one confident cart out.
             </p>
-          </FadeIn>
+          </FadeIn> */}
 
           {/* the spine of the product, visualized */}
           <FadeIn delay={180}>
@@ -98,33 +106,130 @@ export default function HomePage({ ctx }: Props) {
         </div>
       </section>
 
-      {/* ============ The four front doors ============ */}
+      {/* ============ The five front doors ============ */}
       <section className="max-w-6xl mx-auto px-4 -mt-4 md:-mt-6 pb-4">
         <h2 className="sr-only">Choose a front door</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {FRONT_DOORS.map((door, i) => (
+
+        {/* Section label */}
+        <div className="flex items-center gap-2 mb-3">
+          <Star size={13} className="text-secondary fill-secondary" aria-hidden="true" />
+          <span className="text-xs font-bold text-secondary-dark uppercase tracking-widest">Signature features</span>
+        </div>
+
+        {/* ── FEATURED: Show + Share + Subscribe ── */}
+
+        {/* Mobile: Show | Share side-by-side, Subscribe full-width below */}
+        <div className="md:hidden mb-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {featuredDoors.slice(0, 2).map((door, i) => (
+              <FadeIn key={door.id} delay={i * 60}>
+                <button
+                  type="button"
+                  onClick={() => openDoor(door)}
+                  aria-haspopup="dialog"
+                  className={`group w-full text-left rounded-2xl p-4 border-2 shadow-md bg-surface transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] min-h-[175px] ${DOOR_FEATURED_RING[door.tone]}`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <span className={`w-11 h-11 rounded-xl flex items-center justify-center ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
+                    <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full">✦ Core</span>
+                  </div>
+                  <h3 className="font-heading font-bold text-base text-dark mb-1">{door.label}</h3>
+                  <p className="text-xs text-muted line-clamp-2 mb-3">{door.tagline}</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-ink">
+                    Open <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
+                </button>
+              </FadeIn>
+            ))}
+          </div>
+          {featuredDoors[2] && (
+            <FadeIn delay={120}>
+              <button
+                type="button"
+                onClick={() => openDoor(featuredDoors[2])}
+                aria-haspopup="dialog"
+                className={`group w-full text-left rounded-2xl p-4 border-2 shadow-md bg-surface transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] ${DOOR_FEATURED_RING[featuredDoors[2].tone]}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${DOOR_ACCENT[featuredDoors[2].tone]}`}>{featuredDoors[2].icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="font-heading font-bold text-base text-dark">{featuredDoors[2].label}</h3>
+                      <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full shrink-0">✦ Core</span>
+                    </div>
+                    <p className="text-xs text-muted line-clamp-1">{featuredDoors[2].tagline}</p>
+                  </div>
+                  <ArrowRight size={16} className="text-primary-ink shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                </div>
+              </button>
+            </FadeIn>
+          )}
+        </div>
+
+        {/* Desktop featured: 3 equal columns */}
+        <div className="hidden md:grid md:grid-cols-3 gap-4 mb-4">
+          {featuredDoors.map((door, i) => (
             <FadeIn key={door.id} delay={i * 70}>
               <button
                 type="button"
                 onClick={() => openDoor(door)}
                 aria-haspopup="dialog"
-                className="group h-full w-full text-left bg-surface border border-border rounded-2xl p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-pop)] hover:border-primary/40 hover:-translate-y-0.5"
+                className={`group h-full w-full text-left rounded-2xl p-6 border-2 shadow-lg bg-surface transition-all duration-200 hover:shadow-xl hover:-translate-y-1 ${DOOR_FEATURED_RING[door.tone]}`}
               >
-                <span
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${DOOR_ACCENT[door.tone]}`}
-                >
-                  {door.icon}
-                </span>
-                <h3 className="font-heading font-bold text-lg text-dark mb-1">{door.label}</h3>
-                <p className="text-sm text-muted mb-4">{door.tagline}</p>
+                <div className="flex items-start justify-between mb-4">
+                  <span className={`w-12 h-12 rounded-xl flex items-center justify-center ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
+                  <span className="text-[11px] font-bold bg-secondary/15 text-secondary-dark px-2 py-1 rounded-full">✦ Core feature</span>
+                </div>
+                <h3 className="font-heading font-bold text-xl text-dark mb-1">{door.label}</h3>
+                <p className="text-sm text-muted mb-2">{door.tagline}</p>
+                <p className="text-xs text-muted/80 line-clamp-2 mb-4">{door.description}</p>
                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary-ink">
-                  Open this door
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform group-hover:translate-x-1"
-                    aria-hidden="true"
-                  />
+                  Open this door <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </span>
+              </button>
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* ── SECONDARY: Speak + Budget ── */}
+        <div className="flex items-center gap-2 mb-3 mt-2 md:mt-1">
+          <span className="text-xs font-semibold text-muted uppercase tracking-widest">More ways in</span>
+        </div>
+
+        {/* Mobile secondary: compact 2-col */}
+        <div className="md:hidden grid grid-cols-2 gap-3">
+          {secondaryDoors.map((door, i) => (
+            <FadeIn key={door.id} delay={i * 60}>
+              <button
+                type="button"
+                onClick={() => openDoor(door)}
+                aria-haspopup="dialog"
+                className="group w-full text-left bg-surface border border-border rounded-xl p-3.5 shadow-[var(--shadow-card)] transition-all duration-200 hover:border-primary/30 active:scale-[0.98] min-h-[120px]"
+              >
+                <span className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2.5 ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
+                <h3 className="font-heading font-semibold text-sm text-dark mb-1">{door.label}</h3>
+                <p className="text-[11px] text-muted line-clamp-2">{door.tagline}</p>
+              </button>
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* Desktop secondary: 2-col horizontal strip */}
+        <div className="hidden md:grid md:grid-cols-2 gap-4">
+          {secondaryDoors.map((door, i) => (
+            <FadeIn key={door.id} delay={i * 70}>
+              <button
+                type="button"
+                onClick={() => openDoor(door)}
+                aria-haspopup="dialog"
+                className="group w-full text-left bg-surface border border-border rounded-xl p-4 shadow-[var(--shadow-card)] transition-all duration-200 hover:border-primary/30 flex items-center gap-4"
+              >
+                <span className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-heading font-semibold text-base text-dark mb-0.5">{door.label}</h3>
+                  <p className="text-sm text-muted truncate">{door.tagline}</p>
+                </div>
+                <ArrowRight size={16} className="text-muted shrink-0 transition-transform group-hover:translate-x-1 group-hover:text-primary-ink" aria-hidden="true" />
               </button>
             </FadeIn>
           ))}
@@ -152,10 +257,10 @@ export default function HomePage({ ctx }: Props) {
               Pick a door to begin
             </h3>
             <p className="text-muted text-sm max-w-xl mx-auto">
-              However you start — speaking a meal, setting a budget, showing a photo, sharing a
-              recipe, or letting the AI predict — it all flows into the <strong className="text-dark">same brain</strong>. That
-              engine decides for you and hands back <strong className="text-dark">one confident
-              cart</strong>, ready to check out. Five doors in, one cart out.
+              However you start — showing a photo, sharing a recipe, subscribing for restocks,
+              speaking a meal, or setting a budget — it all flows into the{' '}
+              <strong className="text-dark">same brain</strong>. That engine decides for you and hands back{' '}
+              <strong className="text-dark">one confident cart</strong>, ready to check out.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {FRONT_DOORS.map((d) => (
@@ -173,17 +278,17 @@ export default function HomePage({ ctx }: Props) {
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl md:text-2xl font-heading font-bold text-dark">Fresh picks</h2>
           <Link to="/shop" className="text-sm font-semibold text-primary-ink hover:underline">
-            Browse the catalog →
+            Browse →
           </Link>
         </div>
         {loadingPicks ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-light-bg rounded-2xl h-64 animate-pulse" />
+              <div key={i} className="bg-light-bg rounded-2xl h-52 sm:h-64 animate-pulse" />
             ))}
           </div>
         ) : picks.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {picks.map((p) => (
               <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
             ))}

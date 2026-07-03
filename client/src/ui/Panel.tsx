@@ -87,19 +87,19 @@ export default function Panel({
           className="bg-surface w-full rounded-t-2xl sm:rounded-2xl shadow-[var(--shadow-pop)] flex flex-col max-h-[92vh] overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-start gap-3 px-5 py-4 border-b border-border">
+          <div className="flex items-start gap-3 px-4 md:px-5 py-4 border-b border-border">
             {icon && (
-              <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ICON_TONES[tone]}`}>
+              <span className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0 ${ICON_TONES[tone]}`}>
                 {icon}
               </span>
             )}
             <div className="flex-1 min-w-0">
-              <h2 className="font-heading font-bold text-lg text-dark leading-tight">{title}</h2>
+              <h2 className="font-heading font-bold text-lg md:text-xl text-dark leading-tight">{title}</h2>
               {subtitle && <p className="text-sm text-muted mt-0.5">{subtitle}</p>}
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition shrink-0"
+              className="p-2 md:p-1.5 rounded-full text-muted hover:text-dark hover:bg-light-bg transition shrink-0 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
               aria-label="Close panel"
             >
               <X size={20} />
@@ -107,10 +107,10 @@ export default function Panel({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
+          <div className="flex-1 overflow-y-auto px-4 md:px-5 py-5">{children}</div>
 
           {/* Footer */}
-          {footer && <div className="border-t border-border px-5 py-4">{footer}</div>}
+          {footer && <div className="border-t border-border px-4 md:px-5 py-4">{footer}</div>}
         </div>
       </PopIn>
     </div>
