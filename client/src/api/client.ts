@@ -29,6 +29,17 @@ export type Substitution = Schemas['SubstitutionResponse'];
 export type CartItem = Schemas['CartItemResponse'] & {
   /** optional per-pick decision steps (comparison-collapse UI) */
   reasoning_trail?: string[];
+  /** recently-ordered prompt: true if ordered within last 30 days */
+  recently_ordered?: boolean;
+  /** days since last order (0 = not recently ordered) */
+  days_ago?: number;
+  /** OOS suggestion: shown when best match was OOS, frontend lets user decide */
+  out_of_stock_suggestion?: {
+    product_id: string;
+    name: string;
+    price: number;
+    image_url: string | null;
+  } | null;
 };
 
 export type CartResponse = Omit<
@@ -109,12 +120,7 @@ export async function postConstraint(budget: number, servings: number, text?: st
   });
 }
 
-export async function postSos(situation: string): Promise<CartResponse> {
-  return request<CartResponse>('/sos', {
-    method: 'POST',
-    body: JSON.stringify({ situation }),
-  });
-}
+// postSos removed — SOS mode no longer exists
 
 export async function postCartOp(
   session_id: string,
@@ -164,27 +170,14 @@ export async function searchRecommend(q: string, limit = 5): Promise<RecommendRe
   return request<RecommendResponse>(`/catalog/recommend?${params}`);
 }
 
-/** SOS recommend — analyze situation and return product recommendations without adding to cart. */
-export interface SosRecommendation {
-  product: Product;
-  reason: string;
-  quantity: number;
-  confidence: number;
-}
-
-export async function postSosRecommend(situation: string): Promise<SosRecommendation[]> {
-  return request<SosRecommendation[]>('/sos/recommend', {
-    method: 'POST',
-    body: JSON.stringify({ situation }),
-  });
-}
+// postSosRecommend removed — SOS mode no longer exists
 
 
 
-// ============ NEW FEATURES: Predictive, Preferences, Pantry, Replan, Counterfactuals ============
+// ============ NEW FEATURES: Subscribe, Preferences, Pantry, Replan, Counterfactuals ============
 
-/** Predictive "Zero Door" — pre-staged restock cart */
-export interface PredictResponse {
+/** Subscribe "Zero Door" — predicted restock cart + recurring schedules */
+export interface SubscribeResponse {
   message: string;
   cart: CartResponse | null;
   predictions?: PredictionInsight[];
@@ -201,12 +194,45 @@ export interface PredictionInsight {
   reason: string;
 }
 
-export async function getPredictedCart(userId: string): Promise<PredictResponse> {
-  return request<PredictResponse>(`/predict/${userId}`);
+export async function getSubscribedCart(userId: string): Promise<SubscribeResponse> {
+  return request<SubscribeResponse>(`/subscribe/${userId}`);
 }
 
 export async function getPredictionInsights(userId: string): Promise<{ predictions: PredictionInsight[]; count: number }> {
-  return request<{ predictions: PredictionInsight[]; count: number }>(`/predict/${userId}/insights`);
+  return request<{ predictions: PredictionInsight[]; count: number }>(`/subscribe/${userId}/insights`);
+}
+
+/** Recurring schedule subscription */
+export interface Subscription {
+  user_id: string;
+  product_id: string;
+  product_name: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  next_due_date: string;
+}
+
+export async function addSubscription(
+  userId: string,
+  productId: string,
+  productName: string,
+  frequency: 'daily' | 'weekly' | 'monthly',
+): Promise<{ message: string; subscription: Subscription }> {
+  return request(`/subscribe`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, product_id: productId, product_name: productName, frequency }),
+  });
+}
+
+export async function removeSubscription(userId: string, productId: string): Promise<{ message: string }> {
+  return request(`/subscribe/${userId}/${productId}`, { method: 'DELETE' });
+}
+
+export async function getUserSubscriptions(userId: string): Promise<{ subscriptions: Subscription[]; count: number }> {
+  return request(`/subscribe/${userId}/schedules`);
+}
+
+export async function getDueSubscriptions(userId: string): Promise<{ due: Subscription[]; due_count: number; cart: CartResponse | null }> {
+  return request(`/subscribe/${userId}/due`);
 }
 
 /** User preferences (taste graph) */
@@ -228,14 +254,10 @@ export async function getUserPreferences(userId: string): Promise<{ message: str
   return request<{ message: string; preference: UserPreference | null }>(`/preferences/${userId}`);
 }
 
-/** Pantry — inferred items user already has */
+/** Pantry — recently ordered items (ordered in last 30 days) */
 export interface PantryItem {
   product_id: string;
-  product_name: string;
-  category: string;
-  estimated_remaining_days: number;
-  confidence: number;
-  source: string;
+  days_ago: number;
 }
 
 export async function getUserPantry(userId: string): Promise<{ items: PantryItem[]; count: number }> {
@@ -305,17 +327,23 @@ export interface OrderItem {
 
 export interface OrderRecord {
   order_id: string;
-  user_id: string;
+  user_id?: string;
   order_date: string;
   items: OrderItem[];
   total: number;
   status: string;
+  payment_method: string;
+  payment_status: string;
 }
 
-export async function placeOrder(sessionId: string, userId: string): Promise<OrderRecord> {
+export async function placeOrder(
+  sessionId: string,
+  userId: string,
+  paymentMethod: 'upi' | 'card' | 'cod' | 'wallet' = 'cod',
+): Promise<OrderRecord> {
   return request<OrderRecord>('/orders/place', {
     method: 'POST',
-    body: JSON.stringify({ session_id: sessionId, user_id: userId }),
+    body: JSON.stringify({ session_id: sessionId, user_id: userId, payment_method: paymentMethod }),
   });
 }
 
@@ -332,12 +360,20 @@ export interface AuthUser {
   email: string;
   role: string;
   preferences: string[];
+  region?: string;
 }
 
-export async function registerUser(name: string, email: string, password: string): Promise<AuthUser> {
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+  region?: string,
+  city?: string,
+  state?: string,
+): Promise<AuthUser> {
   return request<AuthUser>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, region: region || '', city: city || '', state: state || '' }),
   });
 }
 

@@ -2,11 +2,6 @@
 
 Each node reads what it needs from state and returns a partial dict update.
 LangGraph merges the returned dict back into state automatically.
-
-Extended with:
-- User context (preferences, pantry) for personalized matching
-- Re-planning support (feedback loop for conversational refinement)
-- Counterfactual data for "why not" explanations
 """
 from __future__ import annotations
 
@@ -22,21 +17,20 @@ class AgentState(TypedDict, total=False):
 
     Fields:
         raw_input: The user's natural language input.
-        mode: Classified intent mode (recipe, budget, photo, link, sos, cart_op, text).
+        mode: Classified intent mode (recipe, budget, photo, link, subscribe, cart_op, text).
         servings: Serving count extracted from input (default 1, for scaling).
         needs: Decomposed needs from the outcome.
         candidates: need_name → list of (product_id, name, score, price, image_url) tuples.
         cart: The assembled cart.
-        substitutions: Substitution records for out-of-stock swaps.
+        substitutions: Substitution records (kept for backward compat, now unused in pipeline).
         confidence: Overall cart confidence score (0–1).
         reasoning_trail: Agent decision log.
         clarification: HITL question if confidence below threshold, else None.
 
         --- User Context (Memory Layer) ---
         user_id: Authenticated user ID for personalization.
+        user_region: Region string ("north" | "south" | "east" | "west" | "central").
         user_preferences: Computed preference profile (brand affinity, price tier, etc.).
-        pantry_items: Items the user likely already has at home.
-        pantry_filtered: Names of needs removed because user has them.
 
         --- Re-planning (Conversational Loop) ---
         feedback: User feedback for re-planning (e.g., "make it cheaper", "I'm vegan").
@@ -60,9 +54,8 @@ class AgentState(TypedDict, total=False):
 
     # User context
     user_id: str | None
-    user_preferences: dict  # serialized UserPreference
-    pantry_items: list[dict]  # serialized PantryItem list
-    pantry_filtered: list[str]  # need names removed by pantry filter
+    user_region: str | None       # region-aware decompose
+    user_preferences: dict        # serialized UserPreference
 
     # Re-planning
     feedback: str | None

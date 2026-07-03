@@ -1,8 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Zap, LogOut, User, Activity } from 'lucide-react';
+import { ShoppingCart, Search, LogOut, User, Activity } from 'lucide-react';
 import { useState } from 'react';
 import type { AppContext } from '../App';
-import { Button } from '../ui';
 
 interface Props {
   ctx: AppContext;
@@ -68,12 +67,6 @@ export default function Header({ ctx, onLogout }: Props) {
 
         {/* Right actions */}
         <nav className="flex items-center gap-3" aria-label="Primary actions">
-          <Link to="/sos">
-            <Button variant="accent" size="sm" leftIcon={<Zap size={16} aria-hidden="true" />}>
-              <span className="hidden sm:inline">SOS</span>
-            </Button>
-          </Link>
-
           <button
             onClick={() => ctx.setCartOpen(true)}
             className="relative flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition"
@@ -150,11 +143,10 @@ export default function Header({ ctx, onLogout }: Props) {
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 py-2 text-sm font-medium overflow-x-auto">
           <Link to="/" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Home</Link>
           <Link to="/shop" className="text-dark hover:text-primary-ink transition whitespace-nowrap">Shop</Link>
-          <Link to="/shop?category=fruits%20vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits & Veggies</Link>
+          <Link to="/shop?category=fruits%20vegetables" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Fruits &amp; Veggies</Link>
           <Link to="/shop?category=foodgrains%20oil%20masala" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Staples</Link>
-          <Link to="/shop?category=snacks%20branded%20foods" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks & Beverages</Link>
+          <Link to="/shop?category=snacks%20branded%20foods" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Snacks &amp; Beverages</Link>
           <Link to="/shop?category=bakery%20cakes%20dairy" className="text-muted hover:text-primary-ink transition whitespace-nowrap">Dairy</Link>
-          <Link to="/sos" className="text-accent-dark hover:text-accent transition whitespace-nowrap font-semibold">SOS Mode</Link>
           {ctx.user?.role === 'admin' && (
             <Link to="/admin" className="ml-auto text-purple-600 hover:text-purple-800 transition whitespace-nowrap font-semibold flex items-center gap-1">
               📊 Admin Dashboard

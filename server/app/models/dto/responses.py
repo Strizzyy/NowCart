@@ -45,6 +45,8 @@ class ProductResponse(BaseModel):
     delivery_eta_min: int = 30
     image_url: str | None = None
     description: str = ""
+    verified: bool = False
+    order_count_month: int = 0
 
     @classmethod
     def from_domain(cls, p: Product) -> "ProductResponse":
@@ -62,6 +64,8 @@ class ProductResponse(BaseModel):
             delivery_eta_min=p.delivery_eta_min,
             image_url=p.image_url,
             description=p.description,
+            verified=p.verified,
+            order_count_month=p.order_count_month,
         )
 
 
@@ -89,6 +93,9 @@ class CartItemResponse(BaseModel):
     confidence: float = 1.0
     substituted_for: str | None = None
     image_url: str | None = None
+    recently_ordered: bool = False
+    days_ago: int = 0
+    out_of_stock_suggestion: dict | None = None
 
     @classmethod
     def from_domain(cls, item: CartItem) -> "CartItemResponse":
@@ -104,6 +111,9 @@ class CartItemResponse(BaseModel):
             confidence=item.confidence,
             substituted_for=item.substituted_for,
             image_url=item.image_url,
+            recently_ordered=item.recently_ordered,
+            days_ago=item.days_ago,
+            out_of_stock_suggestion=item.out_of_stock_suggestion,
         )
 
 

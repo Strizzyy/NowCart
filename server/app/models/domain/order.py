@@ -1,4 +1,4 @@
-"""Order domain model — deterministic mock orders for demo (Requirement 8.2)."""
+"""Order domain model."""
 from pydantic import BaseModel, Field
 
 
@@ -11,3 +11,5 @@ class Order(BaseModel):
     items: list[dict] = Field(default_factory=list)  # [{product_id, name, quantity, price}]
     total: float = 0.0
     status: str = "delivered"
+    payment_method: str = "cod"     # "upi" | "card" | "cod" | "wallet"
+    payment_status: str = "pending"  # "paid" | "pending"

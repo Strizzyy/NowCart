@@ -12,7 +12,7 @@ import hashlib
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.models.domain.user import User
+from app.models.domain.user import User, UserLocation
 from app.repositories import get_repository
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -28,6 +28,12 @@ class RegisterRequest(BaseModel):
     email: str = Field(..., min_length=3)
     password: str = Field(..., min_length=6)
     preferences: list[str] = Field(default_factory=list)
+    city: str = ""
+    state: str = ""
+    region: str = Field(
+        default="",
+        description="Indian region: north | south | east | west | central",
+    )
 
 
 class LoginRequest(BaseModel):
@@ -41,6 +47,7 @@ class AuthResponse(BaseModel):
     email: str
     role: str = "user"
     preferences: list[str] = Field(default_factory=list)
+    region: str = ""
 
 
 ADMIN_EMAILS = {"admin@nowcart.in", "admin@nowcart.app", "admin@example.com"}
@@ -82,6 +89,11 @@ async def register(req: RegisterRequest) -> AuthResponse:
         name=req.name.strip(),
         email=email_lower,
         preferences=req.preferences,
+        location=UserLocation(
+            city=req.city.strip(),
+            state=req.state.strip(),
+            region=req.region.strip().lower(),
+        ),
     )
 
     await repo.upsert_user(user)
@@ -94,6 +106,7 @@ async def register(req: RegisterRequest) -> AuthResponse:
         email=user.email,
         role=_get_role(user.email),
         preferences=user.preferences,
+        region=user.location.region if user.location else "",
     )
 
 
@@ -138,6 +151,7 @@ async def login(req: LoginRequest) -> AuthResponse:
         email=user.email,
         role=_get_role(user.email),
         preferences=user.preferences,
+        region=user.location.region if user.location else "",
     )
 
 
@@ -156,4 +170,5 @@ async def get_user_profile(user_id: str):
         "preferences": user.preferences,
         "dietary_tags": user.dietary_tags,
         "price_tier": user.price_tier,
+        "location": user.location.model_dump() if user.location else {},
     }

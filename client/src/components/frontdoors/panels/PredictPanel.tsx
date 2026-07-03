@@ -1,6 +1,13 @@
 import { useState } from 'react';
-import { Clock, Package, TrendingUp, ShoppingCart, Sparkles } from 'lucide-react';
-import { getPredictedCart, getUserPantry, type PredictResponse, type PantryItem } from '../../../api/client';
+import { Clock, Package, TrendingUp, ShoppingCart, Sparkles, Bell, Calendar } from 'lucide-react';
+import {
+  getSubscribedCart,
+  getUserPantry,
+  getUserSubscriptions,
+  type SubscribeResponse,
+  type PantryItem,
+  type Subscription,
+} from '../../../api/client';
 import type { AppContext } from '../../../App';
 import { Button, Chip } from '../../../ui';
 
@@ -30,10 +37,12 @@ function resolveUserId(user: { email?: string; userId?: string } | null | undefi
 
 export default function PredictPanel({ ctx }: Props) {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<PredictResponse | null>(null);
+  const [result, setResult] = useState<SubscribeResponse | null>(null);
   const [error, setError] = useState('');
   const [pantry, setPantry] = useState<PantryItem[]>([]);
   const [pantryLoading, setPantryLoading] = useState(false);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
 
   const userId = resolveUserId(ctx.user);
 
@@ -41,7 +50,7 @@ export default function PredictPanel({ ctx }: Props) {
     setLoading(true);
     setError('');
     try {
-      const data = await getPredictedCart(userId);
+      const data = await getSubscribedCart(userId);
       setResult(data);
       if (data.cart) {
         ctx.setCart(data.cart);
@@ -66,21 +75,34 @@ export default function PredictPanel({ ctx }: Props) {
     }
   };
 
+  const handleLoadSubscriptions = async () => {
+    setSubsLoading(true);
+    try {
+      const data = await getUserSubscriptions(userId);
+      setSubscriptions(data.subscriptions || []);
+    } catch {
+      // ignore
+    } finally {
+      setSubsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center">
             <Sparkles size={16} className="text-violet-700" />
           </div>
           <div>
-            <p className="text-sm font-bold text-violet-900">Zero Door — Predictive Restock</p>
+            <p className="text-sm font-bold text-violet-900">Subscribe — Predicted Restock</p>
             <p className="text-xs text-violet-600">We know what you need before you ask</p>
           </div>
         </div>
         <p className="text-xs text-violet-700 mt-2">
-          Based on your purchase patterns, we predict when you'll run out of essentials and 
-          pre-build a restock cart — already optimized, substituted, and scored.
+          Based on your purchase patterns, we predict when you'll run out of essentials and
+          pre-build a restock cart — already scored and ready to checkout.
         </p>
         <p className="text-[11px] text-violet-500 mt-1">
           Logged in as: <span className="font-semibold">{ctx.user?.name || 'Unknown'}</span> (ID: {userId})
@@ -118,9 +140,7 @@ export default function PredictPanel({ ctx }: Props) {
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <ShoppingCart size={16} className="text-green-700" />
-            <p className="text-sm font-bold text-green-800">
-              {result.message}
-            </p>
+            <p className="text-sm font-bold text-green-800">{result.message}</p>
           </div>
           <div className="space-y-2 mt-3">
             {result.cart.items.slice(0, 5).map((item) => (
@@ -144,11 +164,11 @@ export default function PredictPanel({ ctx }: Props) {
         </div>
       )}
 
-      {/* Pantry Awareness Section */}
+      {/* Recently Ordered section */}
       <div className="border-t border-border pt-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-bold text-dark flex items-center gap-1.5">
-            <Package size={14} className="text-emerald-600" /> Pantry Awareness
+            <Clock size={14} className="text-blue-500" /> Recently Ordered
           </p>
           <Button
             variant="outline"
@@ -156,30 +176,69 @@ export default function PredictPanel({ ctx }: Props) {
             onClick={handleLoadPantry}
             loading={pantryLoading}
           >
-            {pantryLoading ? 'Loading...' : pantry.length > 0 ? 'Refresh' : 'Show my pantry'}
+            {pantry.length > 0 ? 'Refresh' : 'Show recent'}
           </Button>
         </div>
         <p className="text-xs text-muted mb-2">
-          Items we think you still have at home (based on recent purchases + estimated shelf life).
-          These are auto-filtered from your cart when you use any front door.
+          Products you've ordered in the last 30 days. These are marked in your cart with a
+          "You ordered this X days ago — still need it?" prompt.
         </p>
         {pantry.length > 0 && (
           <div className="space-y-1.5 max-h-48 overflow-y-auto">
             {pantry.map((item) => (
-              <div key={item.product_id} className="flex items-center justify-between bg-emerald-50 rounded-lg p-2">
+              <div key={item.product_id} className="flex items-center justify-between bg-blue-50 rounded-lg p-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs">🏠</span>
-                  <span className="text-xs font-medium text-dark">{item.product_name}</span>
+                  <span className="text-xs">🛒</span>
+                  <span className="text-xs font-medium text-dark font-mono">{item.product_id}</span>
+                </div>
+                <Chip tone={item.days_ago <= 7 ? 'warning' : 'info'} size="xs">
+                  {item.days_ago}d ago
+                </Chip>
+              </div>
+            ))}
+          </div>
+        )}
+        {pantry.length === 0 && !pantryLoading && (
+          <p className="text-xs text-muted italic">No recent orders found.</p>
+        )}
+      </div>
+
+      {/* Recurring Subscriptions section */}
+      <div className="border-t border-border pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-bold text-dark flex items-center gap-1.5">
+            <Bell size={14} className="text-violet-500" /> Recurring Schedules
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLoadSubscriptions}
+            loading={subsLoading}
+          >
+            {subscriptions.length > 0 ? 'Refresh' : 'View schedules'}
+          </Button>
+        </div>
+        <p className="text-xs text-muted mb-2">
+          Set daily, weekly, or monthly subscriptions for products you always need.
+        </p>
+        {subscriptions.length > 0 && (
+          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            {subscriptions.map((sub) => (
+              <div key={sub.product_id} className="flex items-center justify-between bg-violet-50 rounded-lg p-2">
+                <div className="flex items-center gap-2">
+                  <Calendar size={12} className="text-violet-600" />
+                  <span className="text-xs font-medium text-dark">{sub.product_name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Chip tone={item.estimated_remaining_days > 5 ? 'success' : 'warning'} size="xs">
-                    ~{Math.round(item.estimated_remaining_days)}d left
-                  </Chip>
-                  <span className="text-[10px] text-muted">{Math.round(item.confidence * 100)}%</span>
+                  <Chip tone="primary" size="xs">{sub.frequency}</Chip>
+                  <span className="text-[10px] text-muted">due {sub.next_due_date}</span>
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {subscriptions.length === 0 && !subsLoading && (
+          <p className="text-xs text-muted italic">No recurring subscriptions set up yet.</p>
         )}
       </div>
     </div>

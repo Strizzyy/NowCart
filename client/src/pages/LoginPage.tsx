@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight, MapPin } from 'lucide-react';
 import type { UserInfo } from '../App';
 import { Button, FadeIn } from '../ui';
 import { registerUser, loginUser } from '../api/client';
@@ -19,6 +19,8 @@ export default function LoginPage({ onLogin }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [region, setRegion] = useState('');
+  const [city, setCity] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +49,7 @@ export default function LoginPage({ onLogin }: Props) {
 
     try {
       if (mode === 'signup') {
-        const authUser = await registerUser(name.trim(), trimmedEmail, password);
+        const authUser = await registerUser(name.trim(), trimmedEmail, password, region, city);
         onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
       } else {
         const authUser = await loginUser(trimmedEmail, password);
@@ -121,6 +123,41 @@ export default function LoginPage({ onLogin }: Props) {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="John Doe"
                       className="w-full pl-10 pr-4 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Region + City (signup only) */}
+              {mode === 'signup' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="auth-region" className="text-sm font-medium text-dark block mb-1.5 flex items-center gap-1">
+                      <MapPin size={13} /> Region
+                    </label>
+                    <select
+                      id="auth-region"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                    >
+                      <option value="">Select…</option>
+                      <option value="north">North India</option>
+                      <option value="south">South India</option>
+                      <option value="east">East India</option>
+                      <option value="west">West India</option>
+                      <option value="central">Central India</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="auth-city" className="text-sm font-medium text-dark block mb-1.5">City</label>
+                    <input
+                      id="auth-city"
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Mumbai"
+                      className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
                     />
                   </div>
                 </div>

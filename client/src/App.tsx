@@ -7,7 +7,6 @@ import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import CartDrawer from './components/CartDrawer';
-import SosPage from './pages/SosPage';
 import LoginPage from './pages/LoginPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
@@ -81,7 +80,6 @@ function App() {
                   <Route path="/shop" element={<ShopPage ctx={ctx} />} />
                   <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
                   <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
-                  <Route path="/sos" element={<SosPage ctx={ctx} />} />
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
                   <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
                   <Route path="/about" element={<AboutPage />} />
@@ -93,6 +91,7 @@ function App() {
                       ? <AdminDashboardPage ctx={ctx} />
                       : <Navigate to="/" replace />
                   } />
+                  <Route path="/sos" element={<Navigate to="/" replace />} />
                   <Route path="/login" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

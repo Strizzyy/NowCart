@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-lg font-heading font-bold text-dark mb-3">3. How We Use Your Data</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>To assemble and deliver your grocery cart and process your orders.</li>
-            <li>To personalise your experience — confidence scores, brand preferences, and predictive restock (Zero Door) rely on your order history.</li>
+            <li>To personalise your experience — confidence scores, brand preferences, and predictive restock (Subscribe) rely on your order history.</li>
             <li>To improve our AI pipeline, matching algorithms, and product catalog.</li>
             <li>To send transactional emails (order confirmation, delivery updates) and, if you subscribed, our newsletter. You can unsubscribe at any time.</li>
             <li>To detect and prevent fraud, abuse, or security incidents.</li>

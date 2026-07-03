@@ -83,7 +83,7 @@ export default function OrderHistoryPage({ ctx }: Props) {
             <ShoppingBag size={48} className="mx-auto text-muted mb-4" />
             <h2 className="text-lg font-semibold text-dark mb-2">No orders yet</h2>
             <p className="text-sm text-muted mb-4">
-              Place your first order and it will appear here. Your order history powers the Zero Door predictions.
+              Place your first order and it will appear here. Your order history powers the Subscribe predictions.
             </p>
             <Link to="/">
               <Button variant="primary" size="md">Start Shopping</Button>
@@ -111,16 +111,31 @@ export default function OrderHistoryPage({ ctx }: Props) {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-primary-ink">₹{order.total.toFixed(0)}</p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      order.status === 'delivered' 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {order.status.toUpperCase()}
-                    </span>
+                    <div className="flex items-center gap-1.5 mt-0.5 justify-end flex-wrap">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        order.status === 'delivered'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {order.status.toUpperCase()}
+                      </span>
+                      {order.payment_method && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 uppercase">
+                          {order.payment_method}
+                        </span>
+                      )}
+                      {order.payment_status && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          order.payment_status === 'paid'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-orange-100 text-orange-700'
+                        }`}>
+                          {order.payment_status === 'paid' ? '✓ Paid' : 'Pending'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-
                 <div className="border-t border-border pt-3">
                   <div className="flex flex-wrap gap-2">
                     {order.items.map((item, idx) => (
@@ -143,7 +158,7 @@ export default function OrderHistoryPage({ ctx }: Props) {
         {orders.length > 0 && (
           <div className="mt-8 bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
             <p className="text-sm text-violet-700">
-              🔮 Your order history feeds the <strong>Zero Door</strong> predictive engine.
+              🔮 Your order history feeds the <strong>Subscribe</strong> predictive engine.
               The more you order, the better we predict your restock needs.
             </p>
           </div>

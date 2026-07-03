@@ -93,7 +93,7 @@ export default function AdminDashboardPage({ ctx: _ctx }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [info, setInfo] = useState<Info | null>(null);
   const [cost, setCost] = useState<CostData | null>(null);
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [_refreshCount, setRefreshCount] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const fetchData = async () => {

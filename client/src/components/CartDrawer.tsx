@@ -1,4 +1,4 @@
-import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, Repeat, PackageX, XCircle, BadgeDollarSign, Star, ArrowRight, Truck } from 'lucide-react';
+import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, PackageX, XCircle, BadgeDollarSign, Star, Truck, Clock, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postCartOp, placeOrder } from '../api/client';
@@ -41,6 +41,13 @@ function confidenceTone(c: number): ChipTone {
   return 'danger';
 }
 
+const PAYMENT_OPTIONS: { value: 'upi' | 'card' | 'cod' | 'wallet'; label: string; icon: string }[] = [
+  { value: 'upi', label: 'UPI', icon: '📱' },
+  { value: 'card', label: 'Card', icon: '💳' },
+  { value: 'wallet', label: 'Wallet', icon: '👛' },
+  { value: 'cod', label: 'Cash on Delivery', icon: '💵' },
+];
+
 export default function CartDrawer({ ctx }: Props) {
   const { cart, cartOpen, setCartOpen, setCart } = ctx;
   const [loading, setLoading] = useState<string | null>(null);
@@ -48,9 +55,10 @@ export default function CartDrawer({ ctx }: Props) {
   const [highlightLow, setHighlightLow] = useState(false);
   const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cod' | 'wallet'>('upi');
   const navigate = useNavigate();
 
-  // reset the HITL gate whenever a new cart arrives
+  // reset whenever a new cart arrives
   useEffect(() => {
     setProceeded(false);
     setHighlightLow(false);
@@ -139,7 +147,7 @@ export default function CartDrawer({ ctx }: Props) {
             <EmptyState
               icon={<Sparkles size={28} />}
               title="Your cart is empty"
-              description='Open a front door on the home page — speak it, constrain it, show it, or share it — and the engine builds your cart here.'
+              description='Open a front door on the home page — speak, budget, show, share, or subscribe — and the engine builds your cart here.'
             />
           ) : (
             <div className="space-y-3">
@@ -155,8 +163,8 @@ export default function CartDrawer({ ctx }: Props) {
                 />
               )}
 
-              {/* Conversational Re-planning (feedback loop) — only for non-predicted carts */}
-              {!showHitl && cart.items.length > 0 && !cart.notes.some(n => n.includes('Predicted restock')) && (
+              {/* Conversational Re-planning */}
+              {!showHitl && cart.items.length > 0 && !cart.notes.some(n => n.includes('Predicted restock') || n.includes('subscription')) && (
                 <ReplanBar cart={cart} onReplan={(updated) => setCart(updated)} ctx={ctx} />
               )}
 
@@ -170,43 +178,7 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Substitutions summary (D2) — Enhanced visibility for demo */}
-              {cart.substitutions.length > 0 && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Repeat size={16} className="text-blue-700" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-blue-900">
-                        🧠 Substitution Intelligence Active
-                      </p>
-                      <p className="text-[11px] text-blue-700">
-                        {cart.substitutions.length} item{cart.substitutions.length === 1 ? '' : 's'} auto-swapped for in-stock alternatives
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 mt-3">
-                    {cart.substitutions.map((sub, i) => (
-                      <div key={i} className="bg-white/70 rounded-lg p-2.5 border border-blue-100">
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-red-500 line-through font-medium">{sub.original_name}</span>
-                          <ArrowRight size={12} className="text-blue-500 shrink-0" />
-                          <span className="text-blue-900 font-bold">{sub.substitute_name}</span>
-                        </div>
-                        <p className="text-[10px] text-blue-600 mt-1 flex items-center gap-1">
-                          <Sparkles size={10} /> {sub.reason}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-blue-600 mt-2 italic">
-                    AI matched similar products by category, brand quality, and price range
-                  </p>
-                </div>
-              )}
-
-              {/* Unmatched / couldn't-add notes (flagged) */}
+              {/* Unmatched / couldn't-add notes */}
               {cart.notes.length > 0 && (
                 <div className="bg-light-bg border border-border rounded-xl p-3">
                   <p className="text-xs font-semibold text-dark mb-1 flex items-center gap-1">
@@ -218,7 +190,7 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* ===== Section Tabs: Recommended vs Economical ===== */}
+              {/* Section Tabs: Recommended vs Economical */}
               {cart.economical_items && cart.economical_items.length > 0 && (
                 <div className="flex rounded-xl bg-light-bg border border-border p-1 gap-1">
                   <button
@@ -270,16 +242,15 @@ export default function CartDrawer({ ctx }: Props) {
                 </p>
               )}
 
-              {/* Items — based on active tab */}
+              {/* Items */}
               {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {
-                const substituted = !!item.substituted_for;
                 const low = item.confidence < LOW_CONFIDENCE;
                 return (
                   <div
                     key={item.product_id}
                     className={[
                       'flex items-start gap-3 p-3 rounded-xl transition',
-                      substituted ? 'bg-blue-50/60 border-l-4 border-blue-300 pl-2' : 'bg-light-bg',
+                      'bg-light-bg',
                       highlightLow && low ? 'ring-2 ring-amber-300' : '',
                       activeTab === 'economical' ? 'border-l-4 border-emerald-200' : '',
                     ].join(' ')}
@@ -309,16 +280,11 @@ export default function CartDrawer({ ctx }: Props) {
                         <p className="text-sm font-bold text-primary-ink shrink-0">₹{item.line_total.toFixed(0)}</p>
                       </div>
 
-                      {/* Confidence + substitution chips */}
+                      {/* Confidence chip */}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <Chip tone={confidenceTone(item.confidence)} size="xs">
                           {Math.round(item.confidence * 100)}% confident
                         </Chip>
-                        {substituted && (
-                          <Chip tone="info" size="xs" icon={<Repeat size={10} />}>
-                            Swapped in
-                          </Chip>
-                        )}
                         {activeTab === 'economical' && item.reason && item.reason.includes('saves') && (
                           <Chip tone="success" size="xs" icon={<BadgeDollarSign size={10} />}>
                             {item.reason.match(/saves ₹\d+/)?.[0] || 'Cheaper'}
@@ -326,7 +292,38 @@ export default function CartDrawer({ ctx }: Props) {
                         )}
                       </div>
 
-                      {/* Comparison-collapse: one-line why + expandable trail */}
+                      {/* Recently-ordered prompt */}
+                      {item.recently_ordered && (item.days_ago ?? 0) > 0 && (
+                        <div className="mt-1.5 bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <Clock size={11} className="text-blue-600 shrink-0" aria-hidden="true" />
+                            <p className="text-[11px] text-blue-800">
+                              You ordered this {item.days_ago ?? 0} day{(item.days_ago ?? 0) === 1 ? '' : 's'} ago — still need it?
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRemove(item.name)}
+                            disabled={loading === item.name}
+                            className="text-[10px] font-semibold text-blue-700 hover:text-blue-900 underline shrink-0"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+
+                      {/* OOS suggestion */}
+                      {item.out_of_stock_suggestion && (
+                        <div className="mt-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <ShoppingBag size={11} className="text-amber-600 shrink-0" aria-hidden="true" />
+                            <p className="text-[11px] text-amber-800 truncate">
+                              Original OOS — also try: <span className="font-semibold">{item.out_of_stock_suggestion.name}</span> ₹{item.out_of_stock_suggestion.price}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Why this one */}
                       <WhyThisOne item={item} />
 
                       {/* Quantity controls */}
@@ -362,7 +359,7 @@ export default function CartDrawer({ ctx }: Props) {
                 );
               })}
 
-              {/* Cart-level reasoning trail (comparison collapse) */}
+              {/* Cart-level reasoning trail */}
               <EngineTrail trail={cart.reasoning_trail} />
             </div>
           )}
@@ -390,6 +387,31 @@ export default function CartDrawer({ ctx }: Props) {
               </div>
             )}
 
+            {/* Payment method selector */}
+            <div>
+              <p className="text-xs font-semibold text-dark mb-2">Payment method</p>
+              <div className="grid grid-cols-4 gap-1.5">
+                {PAYMENT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setPaymentMethod(opt.value)}
+                    className={[
+                      'flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl border text-center transition',
+                      paymentMethod === opt.value
+                        ? 'border-primary bg-primary-light text-primary-ink font-semibold'
+                        : 'border-border text-muted hover:border-primary/40',
+                    ].join(' ')}
+                  >
+                    <span className="text-base leading-none">{opt.icon}</span>
+                    <span className="text-[10px] leading-tight">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              {paymentMethod === 'cod' && (
+                <p className="text-[10px] text-muted mt-1">Payment collected on delivery.</p>
+              )}
+            </div>
+
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-muted">
@@ -413,9 +435,9 @@ export default function CartDrawer({ ctx }: Props) {
                   setPlacingOrder(true);
                   try {
                     const userId = resolveUserId(ctx.user);
-                    await placeOrder(cart.session_id, userId);
+                    await placeOrder(cart.session_id, userId, paymentMethod);
                   } catch {
-                    // Order placement failed — continue to success page anyway for demo
+                    // Order placement failed — continue to success page for demo
                   }
                   setPlacingOrder(false);
                   setCartOpen(false);

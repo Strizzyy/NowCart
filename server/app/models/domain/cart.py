@@ -28,6 +28,13 @@ class CartItem(BaseModel):
     substituted_for: str | None = None     # original product_id if swapped (D2)
     image_url: str | None = None           # product image URL
 
+    # Recently-ordered prompt — populated post-assembly by pantry_service
+    recently_ordered: bool = False         # True if ordered within last 30 days
+    days_ago: int = 0                      # days since last order (0 = not recently ordered)
+
+    # Out-of-stock suggestion — populated in match_node when best candidate is OOS
+    out_of_stock_suggestion: dict | None = None  # {product_id, name, price, image_url}
+
     @property
     def line_total(self) -> float:
         return round(self.price * self.quantity, 2)

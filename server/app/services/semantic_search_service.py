@@ -330,7 +330,7 @@ class HybridRetrievalService:
         cache_valid = False
         if _EMBED_CACHE_FILE.exists():
             try:
-                cached = np.load(_EMBED_CACHE_FILE)
+                cached = np.load(_EMBED_CACHE_FILE, allow_pickle=True)
                 cached_ids = cached["product_ids"].tolist()
                 cached_embeddings = cached["embeddings"]
                 
@@ -367,7 +367,7 @@ class HybridRetrievalService:
 
         self._indexed = True
         elapsed = time.perf_counter() - start
-        mem_mb = embeddings.nbytes / 1024 / 1024
+        mem_mb = self._product_embeddings.nbytes / 1024 / 1024
         logger.info(
             "Hybrid retrieval index ready: %d products, %.2fs, embeddings=%.1fMB",
             len(products),

@@ -1,8 +1,8 @@
 """Outcome Service — orchestrates the LangGraph engine and persists the cart.
 
-Entry point for all front-door inputs. Now enriched with:
-- User preference injection (personalized matching)
-- Pantry awareness (subtracts what user already has)
+Entry point for all front-door inputs. Enriched with:
+- Region-aware decompose (user location → regional ingredient hints)
+- Recently-ordered prompt (post-assembly: marks items ordered in last 30 days)
 - Re-planning support (feedback loop for conversational refinement)
 - Counterfactual data passthrough
 """
@@ -33,18 +33,7 @@ class OutcomeService:
         user_id: str | None = None,
         feedback: str | None = None,
     ) -> Cart:
-        """Process a user's natural-language outcome into a confident cart.
-
-        Args:
-            text: Raw user input (e.g. "Biryani for 4").
-            servings: Optional explicit servings override.
-            mode: Optional mode override (skips intent classification).
-            user_id: Authenticated user ID for personalization.
-            feedback: User feedback for re-planning loop.
-
-        Returns:
-            The assembled Cart domain model (also persisted to cache).
-        """
+        """Process a user's natural-language outcome into a confident cart."""
         pipeline_start = time.perf_counter()
 
         # Build initial state
@@ -62,15 +51,12 @@ class OutcomeService:
         if feedback:
             initial_state["feedback"] = feedback
 
-        # Enrich with user context if user_id is available
+        # Inject user region for region-aware decompose
         if user_id:
             await self._inject_user_context(initial_state, user_id)
 
         try:
-            # Invoke the compiled graph
             result = await outcome_graph.ainvoke(initial_state)
-
-            # Extract cart from final state
             cart: Cart | None = result.get("cart")
 
             if cart is None:
@@ -91,21 +77,16 @@ class OutcomeService:
             if not cart.reasoning_trail:
                 cart.reasoning_trail = result.get("reasoning_trail", []) or []
 
-            # Attach pantry info to notes if items were filtered
-            pantry_filtered = result.get("pantry_filtered", [])
-            if pantry_filtered:
-                cart.notes.append(
-                    f"🏠 Skipped {len(pantry_filtered)} items you likely have: "
-                    + ", ".join(pantry_filtered[:5])
-                )
-
-            # Store counterfactuals in cart metadata (accessible via API)
+            # Attach counterfactual summary
             counterfactuals = result.get("counterfactuals", {})
             if counterfactuals:
-                # Store as a reasoning trail entry for now (lightweight)
                 cart.reasoning_trail.append(
                     f"💡 Counterfactuals available for {len(counterfactuals)} items"
                 )
+
+            # Post-assembly: mark recently-ordered items for the prompt
+            if user_id and cart.items:
+                await self._annotate_recently_ordered(cart, user_id)
 
         except Exception as exc:
             logger.exception("Outcome engine failed: %s", exc)
@@ -145,20 +126,7 @@ class OutcomeService:
         user_id: str | None = None,
         servings: int | None = None,
     ) -> Cart:
-        """Re-plan an existing cart based on user feedback.
-
-        This invokes the graph with feedback set, triggering the
-        re-planning loop (replan → match → optimize → ... ).
-
-        Args:
-            text: Original input text.
-            feedback: User feedback (e.g., "make it cheaper", "I'm vegan").
-            user_id: User ID for personalization.
-            servings: Original servings.
-
-        Returns:
-            A refined Cart.
-        """
+        """Re-plan an existing cart based on user feedback."""
         return await self.process_outcome(
             text=text,
             servings=servings,
@@ -167,12 +135,16 @@ class OutcomeService:
         )
 
     async def _inject_user_context(self, state: AgentState, user_id: str) -> None:
-        """Enrich the initial state with user preferences and pantry data.
+        """Inject user region into state for region-aware decompose."""
+        try:
+            from app.repositories import get_repository
+            repo = get_repository()
+            user = await repo.get_user(user_id)
+            if user and user.location and user.location.region:
+                state["user_region"] = user.location.region
+        except Exception as exc:
+            logger.debug("Could not load user location: %s", exc)
 
-        This enables:
-        - preference_boost_node to personalize confidence scores
-        - pantry_filter_node to subtract items user already has
-        """
         try:
             from app.services.preference_service import get_preference_service
             pref_service = get_preference_service()
@@ -182,14 +154,19 @@ class OutcomeService:
         except Exception as exc:
             logger.debug("Could not load user preferences: %s", exc)
 
+    async def _annotate_recently_ordered(self, cart: Cart, user_id: str) -> None:
+        """Mark cart items ordered in the last 30 days for the recently-ordered prompt."""
         try:
             from app.services.pantry_service import get_pantry_service
             pantry_service = get_pantry_service()
-            pantry = await pantry_service.get_pantry(user_id)
-            if pantry:
-                state["pantry_items"] = [item.model_dump() for item in pantry]
+            product_ids = [item.product_id for item in cart.items]
+            recently = await pantry_service.get_recently_ordered(user_id, product_ids)
+            for item in cart.items:
+                if item.product_id in recently:
+                    item.recently_ordered = True
+                    item.days_ago = recently[item.product_id]
         except Exception as exc:
-            logger.debug("Could not load pantry: %s", exc)
+            logger.debug("Could not annotate recently ordered items: %s", exc)
 
 
 @lru_cache

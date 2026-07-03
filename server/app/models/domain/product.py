@@ -22,13 +22,17 @@ class Product(BaseModel):
 
     unit: str = ""                       # parsed pack unit, e.g. "1 kg", "500 g"
     in_stock: bool = True
-    delivery_eta_min: int = 30           # fastest-delivery signal for SOS (D4)
+    delivery_eta_min: int = 30           # fastest-delivery signal
 
     tags: list[str] = Field(default_factory=list)
     image_url: str | None = None
     description: str = ""
 
+    # Verified badge fields — computed by BadgeService
+    verified: bool = False
+    order_count_month: int = 0           # orders in last 30 days (used for badge scoring)
+
     @property
     def price_per_unit_hint(self) -> float:
-        """Cheap proxy for value comparison (C3). Falls back to sale_price."""
+        """Cheap proxy for value comparison. Falls back to sale_price."""
         return self.sale_price

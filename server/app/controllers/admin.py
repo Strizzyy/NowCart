@@ -1,7 +1,8 @@
-"""Admin controller — demo/stock override controls.
+"""Admin controller — demo/stock override controls + badge recompute.
 
 Routes:
-    POST /api/admin/stock  -> OkResponse
+    POST /api/admin/stock               -> OkResponse
+    POST /api/admin/badges/recompute    -> badge recompute summary
 """
 from fastapi import APIRouter
 
@@ -32,3 +33,19 @@ async def stock_override(req: StockOverrideRequest) -> OkResponse:
 
     status = "in_stock" if req.in_stock else "out_of_stock"
     return OkResponse(message=f"Product {req.product_id} marked {status}")
+
+
+@router.post("/badges/recompute")
+async def recompute_badges():
+    """Recompute NowCart Verified badges for all products.
+
+    Scans order history from the last 30 days, computes per-category order counts,
+    blends with product ratings, and marks products as verified if score >= 0.6.
+    """
+    from app.services.badge_service import get_badge_service
+    badge_service = get_badge_service()
+    result = await badge_service.recompute_badges()
+    return {
+        "message": "Badge recompute complete",
+        **result,
+    }

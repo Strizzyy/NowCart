@@ -187,7 +187,7 @@ export default function OrderSuccessPage({ ctx }: Props) {
 
           {/* Fun message */}
           <p className="text-xs text-muted mt-6 italic">
-            "Order saved! The Zero Door will learn from this purchase to predict your next restock." 🧠✨
+            "Order saved! Subscribe will learn from this purchase to predict your next restock." 🧠✨
           </p>
         </div>
       </FadeIn>
