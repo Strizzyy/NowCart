@@ -135,15 +135,20 @@ class OutcomeService:
         )
 
     async def _inject_user_context(self, state: AgentState, user_id: str) -> None:
-        """Inject user region into state for region-aware decompose."""
+        """Inject user region, age, and gender into state for personalised decompose."""
         try:
             from app.repositories import get_repository
             repo = get_repository()
             user = await repo.get_user(user_id)
-            if user and user.location and user.location.region:
-                state["user_region"] = user.location.region
+            if user:
+                if user.location and user.location.region:
+                    state["user_region"] = user.location.region
+                if user.age:
+                    state["user_age"] = user.age
+                if user.gender:
+                    state["user_gender"] = user.gender
         except Exception as exc:
-            logger.debug("Could not load user location: %s", exc)
+            logger.debug("Could not load user context: %s", exc)
 
         try:
             from app.services.preference_service import get_preference_service

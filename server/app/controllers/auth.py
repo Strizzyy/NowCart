@@ -34,6 +34,8 @@ class RegisterRequest(BaseModel):
         default="",
         description="Indian region: north | south | east | west | central",
     )
+    age: int | None = Field(default=None, ge=1, le=120)
+    gender: str = Field(default="", description="male | female | other")
 
 
 class LoginRequest(BaseModel):
@@ -48,6 +50,8 @@ class AuthResponse(BaseModel):
     role: str = "user"
     preferences: list[str] = Field(default_factory=list)
     region: str = ""
+    age: int | None = None
+    gender: str = ""
 
 
 ADMIN_EMAILS = {"admin@nowcart.in", "admin@nowcart.app", "admin@example.com"}
@@ -89,6 +93,8 @@ async def register(req: RegisterRequest) -> AuthResponse:
         name=req.name.strip(),
         email=email_lower,
         preferences=req.preferences,
+        age=req.age,
+        gender=req.gender.strip().lower(),
         location=UserLocation(
             city=req.city.strip(),
             state=req.state.strip(),
@@ -107,6 +113,8 @@ async def register(req: RegisterRequest) -> AuthResponse:
         role=_get_role(user.email),
         preferences=user.preferences,
         region=user.location.region if user.location else "",
+        age=user.age,
+        gender=user.gender,
     )
 
 
@@ -152,6 +160,8 @@ async def login(req: LoginRequest) -> AuthResponse:
         role=_get_role(user.email),
         preferences=user.preferences,
         region=user.location.region if user.location else "",
+        age=user.age,
+        gender=user.gender,
     )
 
 
@@ -171,4 +181,6 @@ async def get_user_profile(user_id: str):
         "dietary_tags": user.dietary_tags,
         "price_tier": user.price_tier,
         "location": user.location.model_dump() if user.location else {},
+        "age": user.age,
+        "gender": user.gender,
     }

@@ -55,6 +55,8 @@ class AgentState(TypedDict, total=False):
     # User context
     user_id: str | None
     user_region: str | None       # region-aware decompose
+    user_age: int | None          # new-user starter cart personalisation
+    user_gender: str | None       # new-user starter cart personalisation
     user_preferences: dict        # serialized UserPreference
 
     # Re-planning

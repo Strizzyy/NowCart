@@ -361,6 +361,8 @@ export interface AuthUser {
   role: string;
   preferences: string[];
   region?: string;
+  age?: number | null;
+  gender?: string;
 }
 
 export async function registerUser(
@@ -370,10 +372,16 @@ export async function registerUser(
   region?: string,
   city?: string,
   state?: string,
+  age?: number | null,
+  gender?: string,
 ): Promise<AuthUser> {
   return request<AuthUser>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password, region: region || '', city: city || '', state: state || '' }),
+    body: JSON.stringify({
+      name, email, password,
+      region: region || '', city: city || '', state: state || '',
+      age: age || null, gender: gender || '',
+    }),
   });
 }
 

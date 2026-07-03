@@ -73,8 +73,9 @@ class SubscribeService:
     async def predict_restock(self, user_id: str) -> Cart | None:
         """Analyze order history and build a predicted restock cart.
 
-        Returns None if the user has insufficient history or no predictions
-        exceed the confidence threshold. Output is suggestions, not auto-added.
+        For users with order history (>= 2 orders): uses purchase pattern analysis.
+        For new users with no history: builds a starter cart from their age/gender/region profile.
+        Returns None if insufficient data even for a starter cart.
         """
         if not settings.prediction_enabled:
             return None
@@ -82,17 +83,145 @@ class SubscribeService:
         repo = get_repository()
         orders = await repo.get_orders(user_id)
 
-        if len(orders) < 2:
+        if len(orders) >= 2:
+            # Returning user — pattern-based prediction
+            predictions = self._analyze_patterns(orders)
+            if not predictions:
+                return None
+            cart = await self._build_predicted_cart(predictions)
+            if cart is not None:
+                cache = get_cache()
+                await cache.save_cart(cart.session_id, cart)
+            return cart
+
+        # New user (< 2 orders) — build demographic starter cart
+        user = await repo.get_user(user_id)
+        if user:
+            cart = await self._build_new_user_starter_cart(user)
+            if cart is not None:
+                cache = get_cache()
+                await cache.save_cart(cart.session_id, cart)
+            return cart
+
+        return None
+
+    # -----------------------------------------------------------------------
+    # New-user starter cart (no order history)
+    # -----------------------------------------------------------------------
+
+    # Essentials every household needs regardless of demographics
+    _BASE_STAPLES = [
+        "full cream milk", "toor dal", "basmati rice", "refined sunflower oil",
+        "wheat flour atta", "sugar", "salt", "onion",
+    ]
+
+    # Region-specific additions
+    _REGION_ADDITIONS: dict[str, list[str]] = {
+        "south": ["coconut oil", "tamarind", "mustard seeds", "curry leaves", "idli rice"],
+        "north": ["mustard oil", "rajma", "amul butter", "paneer"],
+        "east": ["mustard oil", "panch phoron", "posto seeds", "hilsa fish"],
+        "west": ["groundnut oil", "besan gram flour", "jaggery", "peanuts"],
+        "central": ["soya chunks", "poha flattened rice", "jalebi mix"],
+    }
+
+    # Age-group tweaks
+    _AGE_ADDITIONS: dict[str, list[str]] = {
+        "teen":   ["maggi noodles", "cornflakes", "biscuits", "juice"],
+        "young":  ["eggs", "oats", "greek yogurt", "protein biscuits", "coffee"],
+        "adult":  ["cooking oil", "curd", "green vegetables", "dal"],
+        "senior": ["dalia broken wheat", "moong dal", "low-fat milk", "digestive biscuits"],
+    }
+
+    # Gender tweaks (subtle, opt-in)
+    _GENDER_ADDITIONS: dict[str, list[str]] = {
+        "female": ["spinach", "fenugreek leaves", "dates", "ragi flour"],
+        "male":   ["eggs", "peanut butter", "chana dal", "chicken"],
+    }
+
+    async def _build_new_user_starter_cart(self, user) -> Cart | None:  # type: ignore[type-arg]
+        """Build a personalised starter cart for a new user with no order history.
+
+        Uses age, gender, and region from the user profile to pick a sensible
+        list of household essentials. Confidence is 0.75 — lower than
+        pattern-based predictions, but useful for cold-start onboarding.
+        """
+        from app.models.domain.user import User  # local import to avoid circular
+
+        catalog = get_catalog_service()
+        repo = get_repository()
+
+        # Determine product name pool
+        pool: list[str] = list(self._BASE_STAPLES)
+
+        region = (user.location.region if user.location else "") or ""
+        if region in self._REGION_ADDITIONS:
+            pool.extend(self._REGION_ADDITIONS[region])
+
+        age = user.age or 0
+        if age < 18:
+            pool.extend(self._AGE_ADDITIONS["teen"])
+        elif age < 30:
+            pool.extend(self._AGE_ADDITIONS["young"])
+        elif age < 55:
+            pool.extend(self._AGE_ADDITIONS["adult"])
+        elif age >= 55:
+            pool.extend(self._AGE_ADDITIONS["senior"])
+
+        gender = (user.gender or "").lower()
+        if gender in self._GENDER_ADDITIONS:
+            pool.extend(self._GENDER_ADDITIONS[gender])
+
+        # Deduplicate while preserving order
+        seen: set[str] = set()
+        unique_pool = [p for p in pool if not (p in seen or seen.add(p))]  # type: ignore[func-returns-value]
+
+        items: list[CartItem] = []
+        for need_name in unique_pool[:12]:   # cap at 12 items
+            matches = await catalog.fuzzy_match_need(
+                need_name=need_name, category_hint=None, top_k=3
+            )
+            for product, _score in matches:
+                if await catalog.check_availability(product.product_id):
+                    items.append(CartItem(
+                        product_id=product.product_id,
+                        name=product.name,
+                        brand=product.brand,
+                        price=product.sale_price,
+                        quantity=1.0,
+                        unit="unit",
+                        reason="Household essential — starter suggestion for new users",
+                        confidence=0.75,
+                        image_url=product.image_url,
+                    ))
+                    break   # one product per need
+
+        if not items:
             return None
 
-        predictions = self._analyze_patterns(orders)
-        if not predictions:
-            return None
+        # Build label for notes
+        parts = []
+        if region:
+            parts.append(f"{region.capitalize()} India")
+        if age:
+            parts.append(f"age {age}")
+        if gender:
+            parts.append(gender)
+        profile_label = " · ".join(parts) if parts else "general"
 
-        cart = await self._build_predicted_cart(predictions)
-        if cart is not None:
-            cache = get_cache()
-            await cache.save_cart(cart.session_id, cart)
+        cart = Cart(
+            session_id=str(uuid.uuid4()),
+            items=items,
+            mode=IntentMode.SUBSCRIBE,
+            confidence=0.75,
+            notes=[
+                f"🛒 Starter essentials personalised for your profile ({profile_label})",
+                "Order a few times and we'll switch to pattern-based predictions.",
+            ],
+            reasoning_trail=[
+                f"New-user starter cart: profile={profile_label}, {len(items)} items",
+            ],
+        )
+        cart.recompute_total()
         return cart
 
     def _analyze_patterns(self, orders: list[Order]) -> list[PredictedNeed]:
@@ -250,8 +379,6 @@ class SubscribeService:
             }
             for p in predictions
         ]
-
-
     # -----------------------------------------------------------------------
     # Mode 2: Recurring schedules
     # -----------------------------------------------------------------------

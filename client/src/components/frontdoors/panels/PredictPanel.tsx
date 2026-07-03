@@ -136,33 +136,54 @@ export default function PredictPanel({ ctx }: Props) {
         </div>
       )}
 
-      {result?.cart && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ShoppingCart size={16} className="text-green-700" />
-            <p className="text-sm font-bold text-green-800">{result.message}</p>
-          </div>
-          <div className="space-y-2 mt-3">
-            {result.cart.items.slice(0, 5).map((item) => (
-              <div key={item.product_id} className="flex items-center justify-between bg-white/70 rounded-lg p-2">
-                <div className="flex items-center gap-2">
-                  <Clock size={12} className="text-green-600" />
-                  <span className="text-xs font-medium text-dark">{item.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Chip tone="success" size="xs">{Math.round(item.confidence * 100)}%</Chip>
-                  <span className="text-xs text-muted">₹{item.price}</span>
-                </div>
+      {result?.cart && (() => {
+        const isStarter = result.cart!.notes?.some(n => n.includes('Starter essentials'));
+        const bgClass = isStarter ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200';
+        const iconColor = isStarter ? 'text-blue-700' : 'text-green-700';
+        const textColor = isStarter ? 'text-blue-800' : 'text-green-800';
+        const chipTone = isStarter ? 'info' : 'success';
+        const chipColor = isStarter ? 'text-blue-600' : 'text-green-600';
+        const dotColor = isStarter ? 'bg-blue-100 text-blue-700' : 'bg-white/70';
+        return (
+          <div className={`border rounded-xl p-4 ${bgClass}`}>
+            {isStarter && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wide bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">
+                  New user · Starter cart
+                </span>
               </div>
-            ))}
-            {result.cart.items.length > 5 && (
-              <p className="text-xs text-green-600 text-center">
-                +{result.cart.items.length - 5} more items in your restock cart
+            )}
+            <div className="flex items-center gap-2 mb-2">
+              <ShoppingCart size={16} className={iconColor} />
+              <p className={`text-sm font-bold ${textColor}`}>{result.message}</p>
+            </div>
+            {isStarter && (
+              <p className="text-xs text-blue-700 mb-2">
+                Personalised from your age, gender &amp; region. Order a few times and we'll switch to pattern-based predictions.
               </p>
             )}
+            <div className="space-y-2 mt-1">
+              {result.cart!.items.slice(0, 5).map((item) => (
+                <div key={item.product_id} className={`flex items-center justify-between rounded-lg p-2 ${dotColor}`}>
+                  <div className="flex items-center gap-2">
+                    <Clock size={12} className={chipColor} />
+                    <span className="text-xs font-medium text-dark">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Chip tone={chipTone as any} size="xs">{Math.round(item.confidence * 100)}%</Chip>
+                    <span className="text-xs text-muted">₹{item.price}</span>
+                  </div>
+                </div>
+              ))}
+              {result.cart!.items.length > 5 && (
+                <p className={`text-xs text-center ${chipColor}`}>
+                  +{result.cart!.items.length - 5} more items in your cart
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Recently Ordered section */}
       <div className="border-t border-border pt-4">

@@ -21,3 +21,5 @@ class User(BaseModel):
     dietary_tags: list[str] = Field(default_factory=list)  # ["vegetarian", "organic", etc.]
     price_tier: str = "mid"  # "budget", "mid", "premium" — inferred from orders
     location: UserLocation = Field(default_factory=UserLocation)  # for region-aware decompose
+    age: int | None = None          # used for new-user starter cart (no order history)
+    gender: str = ""                # "male" | "female" | "other" | "" — starter cart personalisation

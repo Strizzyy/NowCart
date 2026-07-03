@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, ShoppingCart, ArrowRight, MapPin } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, MapPin } from 'lucide-react';
 import type { UserInfo } from '../App';
 import { Button, FadeIn } from '../ui';
 import { registerUser, loginUser } from '../api/client';
@@ -11,7 +11,6 @@ interface Props {
 
 type Mode = 'login' | 'signup';
 
-/** Admin emails — users with these emails get admin role */
 const ADMIN_EMAILS = ['admin@nowcart.app', 'admin@nowcart.com'];
 
 export default function LoginPage({ onLogin }: Props) {
@@ -21,6 +20,8 @@ export default function LoginPage({ onLogin }: Props) {
   const [password, setPassword] = useState('');
   const [region, setRegion] = useState('');
   const [city, setCity] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,19 +50,34 @@ export default function LoginPage({ onLogin }: Props) {
 
     try {
       if (mode === 'signup') {
-        const authUser = await registerUser(name.trim(), trimmedEmail, password, region, city);
-        onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
+        const ageNum = age ? parseInt(age, 10) : null;
+        const authUser = await registerUser(
+          name.trim(), trimmedEmail, password,
+          region, city, '',
+          ageNum, gender,
+        );
+        onLogin({
+          name: authUser.name,
+          email: authUser.email,
+          role,
+          userId: authUser.user_id,
+          isNewUser: true,
+        });
       } else {
         const authUser = await loginUser(trimmedEmail, password);
-        onLogin({ name: authUser.name, email: authUser.email, role, userId: authUser.user_id });
+        onLogin({
+          name: authUser.name,
+          email: authUser.email,
+          role,
+          userId: authUser.user_id,
+          isNewUser: false,
+        });
       }
       navigate('/');
     } catch (err: any) {
-      // Fallback: if backend auth fails (e.g. seeded users), allow local-only login
       const userName = mode === 'signup' ? name.trim() : email.split('@')[0];
       setError(err.message || 'Auth failed — using local session');
-      // Still log them in locally for demo convenience
-      onLogin({ name: userName, email: trimmedEmail, role });
+      onLogin({ name: userName, email: trimmedEmail, role, isNewUser: mode === 'signup' });
       navigate('/');
     } finally {
       setLoading(false);
@@ -69,16 +85,13 @@ export default function LoginPage({ onLogin }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-light via-light-bg to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-light-bg to-white flex items-center justify-center px-4 py-8">
       <FadeIn>
         <div className="w-full max-w-md">
-          {/* Logo & Branding */}
+          {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <ShoppingCart size={32} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-heading font-bold text-dark">NowCart</h1>
-            <p className="text-muted text-sm mt-1">Four ways in, one confident cart out</p>
+            <img src="/logo-wordmark.svg" alt="NowCart" className="h-16 mx-auto mb-2" />
+            <p className="text-muted text-sm mt-1">Five ways in, one confident cart out</p>
           </div>
 
           {/* Card */}
@@ -88,9 +101,7 @@ export default function LoginPage({ onLogin }: Props) {
               <button
                 onClick={() => { setMode('login'); setError(''); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition ${
-                  mode === 'login'
-                    ? 'bg-surface text-primary-ink shadow-sm'
-                    : 'text-muted hover:text-dark'
+                  mode === 'login' ? 'bg-surface text-primary-ink shadow-sm' : 'text-muted hover:text-dark'
                 }`}
               >
                 Sign In
@@ -98,9 +109,7 @@ export default function LoginPage({ onLogin }: Props) {
               <button
                 onClick={() => { setMode('signup'); setError(''); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition ${
-                  mode === 'signup'
-                    ? 'bg-surface text-primary-ink shadow-sm'
-                    : 'text-muted hover:text-dark'
+                  mode === 'signup' ? 'bg-surface text-primary-ink shadow-sm' : 'text-muted hover:text-dark'
                 }`}
               >
                 Sign Up
@@ -108,66 +117,101 @@ export default function LoginPage({ onLogin }: Props) {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name (signup only) */}
-              {mode === 'signup' && (
-                <div>
-                  <label htmlFor="auth-name" className="text-sm font-medium text-dark block mb-1.5">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                    <input
-                      id="auth-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
-                      className="w-full pl-10 pr-4 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
-                    />
-                  </div>
-                </div>
-              )}
 
-              {/* Region + City (signup only) */}
+              {/* ── SIGNUP-ONLY FIELDS ── */}
               {mode === 'signup' && (
-                <div className="grid grid-cols-2 gap-3">
+                <>
+                  {/* Name */}
                   <div>
-                    <label htmlFor="auth-region" className="text-sm font-medium text-dark block mb-1.5 flex items-center gap-1">
-                      <MapPin size={13} /> Region
-                    </label>
-                    <select
-                      id="auth-region"
-                      value={region}
-                      onChange={(e) => setRegion(e.target.value)}
-                      className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
-                    >
-                      <option value="">Select…</option>
-                      <option value="north">North India</option>
-                      <option value="south">South India</option>
-                      <option value="east">East India</option>
-                      <option value="west">West India</option>
-                      <option value="central">Central India</option>
-                    </select>
+                    <label htmlFor="auth-name" className="text-sm font-medium text-dark block mb-1.5">Full Name</label>
+                    <div className="relative">
+                      <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                      <input
+                        id="auth-name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Rahul Sharma"
+                        className="w-full pl-10 pr-4 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="auth-city" className="text-sm font-medium text-dark block mb-1.5">City</label>
-                    <input
-                      id="auth-city"
-                      type="text"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="Mumbai"
-                      className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
-                    />
+
+                  {/* Age + Gender */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="auth-age" className="text-sm font-medium text-dark block mb-1.5">Age</label>
+                      <input
+                        id="auth-age"
+                        type="number"
+                        inputMode="numeric"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        placeholder="25"
+                        min={1}
+                        max={120}
+                        className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="auth-gender" className="text-sm font-medium text-dark block mb-1.5">Gender</label>
+                      <select
+                        id="auth-gender"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                      >
+                        <option value="">Prefer not to say</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Region + City */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="auth-region" className="text-sm font-medium text-dark block mb-1.5 flex items-center gap-1">
+                        <MapPin size={13} /> Region
+                      </label>
+                      <select
+                        id="auth-region"
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value)}
+                        className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                      >
+                        <option value="">Select…</option>
+                        <option value="north">North India</option>
+                        <option value="south">South India</option>
+                        <option value="east">East India</option>
+                        <option value="west">West India</option>
+                        <option value="central">Central India</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="auth-city" className="text-sm font-medium text-dark block mb-1.5">City</label>
+                      <input
+                        id="auth-city"
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Delhi"
+                        className="w-full px-3 py-3 border border-border rounded-xl text-sm outline-none focus:border-primary transition bg-surface"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hint */}
+                  <p className="text-xs text-muted bg-primary-light rounded-lg px-3 py-2">
+                    🧠 Age, gender &amp; region help us personalise your first cart — especially if you have no order history yet.
+                  </p>
+                </>
               )}
 
               {/* Email */}
               <div>
-                <label htmlFor="auth-email" className="text-sm font-medium text-dark block mb-1.5">
-                  Email Address
-                </label>
+                <label htmlFor="auth-email" className="text-sm font-medium text-dark block mb-1.5">Email Address</label>
                 <div className="relative">
                   <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                   <input
@@ -183,9 +227,7 @@ export default function LoginPage({ onLogin }: Props) {
 
               {/* Password */}
               <div>
-                <label htmlFor="auth-password" className="text-sm font-medium text-dark block mb-1.5">
-                  Password
-                </label>
+                <label htmlFor="auth-password" className="text-sm font-medium text-dark block mb-1.5">Password</label>
                 <div className="relative">
                   <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                   <input
@@ -207,47 +249,32 @@ export default function LoginPage({ onLogin }: Props) {
                 </div>
               </div>
 
-              {/* Error */}
               {error && (
-                <p className="text-sm text-accent font-medium bg-accent/10 px-3 py-2 rounded-lg">
-                  {error}
-                </p>
+                <p className="text-sm text-accent font-medium bg-accent/10 px-3 py-2 rounded-lg">{error}</p>
               )}
 
-              {/* Submit */}
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                loading={loading}
-                leftIcon={!loading ? <ArrowRight size={18} /> : undefined}
-              >
+              <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}
+                leftIcon={!loading ? <ArrowRight size={18} /> : undefined}>
                 {mode === 'login' ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
 
-            {/* Divider */}
             <div className="flex items-center gap-3 my-5">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted">or continue with</span>
+              <span className="text-xs text-muted">or</span>
               <div className="flex-1 h-px bg-border" />
             </div>
 
-            {/* Quick login buttons */}
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                type="button"
-                onClick={() => { onLogin({ name: 'Guest', email: 'guest@nowcart.app', role: 'user' }); navigate('/'); }}
-                className="flex items-center justify-center gap-2 py-3 px-4 border border-border rounded-xl text-sm font-medium hover:bg-light-bg transition"
-              >
-                <span className="text-xl">👤</span>
-                <span className="text-dark">Continue as Guest</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => { onLogin({ name: 'Guest', email: 'guest@nowcart.app', role: 'user', isNewUser: false }); navigate('/'); }}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-border rounded-xl text-sm font-medium hover:bg-light-bg transition"
+            >
+              <span className="text-xl">👤</span>
+              <span className="text-dark">Continue as Guest</span>
+            </button>
           </div>
 
-          {/* Footer */}
           <p className="text-center text-xs text-muted mt-6">
             By continuing, you agree to NowCart's Terms of Service and Privacy Policy.
           </p>

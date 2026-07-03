@@ -133,13 +133,15 @@ _REGION_HINTS: dict[str, str] = {
 
 
 async def decompose_node(state: AgentState) -> dict:
-    """Decompose the outcome into structured needs using the LLM. Region-aware."""
+    """Decompose the outcome into structured needs using the LLM. Region-aware + age/gender-aware."""
     raw = state.get("raw_input", "")
     servings = state.get("servings", 1)
     mode = state.get("mode", IntentMode.TEXT)
     trail: list[str] = state.get("reasoning_trail", [])
     constraints = state.get("constraints", {})
     user_region = state.get("user_region")
+    user_age = state.get("user_age")
+    user_gender = state.get("user_gender")
 
     llm = get_text_provider()
 
@@ -165,6 +167,26 @@ async def decompose_node(state: AgentState) -> dict:
             f"Prefer regional items like: {_REGION_HINTS[user_region]}."
         )
 
+    # Age + gender hint for personalised ingredient suggestions
+    demographic_context = ""
+    if user_age or user_gender:
+        parts = []
+        if user_age:
+            if user_age < 18:
+                parts.append(f"teenager ({user_age} years old) — prefer lighter, snack-friendly options")
+            elif user_age < 30:
+                parts.append(f"young adult ({user_age} years old) — active lifestyle, open to variety")
+            elif user_age < 50:
+                parts.append(f"adult ({user_age} years old) — practical, family-oriented choices")
+            else:
+                parts.append(f"senior ({user_age} years old) — prefer easy-to-cook, health-conscious options")
+        if user_gender == "female":
+            parts.append("female user — may prefer iron-rich and calcium-rich options")
+        elif user_gender == "male":
+            parts.append("male user — may prefer higher-protein options")
+        if parts:
+            demographic_context = f"\nUser profile: {'; '.join(parts)}."
+
     if mode == IntentMode.GOAL:
         system_prompt = (
             "You are a smart grocery wellness assistant. Given a user's health/lifestyle goal, "
@@ -173,7 +195,7 @@ async def decompose_node(state: AgentState) -> dict:
             "Return quantities as number of packs/units to buy (e.g. 1 pack, 2 bottles). "
             "Return JSON with \"goal\" (string) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many packs to buy.'
-            + constraint_context + region_context
+            + constraint_context + region_context + demographic_context
         )
         schema_hint = '{"goal": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
     elif mode == IntentMode.BUDGET:
@@ -183,7 +205,7 @@ async def decompose_node(state: AgentState) -> dict:
             "ingredients. Return quantities as number of packs/units to buy from a grocery store. "
             "Return JSON with \"dish\" (string) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = number of packs to buy.'
-            + constraint_context + region_context
+            + constraint_context + region_context + demographic_context
         )
         schema_hint = '{"dish": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
     else:
@@ -196,7 +218,7 @@ async def decompose_node(state: AgentState) -> dict:
             "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs. "
             "Return JSON with \"dish\" (string or null) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
-            + constraint_context + region_context
+            + constraint_context + region_context + demographic_context
         )
         schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
 

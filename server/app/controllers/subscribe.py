@@ -62,19 +62,26 @@ class SubscriptionRequest(BaseModel):
 
 @router.get("/subscribe/{user_id}")
 async def get_predicted_cart(user_id: str):
-    """Subscribe — get a pre-staged restock cart based on purchase patterns."""
+    """Subscribe — get a pre-staged restock or starter cart."""
     service = get_subscribe_service()
     cart = await service.predict_restock(user_id)
 
     if cart is None:
         return {
-            "message": "Not enough order history for predictions yet. Keep shopping!",
+            "message": "Not enough data to build a cart yet. Keep shopping!",
             "predictions": [],
             "cart": None,
         }
 
+    # Detect which mode built the cart from the notes
+    is_starter = any("Starter essentials" in n for n in (cart.notes or []))
+    if is_starter:
+        msg = f"🛒 Here are your starter essentials — personalised for your profile ({len(cart.items)} items)"
+    else:
+        msg = f"🔮 We predicted {len(cart.items)} items you might need soon"
+
     return {
-        "message": f"🔮 We predicted {len(cart.items)} items you might need",
+        "message": msg,
         "cart": CartResponse.from_domain(cart).model_dump(),
     }
 

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <!-- Rich background: deep green to teal -->
+    <linearGradient id="bg" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1d3242"/>
+      <stop offset="100%" stop-color="#0f4c35"/>
+    </linearGradient>
+
+    <!-- Cart body gradient: bright green -->
+    <linearGradient id="cartGrad" x1="40" y1="60" x2="160" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4ecf91"/>
+      <stop offset="100%" stop-color="#3bb77e"/>
+    </linearGradient>
+
+    <!-- Spark gradient: amber to yellow -->
+    <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd566"/>
+      <stop offset="100%" stop-color="#f5a623"/>
+    </linearGradient>
+
+    <!-- Glow filter for the spark -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle inner shadow on bg -->
+    <filter id="innerShadow">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur stdDeviation="4"/>
+      <feComposite in2="SourceGraphic" operator="arithmetic" k2="-1" k3="1"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="200" height="200" rx="46" fill="url(#bg)"/>
+
+  <!-- Subtle top-left shine -->
+  <ellipse cx="60" cy="45" rx="55" ry="30" fill="white" opacity="0.04"/>
+
+  <!-- ── CART BODY ── -->
+  <!-- Handle bar (top horizontal) -->
+  <line x1="38" y1="62" x2="60" y2="62" stroke="url(#cartGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Neck (vertical drop from handle) -->
+  <line x1="60" y1="62" x2="60" y2="78" stroke="url(#cartGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Cart base: a smooth trapezoid path (proper cart shape) -->
+  <!-- Goes: left wall down, bottom across, right wall up + flared top-right -->
+  <path
+    d="M60 78 L55 138 Q55 146 63 146 L141 146 Q149 146 151 138 L160 82 Q162 74 154 74 L68 74"
+    stroke="url(#cartGrad)"
+    stroke-width="9.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <!-- Connecting the neck into the cart left wall -->
+  <line x1="60" y1="78" x2="64" y2="78" stroke="url(#cartGrad)" stroke-width="9.5" stroke-linecap="round"/>
+
+  <!-- Wheels -->
+  <circle cx="85" cy="160" r="9.5" fill="url(#cartGrad)"/>
+  <circle cx="132" cy="160" r="9.5" fill="url(#cartGrad)"/>
+
+  <!-- ── SPARK / BOLT — the "Now" intelligence mark ── -->
+  <!-- A confident angular bolt, centered slightly right in the cart body -->
+  <path
+    d="M118 80 L100 112 L113 112 L95 144"
+    stroke="url(#sparkGrad)"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+    filter="url(#glow)"
+  />
+
+  <!-- Tiny dot accent — top right, suggesting "brain spark" -->
+  <circle cx="158" cy="54" r="5" fill="#f5a623" opacity="0.85"/>
+  <circle cx="148" cy="46" r="3" fill="#ffd566" opacity="0.55"/>
+  <circle cx="162" cy="44" r="2.5" fill="#ffd566" opacity="0.4"/>
+</svg>
