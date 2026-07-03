@@ -1,35 +1,41 @@
-"""Semantic Search Service — lightweight TF-IDF vector search over the product catalog.
+"""Hybrid Retrieval Service — Bi-encoder + Cross-encoder + Rapidfuzz.
 
-Instead of sentence-transformers (2GB+ PyTorch download), this uses a pure
-numpy TF-IDF approach that:
-- Requires ZERO model downloads (just numpy, already a dependency)
-- Builds index in <1 second for 9,534 products
-- Provides semantic-like matching via character n-grams (handles typos, synonyms)
-- Uses cosine similarity for ranking
+Three-stage pipeline for robust product retrieval:
 
-The n-gram TF-IDF approach handles cases that fuzzy matching alone cannot:
-- "cottage cheese" → finds "paneer" (shared context words in product descriptions)
-- "healthy breakfast" → finds relevant cereals, oats (TF-IDF on category text)
-- "malai" → finds "cream" (if catalog has these associations in categories)
+1. **Bi-encoder (all-MiniLM-L6-v2, 80MB)**: Semantic embedding for fast similarity
+   - Encodes all products at startup into 384-dim vectors
+   - Query-time: encode need text, find top-20 by cosine similarity (~15ms)
+   - Handles semantic matches: "cottage cheese" → "paneer", "breakfast" → "cereals"
 
-The key insight: by embedding product name + brand + category + subcategory into
-the TF-IDF space, products that share conceptual space (same category, similar
-naming patterns) naturally cluster together — giving "semantic-like" behavior
-without any ML model.
+2. **Cross-encoder (ms-marco-MiniLM-L-6-v2, 80MB)**: Pairwise re-ranking
+   - Re-ranks the top-20 candidates by direct query-product comparison (~50ms)
+   - Improves precision: distinguishes "tomato" from "tomato ketchup"
+   - Returns ordered list with relevance scores
+
+3. **Rapidfuzz fallback**: Typo correction
+   - Catches spelling errors: "panner" → "paneer", "tomatoe" → "tomato" (~3ms)
+   - Runs when cross-encoder confidence is low or for supplementary candidates
+
+**Caching**: Cross-encoder results cached in Redis (SHA-256 hash of query+candidates, 1h TTL)
+to cut latency from ~800ms to <5ms for repeat queries.
+
+**Memory footprint**: ~300MB total (2 models + embeddings for 9,534 products)
 
 RAG Integration:
-- The TF-IDF index serves as a retrieval layer for the LangGraph pipeline
-- Nodes can query the index with natural language to find relevant products
-- Combined with fuzzy matching for best results (hybrid search)
+- Serves as the retrieval layer for the LangGraph outcome pipeline
+- Replaces TF-IDF with true semantic understanding via sentence-transformers
+- Maintains the same search_with_context() interface for backward compatibility
 """
 from __future__ import annotations
 
+import asyncio
+import hashlib
+import json
 import logging
-import math
-import re
+import os
 import time
-from collections import Counter, defaultdict
-from functools import lru_cache
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -41,10 +47,41 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# ── Startup speed: suppress HuggingFace Hub online checks ──────────────────
+# Without this, sentence-transformers makes ~20 HTTP HEAD requests to
+# huggingface.co on EVERY startup — even when models are already cached.
+# Setting TRANSFORMERS_OFFLINE=1 forces local-cache-only loading.
+# On first run (cold start / no cache), we override to "0" so the download
+# can proceed. The _load_models_sync() method handles the fallback.
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+# ───────────────────────────────────────────────────────────────────────────
+
+# Reuse a single thread pool for CPU-bound model inference to avoid blocking the event loop
+_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="hybrid-retrieval")
+
+# Bi-encoder re-ranking shortlist size before cross-encoder
+_BI_ENCODER_SHORTLIST = 20
+
+# Cross-encoder low-confidence threshold — below this, also run rapidfuzz
+_CROSS_ENCODER_LOW_CONF = 0.3
+
+# Rapidfuzz minimum score to include result
+_FUZZY_MIN_SCORE = 40.0
+
+# Cache TTL for cross-encoder results (1 hour)
+_CACHE_TTL_SECONDS = 3600
+
+# ── Disk cache for pre-computed product embeddings ─────────────────────────
+# Avoids re-encoding 9,534 products on every restart (~30-60s → <2s).
+# Cache is invalidated if the product count changes.
+_EMBED_CACHE_DIR = Path(__file__).parent.parent.parent / ".cache"
+_EMBED_CACHE_FILE = _EMBED_CACHE_DIR / "product_embeddings.npz"
+# ───────────────────────────────────────────────────────────────────────────
+
 
 # ---------------------------------------------------------------------------
-# Synonym / alias expansion table
-# Bridges language gaps that pure TF-IDF can't handle alone.
+# Synonym / alias expansion table — bridges language and spelling gaps
 # ---------------------------------------------------------------------------
 _SYNONYMS: dict[str, list[str]] = {
     "paneer": ["cottage cheese", "chhena", "fresh cheese"],
@@ -97,169 +134,369 @@ _SYNONYMS: dict[str, list[str]] = {
 }
 
 
-class SemanticSearchService:
-    """Lightweight TF-IDF vector search — zero model downloads.
+def _expand_with_synonyms(text: str) -> str:
+    """Expand text with known synonyms for better cross-language matching."""
+    text_lower = text.lower()
+    expanded_parts = [text]
+    for term, synonyms in _SYNONYMS.items():
+        if term in text_lower:
+            expanded_parts.extend(synonyms[:2])
+    return " ".join(expanded_parts)
 
-    Uses character-level n-grams (2-4) for robust matching that handles:
-    - Typos ("tomatoe" still matches "tomato")
-    - Partial matches ("chick" matches "chicken")
-    - Hindi/English bridges (via synonym expansion)
+
+def _build_product_text(product: "Product") -> str:
+    """Build a rich text representation for embedding."""
+    parts = [product.name, product.name]  # double-weight the name
+    if product.brand:
+        parts.append(product.brand)
+    if product.sub_category:
+        parts.append(product.sub_category)
+    if product.category:
+        parts.append(product.category)
+    if product.tags:
+        parts.extend(product.tags[:3])
+    text = " ".join(parts)
+    return _expand_with_synonyms(text)
+
+
+def _cache_key(query: str, candidate_ids: list[str]) -> str:
+    """SHA-256 hash of query + sorted candidate IDs."""
+    payload = query + "|" + ",".join(sorted(candidate_ids))
+    return "hybrid_rerank:" + hashlib.sha256(payload.encode()).hexdigest()
+
+
+class HybridRetrievalService:
+    """Three-stage product retrieval: Bi-encoder → Cross-encoder → Rapidfuzz.
+
+    Usage:
+        service = HybridRetrievalService()
+        await service.build_index(products)          # once at startup
+        results = await service.search_with_context(query, context, top_k=5)
     """
 
     def __init__(self) -> None:
-        self._idf: dict[str, float] = {}
-        self._product_vectors: np.ndarray | None = None  # shape: (N, vocab_size)
+        self._bi_encoder = None          # sentence_transformers.SentenceTransformer
+        self._cross_encoder = None       # sentence_transformers.CrossEncoder
+        self._product_embeddings: np.ndarray | None = None  # (N, 384) float32
         self._product_ids: list[str] = []
-        self._vocab: dict[str, int] = {}  # ngram → index
+        self._product_texts: list[str] = []  # for cross-encoder and fuzzy
+        self._product_names: list[str] = []  # raw names for rapidfuzz
         self._indexed = False
+        self._models_loaded = False
 
-    def _tokenize(self, text: str) -> list[str]:
-        """Convert text to character n-grams (2, 3, 4) + word unigrams.
+    # ------------------------------------------------------------------
+    # Model loading (lazy, in thread pool to avoid blocking startup)
+    # ------------------------------------------------------------------
 
-        Character n-grams handle typos and partial matches.
-        Word unigrams capture exact term importance.
+    def _load_models_sync(self) -> bool:
+        """Load bi-encoder and cross-encoder models synchronously.
+
+        Tries local cache first (fast, no HF Hub network requests).
+        Falls back to online download on cache miss (first run only).
+
+        Returns True if both models loaded, False if sentence-transformers
+        is not installed (graceful degradation to rapidfuzz-only mode).
         """
-        text = text.lower().strip()
-        text = re.sub(r'[^a-z0-9\s]', ' ', text)
-        words = text.split()
+        try:
+            from sentence_transformers import SentenceTransformer, CrossEncoder  # type: ignore[import]
 
-        tokens: list[str] = []
-        # Word-level unigrams (high signal)
-        tokens.extend(f"w_{w}" for w in words if len(w) > 1)
+            t0 = time.perf_counter()
 
-        # Character n-grams (2, 3, 4) for fuzzy matching
-        for word in words:
-            if len(word) >= 2:
-                for i in range(len(word) - 1):
-                    tokens.append(word[i:i + 2])
-            if len(word) >= 3:
-                for i in range(len(word) - 2):
-                    tokens.append(word[i:i + 3])
-            if len(word) >= 4:
-                for i in range(len(word) - 3):
-                    tokens.append(word[i:i + 4])
+            # Try local-only first — no HF Hub HTTP round-trips on warm starts
+            try:
+                self._bi_encoder = SentenceTransformer(
+                    settings.embedding_model, device="cpu", local_files_only=True
+                )
+            except Exception:
+                # Not in local cache — download once, then future restarts are instant
+                logger.info("Bi-encoder not cached — downloading from HuggingFace (first run only)...")
+                os.environ["TRANSFORMERS_OFFLINE"] = "0"
+                self._bi_encoder = SentenceTransformer(
+                    settings.embedding_model, device="cpu", local_files_only=False
+                )
+                os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-        return tokens
+            logger.info("Bi-encoder loaded: %s (%.2fs)", settings.embedding_model, time.perf_counter() - t0)
 
-    def _expand_with_synonyms(self, text: str) -> str:
-        """Expand text with known synonyms for better cross-language matching."""
-        text_lower = text.lower()
-        expanded_parts = [text]
+            t1 = time.perf_counter()
+            try:
+                self._cross_encoder = CrossEncoder(
+                    "cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu",
+                    max_length=512, local_files_only=True
+                )
+            except Exception:
+                logger.info("Cross-encoder not cached — downloading from HuggingFace (first run only)...")
+                os.environ["TRANSFORMERS_OFFLINE"] = "0"
+                self._cross_encoder = CrossEncoder(
+                    "cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu",
+                    max_length=512, local_files_only=False
+                )
+                os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-        for term, synonyms in _SYNONYMS.items():
-            if term in text_lower:
-                expanded_parts.extend(synonyms[:2])  # Add top 2 synonyms
+            logger.info("Cross-encoder loaded: ms-marco-MiniLM-L-6-v2 (%.2fs)", time.perf_counter() - t1)
+            return True
 
-        return " ".join(expanded_parts)
+        except ImportError:
+            logger.warning(
+                "sentence-transformers not installed — degraded to rapidfuzz only. "
+                "Install with: uv pip install sentence-transformers"
+            )
+            return False
+        except Exception as exc:
+            logger.warning("Model load failed (%s) — degrading to rapidfuzz only", exc)
+            return False
 
-    def _build_product_text(self, product: "Product") -> str:
-        """Build a rich text representation for TF-IDF."""
-        parts = [product.name, product.name]  # double-weight the name
-        if product.brand:
-            parts.append(product.brand)
-        if product.sub_category:
-            parts.append(product.sub_category)
-        if product.category:
-            parts.append(product.category)
-        if product.tags:
-            parts.extend(product.tags[:3])
+    def _encode_products_sync(self, texts: list[str]) -> np.ndarray:
+        """Encode product texts with bi-encoder (runs in thread pool)."""
+        embeddings = self._bi_encoder.encode(
+            texts,
+            batch_size=256,
+            show_progress_bar=False,
+            convert_to_numpy=True,
+            normalize_embeddings=True,  # L2-normalised → cosine = dot product
+        )
+        return embeddings.astype(np.float32)
 
-        text = " ".join(parts)
-        # Expand with synonyms for better cross-language matching
-        return self._expand_with_synonyms(text)
+    def _encode_query_sync(self, query: str) -> np.ndarray:
+        """Encode a single query (runs in thread pool)."""
+        vec = self._bi_encoder.encode(
+            [query],
+            show_progress_bar=False,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )
+        return vec[0].astype(np.float32)
+
+    def _cross_encode_sync(
+        self,
+        query: str,
+        candidate_texts: list[str],
+    ) -> list[float]:
+        """Score query-candidate pairs with cross-encoder (runs in thread pool)."""
+        pairs = [[query, text] for text in candidate_texts]
+        scores = self._cross_encoder.predict(pairs, show_progress_bar=False)
+        # CrossEncoder returns raw logits; sigmoid to [0, 1] range
+        import math
+        return [1.0 / (1.0 + math.exp(-float(s))) for s in scores]
+
+    # ------------------------------------------------------------------
+    # Index building
+    # ------------------------------------------------------------------
 
     async def build_index(self, products: list["Product"]) -> None:
-        """Build TF-IDF index from product catalog.
+        """Build the retrieval index from the product catalog.
 
-        Fast: <1 second for 9,534 products. No downloads needed.
+        Steps:
+        1. Load bi-encoder and cross-encoder models
+        2. Encode all product texts into 384-dim vectors
+        3. Store vectors for cosine similarity at query time
+
+        Takes ~30-60s on first run (model downloads + encoding).
+        Subsequent runs: ~10-15s (models cached by sentence-transformers).
         """
         if not settings.semantic_search_enabled:
-            logger.info("Semantic search disabled — skipping index build")
+            logger.info("Semantic search disabled — skipping hybrid index build")
             return
 
         if not products:
+            logger.warning("No products to index")
             return
 
         start = time.perf_counter()
 
+        # Step 1: Load models in thread pool (blocking I/O + CPU)
+        loop = asyncio.get_event_loop()
+        loaded = await loop.run_in_executor(_executor, self._load_models_sync)
+        self._models_loaded = loaded
+
+        if not loaded:
+            logger.warning(
+                "Hybrid retrieval: models unavailable, will use rapidfuzz fallback for all queries"
+            )
+            # Still store product metadata for rapidfuzz
+            self._product_ids = [p.product_id for p in products]
+            self._product_names = [p.name for p in products]
+            self._product_texts = [_build_product_text(p) for p in products]
+            self._indexed = True
+            return
+
+        # Step 2: Build product text corpus
         self._product_ids = [p.product_id for p in products]
-        n_docs = len(products)
+        self._product_names = [p.name for p in products]
+        self._product_texts = [_build_product_text(p) for p in products]
 
-        # Step 1: Build vocabulary from all product texts
-        doc_tokens: list[list[str]] = []
-        doc_freq: Counter = Counter()  # how many docs contain each ngram
+        # Step 3: Try loading pre-computed embeddings from disk cache
+        # Cache is keyed by product count — invalidated if catalog changes
+        cache_valid = False
+        if _EMBED_CACHE_FILE.exists():
+            try:
+                cached = np.load(_EMBED_CACHE_FILE)
+                cached_ids = cached["product_ids"].tolist()
+                cached_embeddings = cached["embeddings"]
+                
+                # Validate: same products in same order
+                if cached_ids == self._product_ids:
+                    self._product_embeddings = cached_embeddings
+                    cache_valid = True
+                    logger.info("Loaded embeddings from disk cache (%d products, %.1fMB)",
+                                len(products), cached_embeddings.nbytes / 1024 / 1024)
+            except Exception as e:
+                logger.warning("Embedding cache invalid or corrupt (%s) — will rebuild", e)
 
-        for product in products:
-            text = self._build_product_text(product)
-            tokens = self._tokenize(text)
-            unique_tokens = set(tokens)
-            doc_tokens.append(tokens)
-            for token in unique_tokens:
-                doc_freq[token] += 1
+        # Step 4: Encode all products if cache miss (CPU-bound, run in executor)
+        if not cache_valid:
+            logger.info("Encoding %d products with bi-encoder (first run or cache miss)…", len(products))
+            embeddings = await loop.run_in_executor(
+                _executor,
+                self._encode_products_sync,
+                self._product_texts,
+            )
+            self._product_embeddings = embeddings
 
-        # Step 2: Filter vocabulary (keep tokens appearing in 2+ but <80% of docs)
-        max_df = n_docs * 0.8
-        vocab_tokens = [
-            t for t, freq in doc_freq.items()
-            if 2 <= freq <= max_df
-        ]
-        # Limit vocab size for memory efficiency
-        if len(vocab_tokens) > 15000:
-            # Keep most informative (moderate document frequency)
-            vocab_tokens.sort(key=lambda t: doc_freq[t])
-            vocab_tokens = vocab_tokens[:15000]
-
-        self._vocab = {t: i for i, t in enumerate(vocab_tokens)}
-        vocab_size = len(self._vocab)
-
-        # Step 3: Compute IDF
-        self._idf = {
-            t: math.log(n_docs / (1 + doc_freq[t]))
-            for t in vocab_tokens
-        }
-
-        # Step 4: Build TF-IDF matrix (sparse-ish, stored as dense for simplicity)
-        # For 9,534 products × 15,000 vocab → ~570MB if float64
-        # Use float16 to cut to ~285MB, or better: sparse representation
-        # Actually let's cap vocab at 8000 for memory: 9534 × 8000 × 4bytes = ~300MB
-        # Even better: use a row-normalized sparse approach via dict
-        # Best for our scale: dense float32 with capped vocab
-
-        if vocab_size > 5000:
-            # Further cap for memory (9534 × 5000 × 4bytes ≈ 182MB)
-            top_tokens = sorted(vocab_tokens, key=lambda t: doc_freq[t], reverse=True)[:5000]
-            self._vocab = {t: i for i, t in enumerate(top_tokens)}
-            vocab_size = len(self._vocab)
-            self._idf = {t: self._idf[t] for t in top_tokens}
-
-        matrix = np.zeros((n_docs, vocab_size), dtype=np.float32)
-
-        for doc_idx, tokens in enumerate(doc_tokens):
-            tf: Counter = Counter()
-            for t in tokens:
-                if t in self._vocab:
-                    tf[t] += 1
-
-            # TF-IDF with sublinear TF (log normalization)
-            for token, count in tf.items():
-                col = self._vocab[token]
-                tf_score = 1 + math.log(count) if count > 0 else 0
-                matrix[doc_idx, col] = tf_score * self._idf.get(token, 0)
-
-        # L2 normalize rows for cosine similarity via dot product
-        norms = np.linalg.norm(matrix, axis=1, keepdims=True)
-        norms[norms == 0] = 1  # avoid division by zero
-        self._product_vectors = matrix / norms
+            # Save to disk for next restart
+            try:
+                _EMBED_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                np.savez_compressed(
+                    _EMBED_CACHE_FILE,
+                    product_ids=np.array(self._product_ids, dtype=object),
+                    embeddings=embeddings,
+                )
+                logger.info("Saved embeddings to disk cache for faster restarts")
+            except Exception as e:
+                logger.warning("Could not save embedding cache (%s) — will re-encode on next restart", e)
 
         self._indexed = True
         elapsed = time.perf_counter() - start
+        mem_mb = embeddings.nbytes / 1024 / 1024
         logger.info(
-            "Semantic TF-IDF index built: %d products, %d features, %.2fs, %.1fMB",
-            n_docs,
-            vocab_size,
+            "Hybrid retrieval index ready: %d products, %.2fs, embeddings=%.1fMB",
+            len(products),
             elapsed,
-            matrix.nbytes / 1024 / 1024,
+            mem_mb,
         )
+
+    # ------------------------------------------------------------------
+    # Stage 1 — Bi-encoder: fast approximate top-K
+    # ------------------------------------------------------------------
+
+    async def _bi_encode_search(
+        self,
+        query: str,
+        top_k: int,
+    ) -> list[tuple[int, float]]:
+        """Return (product_index, cosine_score) for top-K products."""
+        if self._product_embeddings is None or self._bi_encoder is None:
+            return []
+
+        loop = asyncio.get_event_loop()
+        query_vec = await loop.run_in_executor(
+            _executor,
+            self._encode_query_sync,
+            query,
+        )
+
+        # Cosine similarity via dot product (embeddings already L2-normalised)
+        scores = self._product_embeddings @ query_vec  # shape: (N,)
+
+        # Partial sort — O(N) instead of O(N log N)
+        actual_k = min(top_k, len(scores))
+        top_indices = np.argpartition(scores, -actual_k)[-actual_k:]
+        top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
+
+        return [(int(idx), float(scores[idx])) for idx in top_indices]
+
+    # ------------------------------------------------------------------
+    # Stage 2 — Cross-encoder: precise re-ranking on shortlist
+    # ------------------------------------------------------------------
+
+    async def _cross_encode_rerank(
+        self,
+        query: str,
+        shortlist: list[tuple[int, float]],  # (product_index, bi_score)
+        cache_key: str | None = None,
+    ) -> list[tuple[int, float]]:
+        """Re-rank shortlist with cross-encoder; cache result in Redis."""
+        if not shortlist or self._cross_encoder is None:
+            return shortlist
+
+        # Check cache first
+        if cache_key:
+            try:
+                from app.repositories import get_cache
+                cached = await get_cache().get_cached_response(cache_key)
+                if cached:
+                    return [(entry["idx"], entry["score"]) for entry in cached]
+            except Exception:
+                pass  # cache miss or unavailable — continue to inference
+
+        indices = [idx for idx, _ in shortlist]
+        candidate_texts = [self._product_texts[idx] for idx in indices]
+
+        loop = asyncio.get_event_loop()
+        scores = await loop.run_in_executor(
+            _executor,
+            self._cross_encode_sync,
+            query,
+            candidate_texts,
+        )
+
+        reranked = sorted(
+            zip(indices, scores),
+            key=lambda x: x[1],
+            reverse=True,
+        )
+
+        # Store in cache
+        if cache_key:
+            try:
+                from app.repositories import get_cache
+                payload = [{"idx": idx, "score": score} for idx, score in reranked]
+                await get_cache().set_cached_response(cache_key, payload, ttl=_CACHE_TTL_SECONDS)
+            except Exception:
+                pass  # non-critical
+
+        return reranked
+
+    # ------------------------------------------------------------------
+    # Stage 3 — Rapidfuzz: typo correction + supplementary candidates
+    # ------------------------------------------------------------------
+
+    def _rapidfuzz_search(
+        self,
+        query: str,
+        top_k: int,
+        exclude_indices: set[int] | None = None,
+    ) -> list[tuple[int, float]]:
+        """Return (product_index, fuzzy_score/100) for top-K by fuzzy match.
+
+        Scores are normalised to [0, 1] to match cross-encoder output.
+        """
+        from rapidfuzz import fuzz, process as rfprocess
+
+        choices = self._product_names
+        expanded_query = _expand_with_synonyms(query)
+
+        raw_matches = rfprocess.extract(
+            expanded_query,
+            choices,
+            scorer=fuzz.WRatio,
+            limit=top_k * 3,
+            score_cutoff=_FUZZY_MIN_SCORE,
+        )
+
+        results: list[tuple[int, float]] = []
+        for _name, score, idx in raw_matches:
+            if exclude_indices and idx in exclude_indices:
+                continue
+            results.append((idx, score / 100.0))
+            if len(results) >= top_k:
+                break
+
+        return results
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
 
     async def search(
         self,
@@ -267,62 +504,64 @@ class SemanticSearchService:
         top_k: int | None = None,
         min_score: float = 0.1,
     ) -> list[tuple[str, float]]:
-        """Search for products similar to the query using TF-IDF cosine similarity.
+        """Search for products using the hybrid pipeline.
 
         Args:
-            query: Natural language query.
-            top_k: Number of results (defaults to config).
-            min_score: Minimum cosine similarity.
+            query: Natural language query (need name).
+            top_k: Number of final results. Defaults to settings.semantic_top_k.
+            min_score: Minimum relevance score (0–1).
 
         Returns:
-            List of (product_id, score) tuples sorted by score desc.
+            List of (product_id, score) tuples, sorted by score descending.
         """
-        if not self._indexed or self._product_vectors is None:
+        if not self._indexed:
             return []
 
         if top_k is None:
             top_k = settings.semantic_top_k
 
-        # Expand query with synonyms
-        expanded_query = self._expand_with_synonyms(query)
-        tokens = self._tokenize(expanded_query)
+        expanded_query = _expand_with_synonyms(query)
 
-        # Build query vector
-        query_vec = np.zeros(len(self._vocab), dtype=np.float32)
-        tf: Counter = Counter()
-        for t in tokens:
-            if t in self._vocab:
-                tf[t] += 1
+        # --- Stage 1: Bi-encoder approximate top-K ---
+        if self._models_loaded and self._product_embeddings is not None:
+            shortlist = await self._bi_encode_search(expanded_query, _BI_ENCODER_SHORTLIST)
 
-        for token, count in tf.items():
-            col = self._vocab[token]
-            tf_score = 1 + math.log(count) if count > 0 else 0
-            query_vec[col] = tf_score * self._idf.get(token, 0)
+            if shortlist:
+                # --- Stage 2: Cross-encoder re-rank ---
+                shortlist_ids = [self._product_ids[idx] for idx, _ in shortlist]
+                ck = _cache_key(expanded_query, shortlist_ids)
 
-        # Normalize
-        norm = np.linalg.norm(query_vec)
-        if norm == 0:
-            return []
-        query_vec /= norm
+                reranked = await self._cross_encode_rerank(expanded_query, shortlist, cache_key=ck)
 
-        # Cosine similarity via dot product
-        scores = self._product_vectors @ query_vec
+                # --- Stage 3: Rapidfuzz fallback if top result has low confidence ---
+                top_score = reranked[0][1] if reranked else 0.0
+                results: list[tuple[str, float]] = []
+                seen_indices = {idx for idx, _ in reranked}
 
-        # Get top-K
-        if top_k < len(scores):
-            top_indices = np.argpartition(scores, -top_k)[-top_k:]
-            top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
-        else:
-            top_indices = np.argsort(scores)[::-1][:top_k]
+                if top_score < _CROSS_ENCODER_LOW_CONF:
+                    # Low confidence from cross-encoder — supplement with rapidfuzz
+                    fuzzy_results = self._rapidfuzz_search(
+                        query, top_k, exclude_indices=seen_indices
+                    )
+                    # Blend: use max of cross-encoder and fuzzy scores for overlapping products
+                    reranked_dict = {idx: score for idx, score in reranked}
+                    for fidx, fscore in fuzzy_results:
+                        reranked_dict[fidx] = max(reranked_dict.get(fidx, 0.0), fscore)
+                    reranked = sorted(reranked_dict.items(), key=lambda x: x[1], reverse=True)
 
-        results: list[tuple[str, float]] = []
-        for idx in top_indices:
-            score = float(scores[idx])
-            if score < min_score:
-                break
-            results.append((self._product_ids[idx], score))
+                for idx, score in reranked[:top_k]:
+                    if score >= min_score:
+                        results.append((self._product_ids[idx], score))
 
-        return results
+                return results
+
+        # --- Fallback: rapidfuzz only (models not loaded) ---
+        fuzzy_raw = self._rapidfuzz_search(query, top_k)
+        return [
+            (self._product_ids[idx], score)
+            for idx, score in fuzzy_raw
+            if score >= min_score
+        ]
 
     async def search_with_context(
         self,
@@ -331,26 +570,48 @@ class SemanticSearchService:
         top_k: int | None = None,
         min_score: float = 0.1,
     ) -> list[tuple[str, float]]:
-        """Search with additional context for richer matching.
+        """Search with optional category/context hint for richer matching.
 
-        Used by match_node to pass category hints as context.
+        This is the primary interface used by match_node in the pipeline.
+        The context (e.g. category_hint) is appended to the query before
+        encoding, nudging the bi-encoder toward the right semantic cluster.
+
+        Args:
+            query: Need name (e.g. "paneer").
+            context: Category hint (e.g. "dairy").
+            top_k: Number of results.
+            min_score: Minimum score threshold.
+
+        Returns:
+            List of (product_id, score) tuples.
         """
         enriched = f"{query} {context}".strip() if context else query
         return await self.search(enriched, top_k=top_k, min_score=min_score)
 
     @property
     def is_ready(self) -> bool:
-        """Whether the index is built and ready."""
+        """Whether the index has been built and is ready for queries."""
         return self._indexed
 
+    @property
+    def using_neural_models(self) -> bool:
+        """Whether bi-encoder + cross-encoder are active (vs. rapidfuzz-only fallback)."""
+        return self._models_loaded and self._product_embeddings is not None
 
+
+# ---------------------------------------------------------------------------
 # Module-level singleton
-_semantic_service: SemanticSearchService | None = None
+# ---------------------------------------------------------------------------
+_hybrid_service: HybridRetrievalService | None = None
 
 
-def get_semantic_search_service() -> SemanticSearchService:
-    """Return the singleton SemanticSearchService."""
-    global _semantic_service
-    if _semantic_service is None:
-        _semantic_service = SemanticSearchService()
-    return _semantic_service
+def get_semantic_search_service() -> HybridRetrievalService:
+    """Return the singleton HybridRetrievalService.
+
+    The function name is intentionally kept as get_semantic_search_service
+    to maintain backward compatibility with all existing callers.
+    """
+    global _hybrid_service
+    if _hybrid_service is None:
+        _hybrid_service = HybridRetrievalService()
+    return _hybrid_service

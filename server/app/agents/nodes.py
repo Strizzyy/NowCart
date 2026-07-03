@@ -294,101 +294,105 @@ async def pantry_filter_node(state: AgentState) -> dict:
 
 
 async def match_node(state: AgentState) -> dict:
-    """For each need, find candidate products via hybrid matching.
+    """For each need, find the best candidate products via hybrid retrieval.
 
-    Hybrid approach (RAG-style):
-    1. Semantic search: find top-K semantically similar products
-    2. Fuzzy match: rapidfuzz within the semantic pool + category pool
-    3. Merge and re-rank: combine both signals for best results
+    Pipeline (three stages, all handled inside HybridRetrievalService):
+    1. Bi-encoder (all-MiniLM-L6-v2): encode need + context, cosine top-20
+    2. Cross-encoder (ms-marco-MiniLM-L-6-v2): pairwise re-rank of the 20
+    3. Rapidfuzz fallback: catches typos ("panner" → "paneer") when
+       cross-encoder confidence is low or models are unavailable
 
-    This handles cases fuzzy matching alone misses:
-    - "cottage cheese" → finds "paneer" (semantic understanding)
-    - "something for breakfast" → finds relevant cereal/bread (contextual)
-    - "malai" → finds "cream" (language bridging)
+    Scores from search_with_context() are normalised to [0, 1].
     """
     needs: list[Need] = state.get("needs", [])
     trail: list[str] = state.get("reasoning_trail", [])
 
     catalog = get_catalog_service()
 
-    # Try to use semantic search if available
-    semantic_service = None
+    # Load hybrid retrieval service
+    hybrid_service = None
     try:
         from app.services.semantic_search_service import get_semantic_search_service
         svc = get_semantic_search_service()
         if svc.is_ready:
-            semantic_service = svc
+            hybrid_service = svc
     except Exception:
         pass
+
+    from app.repositories import get_repository
+    repo = get_repository()
 
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = {}
 
     for need in needs:
-        # --- Hybrid matching ---
-        semantic_product_ids: set[str] = set()
-
-        # Phase 1: Semantic search (if available)
-        if semantic_service:
+        # --- Stage A: Hybrid retrieval (bi-encoder → cross-encoder → rapidfuzz) ---
+        # Returns (product_id, score) with scores in [0, 1]
+        hybrid_results: list[tuple[str, float]] = []
+        if hybrid_service:
             context = need.category_hint or ""
-            sem_results = await semantic_service.search_with_context(
+            hybrid_results = await hybrid_service.search_with_context(
                 query=need.name,
                 context=context,
-                top_k=15,
-                min_score=0.3,
+                top_k=20,   # fetch 20 from hybrid pipeline, then intersect with catalog fuzzy
+                min_score=0.1,
             )
-            semantic_product_ids = {pid for pid, _ in sem_results}
 
-        # Phase 2: Fuzzy match (existing logic — always runs)
-        matches = await catalog.fuzzy_match_need(
+        # --- Stage B: Catalog fuzzy match (always runs for category filtering + availability) ---
+        # Returns (Product, score) with scores in [0, 100]
+        fuzzy_matches = await catalog.fuzzy_match_need(
             need_name=need.name,
             category_hint=need.category_hint or None,
-            top_k=5,
+            top_k=10,
         )
 
-        # Phase 3: If semantic search found additional candidates not in fuzzy results,
-        # do a supplementary fuzzy match on those to get scores
-        if semantic_product_ids:
-            fuzzy_pids = {product.product_id for product, _ in matches}
-            new_semantic_pids = semantic_product_ids - fuzzy_pids
+        # --- Merge: build a unified product_id → score map ---
+        # Normalise fuzzy scores from [0, 100] → [0, 1] to unify with hybrid scores
+        score_map: dict[str, float] = {}
 
-            if new_semantic_pids:
-                # Get those products and score them
-                from app.repositories import get_repository
-                repo = get_repository()
-                for pid in list(new_semantic_pids)[:5]:  # limit supplementary lookups
-                    product = await repo.get_product(pid)
-                    if product:
-                        # Use semantic similarity as a proxy score (scaled to 0-100)
-                        sem_score = next(
-                            (s * 100 for p, s in sem_results if p == pid),
-                            50.0,
-                        )
-                        # Blend with a quick fuzzy check
-                        from rapidfuzz import fuzz
-                        fuzzy_score = fuzz.WRatio(need.name, product.name)
-                        blended = max(sem_score, fuzzy_score)
-                        matches.append((product, blended))
+        # Start with fuzzy scores (normalised)
+        for product, fscore in fuzzy_matches:
+            score_map[product.product_id] = fscore / 100.0
 
-        # Sort by score and keep top 5
-        matches.sort(key=lambda x: x[1], reverse=True)
-        matches = matches[:5]
+        # Blend in hybrid scores — take the maximum of both signals
+        for pid, hscore in hybrid_results:
+            score_map[pid] = max(score_map.get(pid, 0.0), hscore)
 
-        # Store serializable tuples
+        # Retrieve product objects for any hybrid-only candidates
+        for pid, _score in hybrid_results:
+            if pid not in {p.product_id for p, _ in fuzzy_matches}:
+                product = await repo.get_product(pid)
+                if product:
+                    fuzzy_matches.append((product, score_map[pid] * 100.0))
+
+        # --- Sort by merged score and take top 5 ---
+        fuzzy_matches.sort(key=lambda x: score_map.get(x[0].product_id, 0.0), reverse=True)
+        top_matches = fuzzy_matches[:5]
+
+        # Store as serializable tuples; scores stay in [0, 1] throughout the pipeline
         candidate_list: list[tuple[str, str, float, float, str | None]] = [
-            (product.product_id, product.name, score, product.sale_price, product.image_url)
-            for product, score in matches
+            (
+                product.product_id,
+                product.name,
+                score_map.get(product.product_id, fscore / 100.0),  # unified [0, 1] score
+                product.sale_price,
+                product.image_url,
+            )
+            for product, fscore in top_matches
         ]
         candidates[need.name] = candidate_list
 
-        if candidate_list and candidate_list[0][2] >= 40.0:
+        # Threshold: 0.4 (≥ 40% confidence) to call a match successful
+        if candidate_list and candidate_list[0][2] >= 0.4:
             need.matched_product_id = candidate_list[0][0]
             need.status = NeedStatus.MATCHED
         else:
             need.status = NeedStatus.UNMATCHED
 
     matched_count = sum(1 for n in needs if n.status == NeedStatus.MATCHED)
-    semantic_note = " (with semantic search)" if semantic_service else " (fuzzy only)"
-    reasoning = f"Matched {matched_count}/{len(needs)} needs to catalog products{semantic_note}"
+    retrieval_mode = "hybrid (bi-encoder + cross-encoder + rapidfuzz)" if hybrid_service else "rapidfuzz only"
+    if hybrid_service:
+        retrieval_mode += f" [neural={hybrid_service.using_neural_models}]"
+    reasoning = f"Matched {matched_count}/{len(needs)} needs — {retrieval_mode}"
 
     return {
         "needs": needs,
@@ -436,7 +440,7 @@ async def optimize_node(state: AgentState) -> dict:
             need.status = NeedStatus.PENDING
 
         product_id, name, score, price, image_url = best
-        confidence = min(score / 100.0, 1.0)
+        confidence = min(score, 1.0)  # score already in [0, 1] from match_node
         cart_quantity = _normalize_quantity_to_packs(need.quantity, need.unit)
 
         items.append(
@@ -446,7 +450,7 @@ async def optimize_node(state: AgentState) -> dict:
                 price=price,
                 quantity=cart_quantity,
                 unit=need.unit,
-                reason=f"Best match (score={score:.0f})",
+                reason=f"Best match (score={score*100:.0f})",  # display as percentage
                 confidence=confidence,
                 image_url=image_url,
             )
@@ -464,7 +468,7 @@ async def optimize_node(state: AgentState) -> dict:
 
             if cheapest[0] != best[0]:
                 eco_product_id, eco_name, eco_score, eco_price, eco_image_url = cheapest
-                eco_confidence = min(eco_score / 100.0, 1.0)
+                eco_confidence = min(eco_score, 1.0)  # score already in [0, 1]
                 saving = round(price - eco_price, 2) if price > eco_price else 0
                 reason = f"Budget-friendly pick (saves ₹{saving:.0f})" if saving > 0 else "Economical alternative"
                 economical_items.append(
@@ -501,7 +505,7 @@ async def optimize_node(state: AgentState) -> dict:
                     quantity=cart_quantity,
                     unit=need.unit,
                     reason="Same as recommended (no cheaper option)",
-                    confidence=min(best[2] / 100.0, 1.0),
+                    confidence=min(best[2], 1.0),  # score already in [0, 1]
                     image_url=best[4],
                 )
             )
@@ -631,7 +635,7 @@ async def substitute_node(state: AgentState) -> dict:
 
                 reason_parts = []
                 reason_parts.append(f"Original '{item.name}' out of stock")
-                reason_parts.append(f"Match score: {score:.0f}/100")
+                reason_parts.append(f"Match score: {score*100:.0f}/100")  # display as percentage
                 if price_pct < 10:
                     reason_parts.append("Similar price point")
                 elif price > item.price:
@@ -657,7 +661,7 @@ async def substitute_node(state: AgentState) -> dict:
                     quantity=item.quantity,
                     unit=item.unit,
                     reason=f"Substituted (original '{item.name}' out of stock)",
-                    confidence=min(score / 100.0, 1.0),
+                    confidence=min(score, 1.0),  # score already in [0, 1]
                     substituted_for=item.product_id,
                     image_url=image_url,
                 )
