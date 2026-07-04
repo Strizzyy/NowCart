@@ -57,34 +57,9 @@ class SubscriptionRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Predicted restock
+# Specific sub-paths MUST be registered before the generic /{user_id} route
+# so FastAPI doesn't greedily match "user-005/insights" as user_id.
 # ---------------------------------------------------------------------------
-
-@router.get("/subscribe/{user_id}")
-async def get_predicted_cart(user_id: str):
-    """Subscribe — get a pre-staged restock or starter cart."""
-    service = get_subscribe_service()
-    cart = await service.predict_restock(user_id)
-
-    if cart is None:
-        return {
-            "message": "Not enough data to build a cart yet. Keep shopping!",
-            "predictions": [],
-            "cart": None,
-        }
-
-    # Detect which mode built the cart from the notes
-    is_starter = any("Starter essentials" in n for n in (cart.notes or []))
-    if is_starter:
-        msg = f"🛒 Here are your starter essentials — personalised for your profile ({len(cart.items)} items)"
-    else:
-        msg = f"🔮 We predicted {len(cart.items)} items you might need soon"
-
-    return {
-        "message": msg,
-        "cart": CartResponse.from_domain(cart).model_dump(),
-    }
-
 
 @router.get("/subscribe/{user_id}/insights")
 async def get_prediction_insights(user_id: str):
@@ -95,7 +70,7 @@ async def get_prediction_insights(user_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Recurring schedules
+# Recurring schedules (all sub-paths before generic /{user_id})
 # ---------------------------------------------------------------------------
 
 @router.post("/subscribe")
@@ -129,9 +104,78 @@ async def get_subscriptions(user_id: str):
     return {"user_id": user_id, "subscriptions": subs, "count": len(subs)}
 
 
+@router.get("/subscribe/{user_id}/all-cart")
+async def get_all_subscriptions_cart(user_id: str):
+    """Build a cart from ALL subscriptions for a user, regardless of due date.
+
+    Used when user taps 'Add to cart' from the subscriptions page.
+    """
+    service = get_subscribe_service()
+    subs = await service.get_subscriptions(user_id)
+    if not subs:
+        return {"cart": None, "message": "No subscriptions set up yet."}
+
+    from app.services.catalog_service import get_catalog_service
+    from app.repositories import get_repository
+    from app.models.domain.cart import Cart, CartItem
+    from app.models.domain.enums import IntentMode
+    from app.repositories import get_cache
+    import uuid
+
+    catalog = get_catalog_service()
+    repo = get_repository()
+    items: list[CartItem] = []
+
+    for sub in subs:
+        product = await repo.get_product(sub["product_id"])
+        if product and await catalog.check_availability(product.product_id):
+            items.append(CartItem(
+                product_id=product.product_id,
+                name=product.name,
+                brand=product.brand,
+                price=product.sale_price,
+                quantity=1.0,
+                unit="unit",
+                reason=f"Recurring {sub['frequency']} subscription",
+                confidence=0.99,
+                image_url=product.image_url,
+            ))
+        else:
+            matches = await catalog.fuzzy_match_need(need_name=sub["product_name"], category_hint=None, top_k=3)
+            for fp, _ in matches:
+                if await catalog.check_availability(fp.product_id):
+                    items.append(CartItem(
+                        product_id=fp.product_id,
+                        name=fp.name,
+                        brand=fp.brand,
+                        price=fp.sale_price,
+                        quantity=1.0,
+                        unit="unit",
+                        reason=f"Recurring {sub['frequency']} subscription",
+                        confidence=0.9,
+                        image_url=fp.image_url,
+                    ))
+                    break
+
+    if not items:
+        return {"cart": None, "message": "Could not find any subscribed products in catalog."}
+
+    cart = Cart(
+        session_id=str(uuid.uuid4()),
+        items=items,
+        mode=IntentMode.SUBSCRIBE,
+        confidence=0.99,
+        notes=[f"📅 Your {len(items)} subscribed items"],
+        reasoning_trail=[f"Subscription cart: {len(items)} items from {len(subs)} subscriptions"],
+    )
+    cart.recompute_total()
+    cache = get_cache()
+    await cache.save_cart(cart.session_id, cart)
+    return {"cart": CartResponse.from_domain(cart).model_dump(), "message": f"Added {len(items)} subscribed items to cart"}
+
 @router.get("/subscribe/{user_id}/due")
 async def get_due_subscriptions(user_id: str):
-    """Get subscriptions due today and a pre-built cart from them."""
+    """Get subscriptions due today/tomorrow and a pre-built cart from them."""
     service = get_subscribe_service()
     due = await service.get_due_subscriptions(user_id)
     cart = await service.build_due_cart(user_id) if due else None
@@ -141,6 +185,37 @@ async def get_due_subscriptions(user_id: str):
         "due_count": len(due),
         "due": due,
         "cart": CartResponse.from_domain(cart).model_dump() if cart else None,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Predicted restock — MUST be last among /subscribe/{user_id}* routes so
+# FastAPI doesn't swallow sub-paths like /due, /schedules, /all-cart, /insights
+# ---------------------------------------------------------------------------
+
+@router.get("/subscribe/{user_id}")
+async def get_predicted_cart(user_id: str):
+    """Subscribe — get a pre-staged restock or starter cart."""
+    service = get_subscribe_service()
+    cart = await service.predict_restock(user_id)
+
+    if cart is None:
+        return {
+            "message": "Not enough data to build a cart yet. Keep shopping!",
+            "predictions": [],
+            "cart": None,
+        }
+
+    # Detect which mode built the cart from the notes
+    is_starter = any("Starter essentials" in n for n in (cart.notes or []))
+    if is_starter:
+        msg = f"🛒 Here are your starter essentials — personalised for your profile ({len(cart.items)} items)"
+    else:
+        msg = f"🔮 We predicted {len(cart.items)} items you might need soon"
+
+    return {
+        "message": msg,
+        "cart": CartResponse.from_domain(cart).model_dump(),
     }
 
 

@@ -80,15 +80,102 @@ async def system_info():
     }
 
 
+
+
+# ---------------------------------------------------------------------------
+# Cost endpoint + Cost Explorer helpers
+# ---------------------------------------------------------------------------
+
+# Module-level cache to avoid hammering Cost Explorer on every 5s poll
+_ce_cache: dict = {"data": None, "fetched_at": 0.0}
+
+
+def _fetch_aws_costs() -> dict:
+    """Fetch AWS Cost Explorer data using explicit credentials.
+
+    Uses a fresh botocore Session with no environment credential chain so that
+    an ambient AWS_SESSION_TOKEN (from an EC2 instance profile or env var) cannot
+    contaminate the static long-term key+secret from .env — which is what causes
+    UnrecognizedClientException.
+    """
+    try:
+        import boto3
+        from botocore.session import Session as BotocoreSession
+
+        key_id = settings.aws_access_key_id
+        secret = settings.aws_secret_access_key
+
+        if not key_id or key_id == "local" or not secret or secret == "local":
+            return {
+                "available": False,
+                "error": "AWS credentials not configured.",
+                "period": {}, "total_usd": 0.0, "by_service": [], "source": "unavailable",
+            }
+
+        botocore_session = BotocoreSession()
+        botocore_session.set_credentials(key_id, secret)  # no session token
+        session = boto3.Session(botocore_session=botocore_session)
+        # Cost Explorer is a global service — endpoint is always us-east-1
+        ce = session.client("ce", region_name="us-east-1")
+
+        end = date.today()
+        start = end.replace(day=1) - timedelta(days=60)  # ~3 months back from start of current month
+        resp = ce.get_cost_and_usage(
+            TimePeriod={"Start": start.strftime("%Y-%m-%d"), "End": end.strftime("%Y-%m-%d")},
+            Granularity="MONTHLY",
+            Metrics=["UnblendedCost"],
+            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
+        )
+        aws_services_map: dict[str, float] = {}
+        aws_total = 0.0
+        aws_period: dict = {}
+        for period in resp["ResultsByTime"]:
+            aws_period = period["TimePeriod"]
+            for group in period["Groups"]:
+                svc = group["Keys"][0]
+                amt = round(float(group["Metrics"]["UnblendedCost"]["Amount"]), 6)
+                aws_total += amt
+                aws_services_map[svc] = aws_services_map.get(svc, 0.0) + amt
+        aws_services = [
+            {"service": svc, "cost_usd": round(amt, 6)}
+            for svc, amt in sorted(aws_services_map.items(), key=lambda x: x[1], reverse=True)
+        ]
+        return {
+            "available": True,
+            "error": None,
+            "period": aws_period,
+            "total_usd": round(aws_total, 4),
+            "by_service": aws_services,
+            "source": "aws_cost_explorer",
+        }
+    except Exception as e:
+        err_str = str(e)
+        if "DataUnavailableException" in err_str:
+            msg = "Cost Explorer data not yet available — enable it in the AWS Billing console and check back in 24h."
+        elif "AccessDenied" in err_str or "ce:GetCostAndUsage" in err_str:
+            msg = "IAM permission missing: add ce:GetCostAndUsage to the IAM user/role."
+        elif "UnrecognizedClientException" in err_str or "security token" in err_str.lower():
+            msg = (
+                "Cost Explorer is not enabled for this AWS account. "
+                "Go to AWS Console → Billing → Cost Explorer → Enable Cost Explorer. "
+                "Data appears within 24h. Also ensure the IAM user has ce:GetCostAndUsage permission."
+            )
+        elif "NoCredentials" in err_str:
+            msg = "AWS credentials not found."
+        else:
+            msg = f"Could not fetch AWS cost data: {err_str[:160]}"
+        return {
+            "available": False,
+            "error": msg,
+            "period": {}, "total_usd": 0.0, "by_service": [], "source": "unavailable",
+        }
+
+
 @router.get("/cost")
 async def cost_breakdown():
-    """Return real AWS Cost Explorer data grouped by service + live LLM cost estimates.
+    """Return real AWS Cost Explorer data grouped by service + live LLM cost estimates."""
+    import time
 
-    Falls back gracefully if Cost Explorer data is not yet available (< 24h after enabling).
-    LLM costs are always real — derived from live telemetry call counters.
-    AWS Cost Explorer result is cached for 5 minutes to avoid hammering the API.
-    """
-    # --- Live LLM cost estimates from telemetry (always real) ---
     llm_calls = telemetry_metrics.llm_calls
     cache_hits = telemetry_metrics.cache_hits
     llm_cost_per_call = 0.0008
@@ -97,10 +184,8 @@ async def cost_breakdown():
     carts_built = telemetry_metrics.carts_built
     cost_per_cart = round(llm_cost_total / max(carts_built, 1), 6)
 
-    # --- AWS Cost Explorer (cached 5 min to avoid external call on every dashboard refresh) ---
-    import time
     now = time.monotonic()
-    if _ce_cache["data"] is not None and (now - _ce_cache["fetched_at"]) < 300:
+    if _ce_cache["data"] is not None and _ce_cache["fetched_at"] > 0 and (now - _ce_cache["fetched_at"]) < 300:
         aws_result = _ce_cache["data"]
     else:
         aws_result = _fetch_aws_costs()
@@ -119,70 +204,6 @@ async def cost_breakdown():
         },
         "aws": aws_result,
     }
-
-
-# ---------------------------------------------------------------------------
-# Cost Explorer helpers
-# ---------------------------------------------------------------------------
-
-_ce_cache: dict = {"data": None, "fetched_at": 0.0}
-
-
-def _fetch_aws_costs() -> dict:
-    """Fetch AWS Cost Explorer data. Returns a dict regardless of success/failure."""
-    try:
-        import boto3
-        ce = boto3.client(
-            "ce",
-            region_name="us-east-1",
-            aws_access_key_id=settings.aws_access_key_id if settings.aws_access_key_id != "local" else None,
-            aws_secret_access_key=settings.aws_secret_access_key if settings.aws_secret_access_key != "local" else None,
-        )
-        end = date.today()
-        start = end - timedelta(days=30)
-        resp = ce.get_cost_and_usage(
-            TimePeriod={"Start": start.strftime("%Y-%m-%d"), "End": end.strftime("%Y-%m-%d")},
-            Granularity="MONTHLY",
-            Metrics=["UnblendedCost"],
-            GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
-        )
-        aws_services: list[dict] = []
-        aws_total = 0.0
-        aws_period: dict = {}
-        for period in resp["ResultsByTime"]:
-            aws_period = period["TimePeriod"]
-            for group in period["Groups"]:
-                svc = group["Keys"][0]
-                amt = round(float(group["Metrics"]["UnblendedCost"]["Amount"]), 6)
-                aws_total += amt
-                aws_services.append({"service": svc, "cost_usd": amt})
-        aws_services.sort(key=lambda x: x["cost_usd"], reverse=True)
-        return {
-            "available": True,
-            "error": None,
-            "period": aws_period,
-            "total_usd": round(aws_total, 4),
-            "by_service": aws_services,
-            "source": "aws_cost_explorer",
-        }
-    except Exception as e:
-        err_str = str(e)
-        if "DataUnavailableException" in err_str:
-            msg = "Cost Explorer data not yet available — check back in up to 24 hours after first enabling."
-        elif "AccessDenied" in err_str:
-            msg = "IAM permission missing: ce:GetCostAndUsage"
-        elif "NoCredentials" in err_str or settings.aws_access_key_id == "local":
-            msg = "AWS credentials not configured."
-        else:
-            msg = f"Could not fetch AWS cost data: {err_str[:120]}"
-        return {
-            "available": False,
-            "error": msg,
-            "period": {},
-            "total_usd": 0.0,
-            "by_service": [],
-            "source": "unavailable",
-        }
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -505,7 +526,7 @@ _DASHBOARD_HTML = """<!DOCTYPE html>
     <span id="health-badge" class="status-healthy">● Healthy</span>
     <div class="live-badge">
       <div class="live-dot"></div>
-      LIVE — refreshing every 3s
+      LIVE — refreshing every 5s
     </div>
   </div>
 </div>
@@ -764,7 +785,7 @@ function updateStats(d) {
   // Refresh timestamp
   refreshCount++;
   document.getElementById('refresh-info').textContent = 
-    'Last updated: ' + new Date().toLocaleTimeString() + ' — Refresh #' + refreshCount + ' (auto-refreshing every 3s)';
+    'Last updated: ' + new Date().toLocaleTimeString() + ' — Refresh #' + refreshCount + ' (auto-refreshing every 5s)';
 }
 
 function updateInfo(d) {
@@ -804,7 +825,7 @@ function updateInfo(d) {
 // Initial load + auto-refresh
 fetchStats();
 fetchInfo();
-setInterval(fetchStats, 3000);
+setInterval(fetchStats, 5000);
 </script>
 </body>
 </html>

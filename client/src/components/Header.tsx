@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Search, LogOut, User, Activity, Download, Share, MapPin, ChevronDown, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { ShoppingCart, Search, LogOut, User, Activity, Bell, Download, Share, MapPin, ChevronDown, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import type { AppContext } from '../App';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { useLocation as useDeliveryLoc } from '../context/LocationContext';
@@ -9,6 +9,66 @@ import AddressManager from './AddressManager';
 interface Props {
   ctx: AppContext;
   onLogout: () => void;
+}
+
+const SEARCH_PLACEHOLDERS = [
+  'Search "paneer"…',
+  'Search "milk"…',
+  'Search "bread"…',
+  'Search "chicken"…',
+  'Search "onion"…',
+  'Search "tomato"…',
+  'Search "rice"…',
+  'Search "eggs"…',
+];
+
+/** Cycles through placeholder texts with a clean typewriter animation — no flash on transition */
+function useAnimatedPlaceholder() {
+  const [display, setDisplay] = useState('');
+  const stateRef = useRef({ phIndex: 0, charIndex: 0, phase: 'typing' as 'typing' | 'pause' | 'deleting' | 'gap' });
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    function tick() {
+      const s = stateRef.current;
+      const full = SEARCH_PLACEHOLDERS[s.phIndex];
+
+      if (s.phase === 'typing') {
+        if (s.charIndex < full.length) {
+          s.charIndex++;
+          setDisplay(full.slice(0, s.charIndex));
+          timerRef.current = setTimeout(tick, 65);
+        } else {
+          s.phase = 'pause';
+          timerRef.current = setTimeout(tick, 1600);
+        }
+      } else if (s.phase === 'pause') {
+        s.phase = 'deleting';
+        timerRef.current = setTimeout(tick, 35);
+      } else if (s.phase === 'deleting') {
+        if (s.charIndex > 0) {
+          s.charIndex--;
+          setDisplay(full.slice(0, s.charIndex));
+          timerRef.current = setTimeout(tick, 35);
+        } else {
+          // fully deleted — move to next word, gap before typing
+          s.phase = 'gap';
+          s.phIndex = (s.phIndex + 1) % SEARCH_PLACEHOLDERS.length;
+          timerRef.current = setTimeout(tick, 300);
+        }
+      } else {
+        // gap phase — start typing next word
+        s.charIndex = 0;
+        s.phase = 'typing';
+        timerRef.current = setTimeout(tick, 10);
+      }
+    }
+
+    timerRef.current = setTimeout(tick, 900);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  return display;
 }
 
 export default function Header({ ctx, onLogout }: Props) {
@@ -20,6 +80,7 @@ export default function Header({ ctx, onLogout }: Props) {
   const location = useLocation();
   const { state: pwaState, triggerInstall } = usePwaInstall();
   const { locState, activeAddress } = useDeliveryLoc();
+  const animatedPlaceholder = useAnimatedPlaceholder();
 
   const handleInstallClick = async () => {
     if (pwaState === 'ios') { setShowIosInstall(true); return; }
@@ -83,7 +144,7 @@ export default function Header({ ctx, onLogout }: Props) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder='Search "milk"...'
+              placeholder={animatedPlaceholder}
               className="flex-1 px-3 md:px-4 py-2 md:py-2.5 text-sm outline-none bg-transparent text-dark min-w-0"
             />
             <button
@@ -157,6 +218,13 @@ export default function Header({ ctx, onLogout }: Props) {
                     className="w-full text-left px-4 py-2.5 text-sm text-dark hover:bg-light-bg transition flex items-center gap-2 border-b border-border"
                   >
                     <ShoppingCart size={14} /> Order History
+                  </Link>
+                  <Link
+                    to="/subscriptions"
+                    onClick={() => setShowUserMenu(false)}
+                    className="w-full text-left px-4 py-2.5 text-sm text-dark hover:bg-light-bg transition flex items-center gap-2 border-b border-border"
+                  >
+                    <Bell size={14} /> My Subscriptions
                   </Link>
                   <button
                     onClick={() => { setShowUserMenu(false); onLogout(); }}

@@ -1,4 +1,4 @@
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Plus, Minus } from 'lucide-react';
 import type { Product } from '../api/client';
 import { Link } from 'react-router-dom';
 import { Card, Chip } from '../ui';
@@ -6,9 +6,11 @@ import { Card, Chip } from '../ui';
 interface Props {
   product: Product;
   onAddToCart?: (product: Product) => void;
+  onRemoveFromCart?: (product: Product) => void;
+  cartQty?: number; // quantity of this item currently in cart
 }
 
-export default function ProductCard({ product, onAddToCart }: Props) {
+export default function ProductCard({ product, onAddToCart, onRemoveFromCart, cartQty = 0 }: Props) {
   const discount = product.market_price > product.sale_price
     ? Math.round((1 - product.sale_price / product.market_price) * 100)
     : 0;
@@ -70,7 +72,7 @@ export default function ProductCard({ product, onAddToCart }: Props) {
       {/* Brand & unit — truncated on mobile */}
       <p className="text-[11px] sm:text-xs text-muted mb-2 sm:mb-3 truncate">{product.brand} · {product.unit}</p>
 
-      {/* Price + Add */}
+      {/* Price + Add / Qty controls */}
       <div className="flex items-center justify-between mt-auto gap-1">
         <div className="min-w-0">
           <span className="text-sm sm:text-base font-bold text-primary-ink">₹{product.sale_price.toFixed(0)}</span>
@@ -78,15 +80,38 @@ export default function ProductCard({ product, onAddToCart }: Props) {
             <span className="hidden xs:inline text-[10px] sm:text-xs text-muted line-through ml-1">₹{product.market_price.toFixed(0)}</span>
           )}
         </div>
-        {/* 44×44 touch target on all screens */}
-        <button
-          onClick={() => onAddToCart?.(product)}
-          disabled={!product.in_stock}
-          className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-full bg-primary-light text-primary-ink hover:bg-primary hover:text-white active:scale-95 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label={`Add ${product.name} to cart`}
-        >
-          <ShoppingCart size={16} aria-hidden="true" />
-        </button>
+
+        {cartQty > 0 ? (
+          /* Quantity stepper — shown when item is already in cart */
+          <div className="flex items-center gap-1 bg-primary/10 rounded-full px-1 py-0.5">
+            <button
+              onClick={() => onRemoveFromCart?.(product)}
+              className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary-dark active:scale-95 transition"
+              aria-label={`Remove one ${product.name} from cart`}
+            >
+              <Minus size={12} aria-hidden="true" />
+            </button>
+            <span className="text-sm font-bold text-primary-ink min-w-[18px] text-center">{cartQty}</span>
+            <button
+              onClick={() => onAddToCart?.(product)}
+              disabled={!product.in_stock}
+              className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary-dark active:scale-95 transition disabled:opacity-50"
+              aria-label={`Add another ${product.name} to cart`}
+            >
+              <Plus size={12} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          /* Add to cart button — shown when item not in cart */
+          <button
+            onClick={() => onAddToCart?.(product)}
+            disabled={!product.in_stock}
+            className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-full bg-primary-light text-primary-ink hover:bg-primary hover:text-white active:scale-95 transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Add ${product.name} to cart`}
+          >
+            <ShoppingCart size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </Card>
   );

@@ -68,6 +68,25 @@ export default function HomePage({ ctx }: Props) {
     }
   };
 
+  const handleRemoveFromCart = async (product: Product) => {
+    try {
+      const sessionId = ctx.cart?.session_id || '';
+      const currentItem = ctx.cart?.items.find(i => i.name === product.name);
+      if (!currentItem) return;
+      const newQty = currentItem.quantity - 1;
+      const updated = newQty <= 0
+        ? await postCartOp(sessionId, 'remove', product.name)
+        : await postCartOp(sessionId, 'update', product.name, newQty);
+      ctx.setCart(updated);
+    } catch { /* ignore */ }
+  };
+
+  const getCartQty = (product: Product): number => {
+    if (!ctx.cart) return 0;
+    const item = ctx.cart.items.find(i => i.name === product.name);
+    return item ? item.quantity : 0;
+  };
+
   return (
     <div>
       {/* ============ Hero: thesis + narrative ============ */}
@@ -166,7 +185,6 @@ export default function HomePage({ ctx }: Props) {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className={`w-11 h-11 rounded-xl flex items-center justify-center ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
-                    <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full">✦</span>
                   </div>
                   <h3 className="font-heading font-bold text-base text-dark mb-1">{door.label}</h3>
                   <p className="text-xs text-muted line-clamp-2 mb-3">{door.tagline}</p>
@@ -190,7 +208,6 @@ export default function HomePage({ ctx }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className="font-heading font-bold text-base text-dark">{featuredDoors[2].label}</h3>
-                      <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full shrink-0">✦ Core</span>
                     </div>
                     <p className="text-xs text-muted line-clamp-1">{featuredDoors[2].tagline}</p>
                   </div>
@@ -325,7 +342,13 @@ export default function HomePage({ ctx }: Props) {
         ) : picks.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {picks.map((p) => (
-              <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
+              <ProductCard
+                key={p.product_id}
+                product={p}
+                onAddToCart={handleAddToCart}
+                onRemoveFromCart={handleRemoveFromCart}
+                cartQty={getCartQty(p)}
+              />
             ))}
           </div>
         ) : null}

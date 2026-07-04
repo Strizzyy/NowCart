@@ -463,23 +463,33 @@ class SubscribeService:
         return await self._load_subscriptions(user_id)
 
     async def get_due_subscriptions(self, user_id: str) -> list[dict]:
-        """Get subscriptions due today (next_due_date <= today).
+        """Get subscriptions due today or tomorrow.
 
-        Used at cart load time to pre-populate recurring items.
+        The logic: if you order today, delivery arrives tomorrow morning.
+        So we include anything due today (overdue) AND tomorrow (order now
+        for tomorrow's delivery) — giving you a 2-day lookahead window.
         """
         subs = await self._load_subscriptions(user_id)
-        today = datetime.now().date().isoformat()
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        due_cutoff = tomorrow.isoformat()   # include anything <= tomorrow
+
         due = []
         updated_subs = []
 
         for sub in subs:
-            if sub.get("next_due_date", "") <= today:
+            if sub.get("next_due_date", "") <= due_cutoff:
                 due.append(sub)
-                # Advance next_due_date
+                # Advance next_due_date from the original due date (not today)
+                # so weekly milk stays weekly, not drifting
+                original_due = sub.get("next_due_date", today.isoformat())
                 freq_days = {"daily": 1, "weekly": 7, "monthly": 30}.get(sub["frequency"], 7)
-                next_due = (datetime.now().date() + timedelta(days=freq_days)).isoformat()
-                updated_sub = dict(sub, next_due_date=next_due)
-                updated_subs.append(updated_sub)
+                try:
+                    base = datetime.fromisoformat(original_due).date()
+                    next_due = (base + timedelta(days=freq_days)).isoformat()
+                except ValueError:
+                    next_due = (today + timedelta(days=freq_days)).isoformat()
+                updated_subs.append(dict(sub, next_due_date=next_due))
             else:
                 updated_subs.append(sub)
 
@@ -543,8 +553,8 @@ class SubscribeService:
             items=items,
             mode=IntentMode.SUBSCRIBE,
             confidence=0.99,
-            notes=["📅 Your recurring subscriptions due today"],
-            reasoning_trail=[f"Subscribe: {len(items)} recurring items due today"],
+            notes=["📅 Order now for tomorrow morning delivery — your recurring subscriptions"],
+            reasoning_trail=[f"Subscribe: {len(items)} recurring items (due today/tomorrow)"],
         )
         cart.recompute_total()
         cache = get_cache()

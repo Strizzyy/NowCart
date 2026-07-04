@@ -235,6 +235,10 @@ export async function getDueSubscriptions(userId: string): Promise<{ due: Subscr
   return request(`/subscribe/${userId}/due`);
 }
 
+export async function getAllSubscriptionsCart(userId: string): Promise<{ cart: CartResponse | null; message: string }> {
+  return request(`/subscribe/${userId}/all-cart`);
+}
+
 /** User preferences (taste graph) */
 export interface UserPreference {
   user_id: string;

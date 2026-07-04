@@ -17,7 +17,6 @@ export default function WhyThisOne({ item }: Props) {
     ? item.reasoning_trail
     : [
         item.reason || 'Best available match for this need.',
-        `Confidence scored at ${Math.round(item.confidence * 100)}% from match quality, rating, and price.`,
         item.substituted_for
           ? 'Original pick was out of stock — swapped for this in-stock equivalent.'
           : 'In stock and ready for the fastest delivery slot.',
@@ -33,7 +32,7 @@ export default function WhyThisOne({ item }: Props) {
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-ink hover:underline"
         >
           <Sparkles size={11} aria-hidden="true" />
-          Why this one
+          Why this item was suggested
           <ChevronDown
             size={12}
             className={`transition-transform ${open ? 'rotate-180' : ''}`}

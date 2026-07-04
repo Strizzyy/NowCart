@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import type { AppContext } from '../App';
 import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';
@@ -56,6 +56,9 @@ export default function ShopPage({ ctx }: Props) {
     return products.slice(start, start + ITEMS_PER_PAGE);
   }, [products, currentPage]);
 
+  const cartItemCount = ctx.cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+  const cartTotal = ctx.cart?.total ?? 0;
+
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setCategory(cat);
@@ -93,8 +96,27 @@ export default function ShopPage({ ctx }: Props) {
       const sessionId = ctx.cart?.session_id || '';
       const updated = await postCartOp(sessionId, 'add', product.name, 1);
       ctx.setCart(updated);
-      ctx.setCartOpen(true);
     } catch { /* ignore */ }
+  };
+
+  const handleRemoveFromCart = async (product: Product) => {
+    try {
+      const sessionId = ctx.cart?.session_id || '';
+      const currentItem = ctx.cart?.items.find(i => i.name === product.name);
+      if (!currentItem) return;
+      const newQty = currentItem.quantity - 1;
+      const updated = newQty <= 0
+        ? await postCartOp(sessionId, 'remove', product.name)
+        : await postCartOp(sessionId, 'update', product.name, newQty);
+      ctx.setCart(updated);
+    } catch { /* ignore */ }
+  };
+
+  /** Look up current quantity of a product in the cart by name */
+  const getCartQty = (product: Product): number => {
+    if (!ctx.cart) return 0;
+    const item = ctx.cart.items.find(i => i.name === product.name);
+    return item ? item.quantity : 0;
   };
 
   const handleCategoryClick = (cat: string) => {
@@ -112,9 +134,7 @@ export default function ShopPage({ ctx }: Props) {
       <p className="text-sm text-muted mb-4">
         Home / <span className="text-dark font-medium">Shop</span>
         {category !== 'All' && <> / <span className="text-primary">{CATEGORY_LABELS[category] || category}</span></>}
-      </p>
-
-      {/* Mobile category pill row — horizontally scrollable, same style as Fresh picks */}
+      </p>      {/* Mobile category pill row — horizontally scrollable, same style as Fresh picks */}
       <div className="md:hidden -mx-4 px-4 mb-4 overflow-x-auto scrollbar-none">
         <div className="flex gap-2 pb-1" style={{ width: 'max-content' }}>
           {CATEGORIES.map((cat) => (
@@ -194,7 +214,13 @@ export default function ShopPage({ ctx }: Props) {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {paginatedProducts.map((p) => (
-                  <ProductCard key={p.product_id} product={p} onAddToCart={handleAddToCart} />
+                  <ProductCard
+                    key={p.product_id}
+                    product={p}
+                    onAddToCart={handleAddToCart}
+                    onRemoveFromCart={handleRemoveFromCart}
+                    cartQty={getCartQty(p)}
+                  />
                 ))}
               </div>
 
@@ -242,6 +268,26 @@ export default function ShopPage({ ctx }: Props) {
           )}
         </div>
       </div>
+
+      {/* Floating cart button — mobile only, shown when cart has items */}
+      {cartItemCount > 0 && (
+        <div className="md:hidden fixed bottom-4 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+          <button
+            onClick={() => ctx.setCartOpen(true)}
+            className="pointer-events-auto flex items-center gap-3 bg-primary text-white px-5 py-3.5 rounded-2xl shadow-[0_4px_24px_rgba(59,183,126,0.5)] active:scale-95 transition-all"
+            aria-label={`View cart — ${cartItemCount} items, ₹${cartTotal.toFixed(0)}`}
+          >
+            <div className="relative">
+              <ShoppingCart size={20} aria-hidden="true" />
+              <span className="absolute -top-2 -right-2 bg-white text-primary text-[10px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            </div>
+            <span className="font-semibold text-sm">View Cart</span>
+            <span className="font-bold text-sm">₹{cartTotal.toFixed(0)}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

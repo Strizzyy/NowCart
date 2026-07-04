@@ -3,22 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postCartOp } from '../api/client';
 import { useEffect, useState } from 'react';
-import { Button, Chip, EmptyState, type ChipTone } from '../ui';
+import { Button, Chip, EmptyState } from '../ui';
 import WhyThisOne from './cart/WhyThisOne';
 import HitlPrompt from './cart/HitlPrompt';
 import EngineTrail from './cart/EngineTrail';
 import ReplanBar from './cart/ReplanBar';
+import NowCartVerified from './NowCartVerified';
 
 interface Props {
   ctx: AppContext;
-}
-
-const LOW_CONFIDENCE = 0.6;
-
-function confidenceTone(c: number): ChipTone {
-  if (c >= 0.8) return 'success';
-  if (c >= 0.5) return 'warning';
-  return 'danger';
 }
 
 export default function CartDrawer({ ctx }: Props) {
@@ -28,6 +21,23 @@ export default function CartDrawer({ ctx }: Props) {
   const [highlightLow, setHighlightLow] = useState(false);
   const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
   const navigate = useNavigate();
+
+  // Lock background scroll when cart is open (iOS-safe)
+  useEffect(() => {
+    if (!cartOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, [cartOpen]);
 
   // reset whenever a new cart arrives
   useEffect(() => {
@@ -113,7 +123,7 @@ export default function CartDrawer({ ctx }: Props) {
         </div>
 
         {/* Cart content */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-4">
           {!cart || cart.items.length === 0 ? (
             <EmptyState
               icon={<Sparkles size={28} />}
@@ -215,14 +225,14 @@ export default function CartDrawer({ ctx }: Props) {
 
               {/* Items */}
               {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {
-                const low = item.confidence < LOW_CONFIDENCE;
+                const isVerified = item.confidence >= 0.8;
                 return (
                   <div
                     key={item.product_id}
                     className={[
                       'flex items-start gap-3 p-3 rounded-xl transition',
                       'bg-light-bg',
-                      highlightLow && low ? 'ring-2 ring-amber-300' : '',
+                      highlightLow && !isVerified ? 'ring-2 ring-amber-300' : '',
                       activeTab === 'economical' ? 'border-l-4 border-emerald-200' : '',
                     ].join(' ')}
                   >
@@ -251,11 +261,15 @@ export default function CartDrawer({ ctx }: Props) {
                         <p className="text-sm font-bold text-primary-ink shrink-0">₹{item.line_total.toFixed(0)}</p>
                       </div>
 
-                      {/* Confidence chip */}
+                      {/* NowCart Verified badge or savings chip */}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <Chip tone={confidenceTone(item.confidence)} size="xs">
-                          {Math.round(item.confidence * 100)}% confident
-                        </Chip>
+                        {isVerified && <NowCartVerified size="xs" />}
+                        {/* Subscription badge */}
+                        {(item.reason?.toLowerCase().includes('subscription') || item.reason?.toLowerCase().includes('recurring')) && (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-violet-100 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full">
+                            🔔 {item.reason?.toLowerCase().includes('daily') ? 'Daily' : item.reason?.toLowerCase().includes('weekly') ? 'Weekly' : 'Monthly'} subscription
+                          </span>
+                        )}
                         {activeTab === 'economical' && item.reason && item.reason.includes('saves') && (
                           <Chip tone="success" size="xs" icon={<BadgeDollarSign size={10} />}>
                             {item.reason.match(/saves ₹\d+/)?.[0] || 'Cheaper'}
@@ -383,12 +397,6 @@ export default function CartDrawer({ ctx }: Props) {
               >
                 Proceed to Payment →
               </Button>
-            </div>
-
-            <div className="text-center">
-              <Chip tone={confidenceTone(cart.confidence)}>
-                Overall confidence: {Math.round(cart.confidence * 100)}%
-              </Chip>
             </div>
           </div>
         )}

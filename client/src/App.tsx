@@ -11,6 +11,7 @@ import CartDrawer from './components/CartDrawer';
 import LoginPage from './pages/LoginPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
+import SubscriptionsPage from './pages/SubscriptionsPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import PaymentPage from './pages/PaymentPage';
 import AboutPage from './pages/AboutPage';
@@ -154,6 +155,12 @@ function App() {
               <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+          ) : user.role === 'admin' ? (
+            /* ── Admin: only the observability dashboard, no app shell ── */
+            <Routes>
+              <Route path="/admin" element={<AdminDashboardPage ctx={ctx} onLogout={handleLogout} />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Routes>
           ) : (
             <>
               <Header ctx={ctx} onLogout={handleLogout} />
@@ -166,15 +173,12 @@ function App() {
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
                   <Route path="/checkout" element={<PaymentPage ctx={ctx} />} />
                   <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
+                  <Route path="/subscriptions" element={<SubscriptionsPage ctx={ctx} />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/delivery-info" element={<DeliveryInfoPage />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/admin" element={
-                    user?.role === 'admin'
-                      ? <AdminDashboardPage ctx={ctx} />
-                      : <Navigate to="/" replace />
-                  } />
+                  <Route path="/admin" element={<Navigate to="/" replace />} />
                   <Route path="/sos" element={<Navigate to="/" replace />} />
                   <Route path="/login" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />

@@ -40,9 +40,10 @@ class _TokenBucket:
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Token-bucket rate limiter: 60 req/min per IP."""
+    """Token-bucket rate limiter: 60 req/min per IP for regular routes,
+    exempt for /api/meta/* endpoints (admin dashboard polling)."""
 
-    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+    def __init__(self, app, max_requests: int = 120, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         # refill_rate = max_requests / window_seconds tokens per second
@@ -52,6 +53,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         )
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        # Admin observability endpoints are exempt from rate limiting
+        # to prevent the dashboard's 3-second polling from hitting 429s
+        if request.url.path.startswith("/api/meta/"):
+            return await call_next(request)
+
         client_ip = request.client.host if request.client else "unknown"
         bucket = self._buckets[client_ip]
 

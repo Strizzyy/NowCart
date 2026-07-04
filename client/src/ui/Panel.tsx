@@ -43,8 +43,11 @@ export default function Panel({
   useEffect(() => {
     if (!open) return;
 
-    // lock background scroll
-    const prevOverflow = document.body.style.overflow;
+    // Lock background scroll on both body and html — required for iOS Safari
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
 
     // move focus into the panel
@@ -59,7 +62,11 @@ export default function Panel({
     document.addEventListener('keydown', onKey);
 
     return () => {
-      document.body.style.overflow = prevOverflow;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
       document.removeEventListener('keydown', onKey);
     };
   }, [open, onClose]);
@@ -77,14 +84,16 @@ export default function Panel({
 
       {/* Dialog */}
       <PopIn
-        className="relative w-full sm:max-w-lg max-h-[92vh] flex flex-col"
+        className="relative w-full sm:max-w-lg flex flex-col"
+        style={{ maxHeight: '92dvh' }}
       >
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={typeof title === 'string' ? title : undefined}
-          className="bg-surface w-full rounded-t-2xl sm:rounded-2xl shadow-[var(--shadow-pop)] flex flex-col max-h-[92vh] overflow-hidden"
+          className="bg-surface w-full rounded-t-2xl sm:rounded-2xl shadow-[var(--shadow-pop)] flex flex-col overflow-hidden"
+          style={{ maxHeight: '92dvh' }}
         >
           {/* Header */}
           <div className="flex items-start gap-3 px-4 md:px-5 py-4 border-b border-border">
@@ -107,7 +116,7 @@ export default function Panel({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-5 py-5">{children}</div>
+          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-4 md:px-5 py-5">{children}</div>
 
           {/* Footer */}
           {footer && <div className="border-t border-border px-4 md:px-5 py-4">{footer}</div>}

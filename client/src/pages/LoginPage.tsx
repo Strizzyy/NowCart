@@ -73,12 +73,12 @@ export default function LoginPage({ onLogin }: Props) {
           isNewUser: false,
         });
       }
-      navigate('/');
+      navigate(role === 'admin' ? '/admin' : '/');
     } catch (err: any) {
       const userName = mode === 'signup' ? name.trim() : email.split('@')[0];
       setError(err.message || 'Auth failed — using local session');
       onLogin({ name: userName, email: trimmedEmail, role, isNewUser: mode === 'signup' });
-      navigate('/');
+      navigate(role === 'admin' ? '/admin' : '/');
     } finally {
       setLoading(false);
     }

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Shield, Activity, Server, Zap, Database, Brain, RefreshCw, ExternalLink, DollarSign, TrendingUp, Cloud } from 'lucide-react';
+import {
+  Shield, Activity, Zap, Brain, RefreshCw,
+  Cloud, LogOut, Cpu,
+} from 'lucide-react';
 import type { AppContext } from '../App';
-import { Card, Chip, FadeIn } from '../ui';
+import { Card, Chip } from '../ui';
 
 interface Props {
   ctx: AppContext;
+  onLogout: () => void;
 }
 
 interface Stats {
   total_requests: number;
-  total_errors: number;
   error_rate: number;
   error_rate_pct: string;
   avg_latency_ms: number;
@@ -21,11 +24,8 @@ interface Stats {
   cache_hit_ratio: number;
   cache_hit_ratio_pct: string;
   llm_calls: number;
-  avg_llm_latency_ms: number;
   top_paths: Record<string, number>;
-  status_codes: Record<string, number>;
   requests_per_status: { '2xx': number; '4xx': number; '5xx': number };
-  throughput_summary: { total_requests: number; carts_built: number; avg_response_ms: number; p95_response_ms: number };
   health: { status: string; error_budget_remaining: string };
 }
 
@@ -37,7 +37,6 @@ interface CostData {
     cache_savings_usd: number;
     cost_per_cart_usd: number;
     pricing_note: string;
-    source: string;
   };
   aws: {
     available: boolean;
@@ -45,460 +44,369 @@ interface CostData {
     period: { Start?: string; End?: string };
     total_usd: number;
     by_service: { service: string; cost_usd: number }[];
-    source: string;
   };
 }
 
 interface Info {
-  service: string;
-  version: string;
-  environment: string;
   providers: { text_llm: string; text_model: string; vision_llm: string; vision_model: string };
   backends: { data: string; cache: string; region: string };
   features: Record<string, boolean | string[]>;
   scaling: Record<string, string>;
 }
 
-function MetricCard({ icon, title, value, subtitle, color }: { icon: React.ReactNode; title: string; value: string; subtitle: string; color: string }) {
+function KpiCard({ icon, title, value, sub, iconBg }: {
+  icon: React.ReactNode; title: string; value: string; sub: string; iconBg: string;
+}) {
   return (
-    <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold text-muted uppercase tracking-wide">{title}</p>
-          <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
-          <p className="text-xs text-muted mt-1">{subtitle}</p>
-        </div>
-        <div className="w-10 h-10 bg-light-bg rounded-xl flex items-center justify-center shrink-0">
-          {icon}
-        </div>
+    <Card padding="md" className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-1">{title}</p>
+        <p className="text-2xl font-bold text-dark leading-tight">{value}</p>
+        <p className="text-[11px] text-muted mt-1">{sub}</p>
+      </div>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+        {icon}
       </div>
     </Card>
   );
 }
 
-function ProgressBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+function MiniBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs font-medium text-muted w-8">{label}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted w-8 shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-light-bg rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-semibold text-dark w-16 text-right">{value.toFixed(0)}ms</span>
+      <span className="text-xs font-semibold text-dark w-14 text-right">{value.toFixed(0)}ms</span>
     </div>
   );
 }
 
-export default function AdminDashboardPage({ ctx: _ctx }: Props) {
+function InfoPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-light-bg rounded-xl p-3">
+      <p className="text-[10px] font-semibold text-muted uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-xs font-semibold text-dark truncate">{value}</p>
+    </div>
+  );
+}
+
+export default function AdminDashboardPage({ onLogout }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [info, setInfo] = useState<Info | null>(null);
   const [cost, setCost] = useState<CostData | null>(null);
-  const [_refreshCount, setRefreshCount] = useState(0);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [activeTab, setActiveTab] = useState<'overview' | 'infra'>('overview');
 
   const fetchData = async () => {
     try {
-      const [statsRes, infoRes, costRes] = await Promise.all([
+      const [sRes, iRes, cRes] = await Promise.all([
         fetch('/api/meta/stats'),
         fetch('/api/meta/info'),
         fetch('/api/meta/cost'),
       ]);
-      const statsData = await statsRes.json();
-      const infoData = await infoRes.json();
-      const costData = await costRes.json();
-      setStats(statsData);
-      setInfo(infoData);
-      setCost(costData);
-      setRefreshCount((c) => c + 1);
+      if (sRes.ok) setStats(await sRes.json());
+      if (iRes.ok) setInfo(await iRes.json());
+      if (cRes.ok) setCost(await cRes.json());
       setLastUpdated(new Date().toLocaleTimeString());
-    } catch (err) {
-      console.error('Failed to fetch metrics:', err);
+    } catch (e) {
+      console.error('metrics fetch failed', e);
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000);
-    return () => clearInterval(interval);
+    const id = setInterval(fetchData, 5000);
+    return () => clearInterval(id);
   }, []);
 
   const maxLatency = Math.max(stats?.p95_latency_ms ?? 100, stats?.avg_latency_ms ?? 50, 100);
-  const topPaths = stats ? Object.entries(stats.top_paths).sort(([, a], [, b]) => b - a).slice(0, 8) : [];
+  const topPaths = stats
+    ? Object.entries(stats.top_paths).sort(([, a], [, b]) => b - a).slice(0, 6)
+    : [];
+  const isHealthy = stats?.health.status === 'healthy';
+
+  const TABS = [
+    { id: 'overview' as const, label: 'Overview' },
+    { id: 'infra' as const, label: 'Infra & Cost' },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header */}
-      <FadeIn>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Shield size={24} className="text-purple-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-heading font-bold text-dark">Admin Dashboard</h1>
-              <p className="text-sm text-muted">Real-time observability & system metrics</p>
-            </div>
+    <div className="min-h-screen bg-light-bg">
+
+      {/* ── Top bar ── */}
+      <header className="sticky top-0 z-50 bg-surface border-b border-border px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center">
+            <Shield size={18} className="text-purple-600" />
           </div>
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <Chip tone="success" size="sm" icon={<Activity size={12} />}>
-              {stats?.health.status === 'healthy' ? '● Healthy' : '● Degraded'}
-            </Chip>
-            <div className="flex items-center gap-2 text-xs text-muted bg-light-bg px-3 py-2 rounded-lg">
-              <RefreshCw size={12} className="animate-spin" style={{ animationDuration: '3s' }} />
-              Live
-            </div>
-            <a
-              href="/api/meta/dashboard"
-              target="_blank"
-              rel="noopener"
-              className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 px-3 py-2 rounded-lg transition"
-            >
-              <ExternalLink size={12} /> <span className="hidden sm:inline">Full Dashboard</span><span className="sm:hidden">Dashboard</span>
-            </a>
+          <div>
+            <p className="text-sm font-bold text-dark leading-tight">Admin Dashboard</p>
+            <p className="text-[11px] text-muted leading-tight">NowCart Observability</p>
           </div>
         </div>
-      </FadeIn>
-
-      {/* KPI Cards */}
-      <FadeIn delay={60}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <MetricCard
-            icon={<Activity size={20} className="text-primary-ink" />}
-            title="Total Requests"
-            value={stats?.total_requests.toLocaleString() ?? '0'}
-            subtitle="Across all endpoints"
-            color="text-primary-ink"
-          />
-          <MetricCard
-            icon={<Brain size={20} className="text-blue-600" />}
-            title="Carts Built"
-            value={stats?.carts_built.toLocaleString() ?? '0'}
-            subtitle="AI-assembled carts"
-            color="text-blue-600"
-          />
-          <MetricCard
-            icon={<Zap size={20} className="text-secondary-dark" />}
-            title="Avg Latency"
-            value={`${stats?.avg_latency_ms.toFixed(0) ?? '0'}ms`}
-            subtitle={`P95: ${stats?.p95_latency_ms.toFixed(0) ?? '0'}ms`}
-            color="text-secondary-dark"
-          />
-          <MetricCard
-            icon={<Shield size={20} className="text-accent" />}
-            title="Error Rate"
-            value={stats?.error_rate_pct ?? '0%'}
-            subtitle={`Budget: ${stats?.health.error_budget_remaining ?? '100%'}`}
-            color={stats && stats.error_rate > 0.05 ? 'text-accent' : 'text-primary-ink'}
-          />
+        <div className="flex items-center gap-2">
+          <Chip tone={isHealthy ? 'success' : 'accent'} size="xs">
+            {isHealthy ? '● Healthy' : '● Degraded'}
+          </Chip>
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-muted bg-light-bg px-2.5 py-1.5 rounded-lg">
+            <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '5s' }} />
+            {lastUpdated || '—'}
+          </div>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-dark px-2.5 py-1.5 rounded-lg hover:bg-red-50 transition"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Sign out</span>
+          </button>
         </div>
-      </FadeIn>
+      </header>
 
-      {/* Performance Row */}
-      <FadeIn delay={120}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          {/* Latency Percentiles */}
-          <Card padding="md">
-            <h3 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
-              <Zap size={14} className="text-secondary" /> Latency Percentiles
-            </h3>
-            <div className="space-y-3">
-              <ProgressBar label="P50" value={stats?.p50_latency_ms ?? 0} max={maxLatency} color="bg-primary" />
-              <ProgressBar label="Avg" value={stats?.avg_latency_ms ?? 0} max={maxLatency} color="bg-blue-500" />
-              <ProgressBar label="P95" value={stats?.p95_latency_ms ?? 0} max={maxLatency} color="bg-secondary" />
+      {/* ── Tab bar ── */}
+      <div className="sticky top-[57px] z-40 bg-surface border-b border-border flex">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 py-3 text-xs font-semibold transition border-b-2 ${
+              activeTab === tab.id
+                ? 'text-primary-ink border-primary'
+                : 'text-muted border-transparent hover:text-dark'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
+
+        {/* ════════ OVERVIEW ════════ */}
+        {activeTab === 'overview' && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <KpiCard
+                icon={<Activity size={18} className="text-primary-ink" />}
+                title="Total Requests"
+                value={stats?.total_requests.toLocaleString() ?? '0'}
+                sub="All endpoints"
+                iconBg="bg-primary-light"
+              />
+              <KpiCard
+                icon={<Brain size={18} className="text-blue-600" />}
+                title="Carts Built"
+                value={stats?.carts_built.toLocaleString() ?? '0'}
+                sub="AI assembled"
+                iconBg="bg-blue-50"
+              />
+              <KpiCard
+                icon={<Zap size={18} className="text-secondary-dark" />}
+                title="Avg Latency"
+                value={`${stats?.avg_latency_ms.toFixed(0) ?? '0'}ms`}
+                sub={`P95: ${stats?.p95_latency_ms.toFixed(0) ?? '0'}ms`}
+                iconBg="bg-secondary/15"
+              />
+              <KpiCard
+                icon={<Shield size={18} className={stats && stats.error_rate > 0.05 ? 'text-accent' : 'text-primary-ink'} />}
+                title="Error Rate"
+                value={stats?.error_rate_pct ?? '0%'}
+                sub={`Budget: ${stats?.health.error_budget_remaining ?? '100%'}`}
+                iconBg={stats && stats.error_rate > 0.05 ? 'bg-accent/10' : 'bg-primary-light'}
+              />
             </div>
-            <p className="text-[11px] text-muted mt-3 italic">P95 &lt; 3000ms = healthy for LLM workloads</p>
-          </Card>
 
-          {/* Cache Performance */}
-          <Card padding="md">
-            <h3 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
-              <Database size={14} className="text-primary-ink" /> LLM Cache Performance
-            </h3>
-            <div className="flex items-center gap-4">
-              {/* Gauge */}
-              <div className="relative w-20 h-20">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="#f0f2f5" strokeWidth="3" />
-                  <circle
-                    cx="18" cy="18" r="14" fill="none"
-                    stroke="#3bb77e" strokeWidth="3"
-                    strokeDasharray={`${(stats?.cache_hit_ratio ?? 0) * 88} 88`}
-                    strokeLinecap="round"
-                    className="transition-all duration-700"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary-ink">{stats?.cache_hit_ratio_pct ?? '0%'}</span>
+            <div className="grid grid-cols-2 gap-3">
+              <Card padding="md">
+                <p className="text-xs font-semibold text-dark mb-3 flex items-center gap-1.5">
+                  <Zap size={13} className="text-secondary" /> Latency
+                </p>
+                <div className="space-y-2.5">
+                  <MiniBar label="P50" value={stats?.p50_latency_ms ?? 0} max={maxLatency} color="bg-primary" />
+                  <MiniBar label="Avg" value={stats?.avg_latency_ms ?? 0} max={maxLatency} color="bg-blue-500" />
+                  <MiniBar label="P95" value={stats?.p95_latency_ms ?? 0} max={maxLatency} color="bg-secondary" />
+                </div>
+              </Card>
+
+              <Card padding="md" className="flex flex-col items-center justify-center text-center gap-2">
+                <p className="text-xs font-semibold text-dark self-start">LLM Cache</p>
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="14" fill="none" stroke="#f0f2f5" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="14" fill="none"
+                      stroke="#3bb77e" strokeWidth="3"
+                      strokeDasharray={`${(stats?.cache_hit_ratio ?? 0) * 88} 88`}
+                      strokeLinecap="round"
+                      className="transition-all duration-700"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary-ink">{stats?.cache_hit_ratio_pct ?? '0%'}</span>
+                  </div>
+                </div>
+                <div className="text-[11px] text-muted space-y-0.5">
+                  <p><span className="font-semibold text-dark">{stats?.cache_hits ?? 0}</span> hits</p>
+                  <p><span className="font-semibold text-dark">{stats?.llm_calls ?? 0}</span> LLM calls</p>
+                </div>
+              </Card>
+            </div>
+
+            <Card padding="md">
+              <p className="text-xs font-semibold text-dark mb-3">Response Status</p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-xl font-bold text-primary-ink">{stats?.requests_per_status['2xx'] ?? 0}</p>
+                  <p className="text-[11px] text-muted">2xx OK</p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-secondary-dark">{stats?.requests_per_status['4xx'] ?? 0}</p>
+                  <p className="text-[11px] text-muted">4xx Client</p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-accent">{stats?.requests_per_status['5xx'] ?? 0}</p>
+                  <p className="text-[11px] text-muted">5xx Server</p>
                 </div>
               </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-semibold text-dark">{stats?.cache_hits ?? 0}</span> <span className="text-muted">hits</span></p>
-                <p><span className="font-semibold text-dark">{stats?.cache_misses ?? 0}</span> <span className="text-muted">misses</span></p>
-                <p><span className="font-semibold text-dark">{stats?.llm_calls ?? 0}</span> <span className="text-muted">LLM calls</span></p>
-              </div>
-            </div>
-            <p className="text-[11px] text-muted mt-3 italic">Same recipe → cached result (no LLM cost)</p>
-          </Card>
+            </Card>
 
-          {/* Status Distribution */}
-          <Card padding="md">
-            <h3 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
-              <Server size={14} className="text-blue-600" /> Status Distribution
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-primary-ink w-8">2xx</span>
-                <div className="flex-1 h-2 bg-light-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${stats ? Math.max((stats.requests_per_status['2xx'] / Math.max(stats.total_requests, 1)) * 100, 0) : 0}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold w-10 text-right">{stats?.requests_per_status['2xx'] ?? 0}</span>
+            <Card padding="none" className="overflow-hidden">
+              <div className="px-4 py-3 bg-light-bg border-b border-border">
+                <p className="text-xs font-semibold text-dark">Top Endpoints by Traffic</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-secondary-dark w-8">4xx</span>
-                <div className="flex-1 h-2 bg-light-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-secondary transition-all duration-500"
-                    style={{ width: `${stats ? Math.max((stats.requests_per_status['4xx'] / Math.max(stats.total_requests, 1)) * 100, 0) : 0}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold w-10 text-right">{stats?.requests_per_status['4xx'] ?? 0}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-accent w-8">5xx</span>
-                <div className="flex-1 h-2 bg-light-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-accent transition-all duration-500"
-                    style={{ width: `${stats ? Math.max((stats.requests_per_status['5xx'] / Math.max(stats.total_requests, 1)) * 100, 0) : 0}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold w-10 text-right">{stats?.requests_per_status['5xx'] ?? 0}</span>
-              </div>
-            </div>
-            <p className="text-[11px] text-muted mt-3 italic">Zero 5xx = production-grade error handling</p>
-          </Card>
-        </div>
-      </FadeIn>
-
-      {/* Top Endpoints + System Info */}
-      <FadeIn delay={180}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-          {/* Top Endpoints */}
-          <Card padding="none" className="overflow-hidden">
-            <div className="px-5 py-3 border-b border-border bg-light-bg">
-              <h3 className="text-sm font-semibold text-dark flex items-center gap-2">
-                🔥 Top Endpoints by Traffic
-              </h3>
-            </div>
-            {topPaths.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-muted text-center">No traffic yet — start using the app!</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="divide-y divide-border min-w-full">
+              {topPaths.length === 0 ? (
+                <p className="px-4 py-5 text-sm text-muted text-center">No traffic yet — start using the app!</p>
+              ) : (
+                <div className="divide-y divide-border">
                   {topPaths.map(([path, count]) => (
-                    <div key={path} className="flex items-center justify-between px-5 py-2.5 hover:bg-light-bg transition min-w-[300px]">
+                    <div key={path} className="flex items-center justify-between px-4 py-2.5 hover:bg-light-bg transition">
                       <code className="text-xs text-primary-ink font-mono truncate flex-1 mr-3">{path}</code>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs font-semibold bg-light-bg px-2.5 py-0.5 rounded-md border border-border">{count}</span>
-                        <span className="text-[11px] text-muted w-12 text-right">
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-semibold bg-light-bg border border-border px-2 py-0.5 rounded-md">{count}</span>
+                        <span className="text-[11px] text-muted w-10 text-right">
                           {stats ? ((count / stats.total_requests) * 100).toFixed(1) : 0}%
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </Card>
+              )}
+            </Card>
+          </>
+        )}
 
-          {/* System Info */}
-          <Card padding="md">
-            <h3 className="text-sm font-semibold text-dark mb-4 flex items-center gap-2">
-              🏗️ System Architecture
-            </h3>
-            {info && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Text LLM</p>
-                    <p className="text-xs font-semibold">{info.providers.text_llm}</p>
-                  </div>
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Model</p>
-                    <p className="text-xs font-semibold">{info.providers.text_model}</p>
-                  </div>
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Vision</p>
-                    <p className="text-xs font-semibold">{info.providers.vision_llm}</p>
-                  </div>
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Data</p>
-                    <p className="text-xs font-semibold">{info.backends.data}</p>
-                  </div>
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Cache</p>
-                    <p className="text-xs font-semibold">{info.backends.cache}</p>
-                  </div>
-                  <div className="bg-light-bg rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted uppercase">Region</p>
-                    <p className="text-xs font-semibold">{info.backends.region}</p>
-                  </div>
-                </div>
-
-                {/* Scaling info */}
-                <div className="border-t border-border pt-3 space-y-1.5">
-                  {Object.entries(info.scaling).map(([key, val]) => (
-                    <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
-                      <span className="text-[10px] text-muted uppercase sm:min-w-[70px]">{key.replace(/_/g, ' ')}</span>
-                      <span className="text-xs text-dark">{val}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Features */}
-                <div className="border-t border-border pt-3">
-                  <p className="text-[10px] text-muted uppercase mb-2">Active Features</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(info.features)
-                      .filter(([, v]) => v === true)
-                      .map(([k]) => (
-                        <span key={k} className="text-[10px] font-semibold bg-primary-light text-primary-ink px-2 py-0.5 rounded-full">
-                          ✓ {k.replace(/_/g, ' ')}
-                        </span>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
-      </FadeIn>
-
-      {/* Cost Monitoring */}
-      <FadeIn delay={240}>
-        <div className="mb-6">
-          <h2 className="text-lg font-heading font-bold text-dark mb-4 flex items-center gap-2">
-            <DollarSign size={20} className="text-green-600" /> Cost Monitoring
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">LLM Cost (session)</p>
-                  <p className="text-3xl font-bold mt-1 text-green-600">
-                    ${cost?.llm.cost_usd.toFixed(4) ?? '0.0000'}
-                  </p>
-                  <p className="text-xs text-muted mt-1">{cost?.llm.calls ?? 0} calls · live telemetry</p>
-                </div>
-                <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Brain size={20} className="text-green-600" />
-                </div>
+        {/* ════════ INFRA & COST ════════ */}
+        {activeTab === 'infra' && (
+          <>
+            {/* AI providers */}
+            <Card padding="md">
+              <p className="text-xs font-semibold text-dark mb-3 flex items-center gap-1.5">
+                <Brain size={13} className="text-blue-600" /> AI Providers
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <InfoPill label="Text LLM" value={info?.providers.text_llm ?? '—'} />
+                <InfoPill label="Model" value={info?.providers.text_model ?? '—'} />
+                <InfoPill label="Vision LLM" value={info?.providers.vision_llm ?? '—'} />
+                <InfoPill label="Vision Model" value={info?.providers.vision_model ?? '—'} />
               </div>
             </Card>
 
-            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cache Savings</p>
-                  <p className="text-3xl font-bold mt-1 text-blue-600">
-                    ${cost?.llm.cache_savings_usd.toFixed(4) ?? '0.0000'}
-                  </p>
-                  <p className="text-xs text-muted mt-1">{cost?.llm.cache_hits ?? 0} hits avoided</p>
-                </div>
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Database size={20} className="text-blue-600" />
-                </div>
+            {/* Infrastructure */}
+            <Card padding="md">
+              <p className="text-xs font-semibold text-dark mb-3 flex items-center gap-1.5">
+                <Cpu size={13} className="text-muted" /> Infrastructure
+              </p>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <InfoPill label="Data Backend" value={info?.backends.data ?? '—'} />
+                <InfoPill label="Cache Layer" value={info?.backends.cache ?? '—'} />
+                <InfoPill label="AWS Region" value={info?.backends.region ?? '—'} />
               </div>
+              {info && Object.entries(info.scaling).map(([key, val]) => (
+                <div key={key} className="flex gap-2 py-2 border-t border-border">
+                  <span className="text-[10px] font-semibold text-muted uppercase min-w-[90px] pt-0.5">
+                    {key.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-xs text-dark">{val}</span>
+                </div>
+              ))}
             </Card>
 
-            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">AWS Total (30d)</p>
-                  <p className="text-3xl font-bold mt-1 text-orange-500">
-                    {cost?.aws.available ? `$${cost.aws.total_usd.toFixed(4)}` : '—'}
-                  </p>
-                  <p className="text-xs text-muted mt-1">
-                    {cost?.aws.available
-                      ? `${cost.aws.period.Start} → ${cost.aws.period.End}`
-                      : 'Awaiting CE data'}
-                  </p>
-                </div>
-                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Cloud size={20} className="text-orange-500" />
-                </div>
-              </div>
-            </Card>
-
-            <Card padding="md" className="hover:shadow-[var(--shadow-pop)] transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Cost / Cart</p>
-                  <p className="text-3xl font-bold mt-1 text-purple-600">
-                    ${cost?.llm.cost_per_cart_usd.toFixed(4) ?? '0.0000'}
-                  </p>
-                  <p className="text-xs text-muted mt-1">LLM cost per assembled cart</p>
-                </div>
-                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
-                  <TrendingUp size={20} className="text-purple-600" />
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* AWS Cost Explorer breakdown */}
-          <Card padding="none" className="overflow-hidden mb-4">
-            <div className="px-5 py-3 border-b border-border bg-light-bg flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-dark flex items-center gap-2">
-                ☁️ AWS Cost by Service (last 30 days)
-              </h3>
-              <span className="text-xs text-muted hidden sm:inline">
-                {cost?.aws.available ? 'Source: AWS Cost Explorer · real data' : 'Source: AWS Cost Explorer'}
-              </span>
-            </div>
-            {!cost?.aws.available ? (
-              <div className="px-5 py-6 text-sm text-muted text-center">
-                {cost?.aws.error ?? 'Loading…'}
-              </div>
-            ) : cost.aws.by_service.filter(s => s.cost_usd > 0).length === 0 ? (
-              <div className="px-5 py-6 text-sm text-muted text-center">No costs recorded in this period.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="divide-y divide-border min-w-full">
-                  <div className="grid grid-cols-3 px-5 py-2 bg-light-bg text-xs font-semibold text-muted uppercase min-w-[400px]">
-                    <span>Service</span><span>Cost (USD)</span><span>% of Total</span>
+            {/* LLM cost summary */}
+            <Card padding="md">
+              <p className="text-xs font-semibold text-dark mb-3 flex items-center gap-1.5">
+                <Brain size={13} className="text-primary-ink" /> LLM Usage (this session)
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {[
+                  { label: 'API calls', value: String(cost?.llm.calls ?? 0) },
+                  { label: 'Cache hits', value: String(cost?.llm.cache_hits ?? 0) },
+                  { label: 'Cost', value: `$${cost?.llm.cost_usd.toFixed(4) ?? '0.0000'}` },
+                  { label: 'Saved by cache', value: `$${cost?.llm.cache_savings_usd.toFixed(4) ?? '0.0000'}` },
+                  { label: 'Cost / cart', value: `$${cost?.llm.cost_per_cart_usd.toFixed(4) ?? '0.0000'}` },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-1 border-b border-border">
+                    <span className="text-[11px] text-muted">{label}</span>
+                    <span className="text-xs font-semibold text-dark">{value}</span>
                   </div>
-                  {cost.aws.by_service.filter(s => s.cost_usd > 0).map(({ service, cost_usd }) => (
-                    <div key={service} className="grid grid-cols-3 px-5 py-3 text-sm hover:bg-light-bg transition min-w-[400px]">
-                      <span className="font-medium text-dark">{service}</span>
-                      <span className="font-semibold text-primary-ink">${cost_usd.toFixed(4)}</span>
-                      <span className="text-muted">
-                        {cost.aws.total_usd > 0 ? ((cost_usd / cost.aws.total_usd) * 100).toFixed(1) : '0'}%
+                ))}
+              </div>
+              <p className="text-[10px] text-muted mt-2">{cost?.llm.pricing_note}</p>
+            </Card>
+
+            {/* AWS Cost — compact, honest */}
+            <Card padding="md">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-dark flex items-center gap-1.5">
+                  <Cloud size={13} className="text-secondary-dark" /> AWS Billing
+                </p>
+                {cost?.aws.available && (
+                  <span className="text-[10px] text-muted">
+                    {cost.aws.period.Start} → {cost.aws.period.End}
+                  </span>
+                )}
+              </div>
+
+              {!cost?.aws.available ? (
+                <p className="text-xs text-muted">{cost?.aws.error ?? 'Loading…'}</p>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl font-bold text-dark">
+                      ${cost.aws.total_usd.toFixed(2)}
+                    </span>
+                    <span className="text-xs text-muted">total spend</span>
+                    {cost.aws.total_usd === 0 && (
+                      <span className="text-[10px] font-semibold bg-primary-light text-primary-ink px-2 py-0.5 rounded-full ml-1">
+                        Free Tier
                       </span>
-                    </div>
-                  ))}
-                  <div className="grid grid-cols-3 px-5 py-3 bg-light-bg text-sm font-semibold min-w-[400px]">
-                    <span className="text-dark">Total</span>
-                    <span className="text-primary-ink">${cost.aws.total_usd.toFixed(4)}</span>
-                    <span className="text-muted">100%</span>
+                    )}
                   </div>
-                </div>
-              </div>
-            )}
-          </Card>
+                  {cost.aws.total_usd === 0 && (
+                    <p className="text-[11px] text-muted mb-3">
+                      All services within AWS Free Tier limits for this period. No charges accrued.
+                    </p>
+                  )}
+                  <div className="space-y-1 mt-2">
+                    {cost.aws.by_service.map(({ service, cost_usd }, idx) => (
+                      <div key={`${service}-${idx}`} className="flex items-center justify-between py-1.5 border-t border-border first:border-0">
+                        <span className="text-xs text-dark truncate flex-1 mr-2">{service}</span>
+                        <span className="text-xs font-semibold text-muted shrink-0">
+                          {cost_usd === 0 ? 'Free' : `$${cost_usd.toFixed(4)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </Card>
+          </>
+        )}
 
-          {/* LLM pricing note */}
-          <p className="text-xs text-muted px-1">
-            💡 LLM costs: {cost?.llm.pricing_note ?? 'Groq Llama 3.3 70B pricing'}. Session counters reset on server restart.
-          </p>
-        </div>
-      </FadeIn>
-
-      {/* Footer */}
-      <div className="text-center text-xs text-muted pt-4 border-t border-border">
-        Last updated: {lastUpdated || '—'} · Auto-refreshing every 3 seconds
+        <p className="text-center text-[11px] text-muted pb-2">
+          Auto-refreshing every 5s · last updated {lastUpdated || '—'}
+        </p>
       </div>
     </div>
   );

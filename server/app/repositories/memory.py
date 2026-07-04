@@ -31,14 +31,21 @@ class MemoryRepository:
             results = [p for p in results if p.category.lower() == cat_lower]
 
         if search:
-            term = search.lower()
-            results = [
-                p for p in results
-                if term in p.name.lower()
-                or term in p.category.lower()
-                or term in p.brand.lower()
-                or term in p.sub_category.lower()
-            ]
+            # Split into tokens — match if ANY token appears in name/category/brand.
+            # This means "full cream milk" finds all milk products, not just
+            # those with the exact phrase "full cream milk" in the name.
+            tokens = [t for t in search.lower().split() if len(t) > 1]
+            if tokens:
+                results = [
+                    p for p in results
+                    if any(
+                        tok in p.name.lower()
+                        or tok in p.category.lower()
+                        or tok in p.brand.lower()
+                        or tok in p.sub_category.lower()
+                        for tok in tokens
+                    )
+                ]
 
         return results
 
