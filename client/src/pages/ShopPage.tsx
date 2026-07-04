@@ -156,7 +156,7 @@ export default function ShopPage({ ctx }: Props) {
       <div className="flex gap-6">
         {/* Sidebar — desktop only */}
         <aside className="hidden md:block w-56 shrink-0">
-          <div className="bg-white border border-border rounded-xl p-4 sticky top-36">
+          <div className="bg-white border border-border rounded-xl p-4 sticky top-[152px]">
             <h3 className="font-heading font-bold text-dark mb-3 flex items-center gap-2">
               <Filter size={16} />
               Category

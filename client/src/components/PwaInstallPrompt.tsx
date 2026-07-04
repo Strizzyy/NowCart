@@ -1,40 +1,57 @@
 /**
  * PWA Install Prompt — auto-triggered bottom banner.
- * Shown once when the browser fires beforeinstallprompt,
- * or on iOS Safari with manual "Add to Home Screen" instructions.
- * The header install button (Header.tsx) triggers install on demand.
+ *
+ * Behaviour:
+ * - New users: shows automatically once when the browser fires beforeinstallprompt
+ *   (Android/Chrome) or on iOS Safari. Shown every session until explicitly dismissed.
+ * - Returning users who dismissed or installed: never shown again (persisted in localStorage).
+ * - Header install button (Header.tsx) always available on demand regardless of this banner.
  */
 import { useState, useEffect } from 'react';
 import { Download, Share, X } from 'lucide-react';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 
+const STORAGE_KEY = 'pwa_prompt_dismissed';
+
 export default function PwaInstallPrompt() {
   const { state, triggerInstall } = usePwaInstall();
   const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (dismissed) return;
-    if (localStorage.getItem('pwa_prompt_dismissed')) return;
-    if (state === 'ready' || state === 'ios') setVisible(true);
-  }, [state, dismissed]);
+    // Already installed as a PWA — never show
+    if (state === 'installed') return;
+    // User dismissed or accepted before — never show again
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    // Show for new/returning-not-yet-installed users when browser is ready
+    if (state === 'ready' || state === 'ios') {
+      // Small delay so it doesn't flash immediately on page load
+      const t = setTimeout(() => setVisible(true), 2500);
+      return () => clearTimeout(t);
+    }
+  }, [state]);
 
   const handleInstall = async () => {
     const outcome = await triggerInstall();
-    if (outcome === 'accepted') localStorage.setItem('pwa_prompt_dismissed', '1');
+    // accepted → installed; ios → user follows manual steps; unavailable/dev → no-op
+    if (outcome === 'accepted' || outcome === 'ios') {
+      localStorage.setItem(STORAGE_KEY, '1');
+    }
     setVisible(false);
   };
 
   const handleDismiss = () => {
-    setDismissed(true);
     setVisible(false);
-    localStorage.setItem('pwa_prompt_dismissed', '1');
+    localStorage.setItem(STORAGE_KEY, '1');
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 sm:bottom-6">
+    // Safe-area aware bottom position so it clears the iOS home indicator
+    <div
+      className="fixed left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4"
+      style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+    >
       <div className="bg-dark border border-white/10 text-white rounded-2xl shadow-[var(--shadow-pop)] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -68,10 +85,10 @@ export default function PwaInstallPrompt() {
         ) : (
           <button
             onClick={handleInstall}
-            className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 rounded-xl transition"
+            className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 rounded-xl transition active:scale-95"
           >
-            <Download size={15} />
-            {/* Install App */}
+            <Download size={15} aria-hidden="true" />
+            Install App
           </button>
         )}
       </div>
