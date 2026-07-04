@@ -17,6 +17,7 @@ import DeliveryInfoPage from './pages/DeliveryInfoPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
 import { ToastProvider } from './ui';
+import PwaInstallPrompt from './components/PwaInstallPrompt';
 import type { CartResponse } from './api/client';
 
 export interface UserInfo {
@@ -180,6 +181,7 @@ function App() {
               {showLocationPrompt && (
                 <LocationPrompt onDismiss={() => setShowLocationPrompt(false)} />
               )}
+              <PwaInstallPrompt />
             </>
           )}
         </div>

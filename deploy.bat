@@ -29,12 +29,12 @@ echo.
 
 :: Step 3: Invalidate CloudFront
 echo [3/4] Invalidating CloudFront cache...
-aws cloudfront create-invalidation --distribution-id E12DWQGX8DIMR3 --paths "/*" >nul 2>&1
+aws cloudfront create-invalidation --distribution-id E12DWQGX8DIMR3 --paths "/*"
 if %errorlevel% neq 0 (
-    echo       WARNING: CloudFront invalidation failed (permission issue).
-    echo       Go to AWS Console - CloudFront - E12DWQGX8DIMR3 - Invalidations - Create - /*
+    echo       WARNING: CloudFront invalidation failed.
+    echo       Run manually: aws cloudfront create-invalidation --distribution-id E12DWQGX8DIMR3 --paths "/*"
 ) else (
-    echo       CloudFront invalidation started (takes 1-2 min to propagate).
+    echo       CloudFront invalidation started - takes 1-2 min to propagate.
 )
 echo.
 
