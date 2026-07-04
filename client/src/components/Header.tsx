@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Search, LogOut, User, Activity, Bell, Download, Share, MapPin, ChevronDown, Loader2 } from 'lucide-react';
+import { ShoppingCart, Search, LogOut, User, Activity, Bell, Share, MapPin, ChevronDown, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import type { AppContext } from '../App';
 import { usePwaInstall } from '../hooks/usePwaInstall';
@@ -160,8 +160,17 @@ export default function Header({ ctx, onLogout }: Props) {
         {/* Right actions */}
         <nav className="flex items-center gap-2 md:gap-3 ml-auto" aria-label="Primary actions">
 
-
-          <button
+          {/* Install app button — only shown when installable */}
+          {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev') && (
+            <button
+              onClick={handleInstallClick}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary-light transition min-h-[44px]"
+              aria-label="Install NowCart app"
+            >
+              <Share size={16} aria-hidden="true" />
+              <span className="hidden md:inline">Install</span>
+            </button>
+          )}          <button
             onClick={() => ctx.setCartOpen(true)}
             className="relative flex items-center gap-2 bg-primary text-white px-3 md:px-4 py-2.5 rounded-lg hover:bg-primary-dark transition min-h-[44px]"
             aria-label={`Open cart, ${itemCount} items, total ₹${cartTotal.toFixed(0)}`}
