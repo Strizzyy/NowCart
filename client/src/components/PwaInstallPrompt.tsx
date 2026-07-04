@@ -1,59 +1,32 @@
 /**
- * PWA Install Prompt
- * Shows a native-style "Add to Home Screen" banner when the browser fires
- * the beforeinstallprompt event (Chrome/Android). Also shows a manual
- * iOS instruction since Safari doesn't support the event.
+ * PWA Install Prompt — auto-triggered bottom banner.
+ * Shown once when the browser fires beforeinstallprompt,
+ * or on iOS Safari with manual "Add to Home Screen" instructions.
+ * The header install button (Header.tsx) triggers install on demand.
  */
 import { useState, useEffect } from 'react';
 import { Download, Share, X } from 'lucide-react';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { usePwaInstall } from '../hooks/usePwaInstall';
 
 export default function PwaInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIosHint, setShowIosHint] = useState(false);
+  const { state, triggerInstall } = usePwaInstall();
   const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Don't show if already installed (running as standalone)
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
-    // Don't show if dismissed before
+    if (dismissed) return;
     if (localStorage.getItem('pwa_prompt_dismissed')) return;
-
-    // Android / Chrome
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setVisible(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-
-    // iOS Safari detection
-    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isIos && isSafari) {
-      setShowIosHint(true);
-      setVisible(true);
-    }
-
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+    if (state === 'ready' || state === 'ios') setVisible(true);
+  }, [state, dismissed]);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      localStorage.setItem('pwa_prompt_dismissed', '1');
-    }
+    const outcome = await triggerInstall();
+    if (outcome === 'accepted') localStorage.setItem('pwa_prompt_dismissed', '1');
     setVisible(false);
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
+    setDismissed(true);
     setVisible(false);
     localStorage.setItem('pwa_prompt_dismissed', '1');
   };
@@ -69,7 +42,7 @@ export default function PwaInstallPrompt() {
             <div>
               <p className="text-sm font-semibold leading-snug">Install NowCart</p>
               <p className="text-xs text-white/60 mt-0.5">
-                {showIosHint && !deferredPrompt
+                {state === 'ios'
                   ? 'Tap the share icon below, then "Add to Home Screen"'
                   : 'Add to your home screen for the full app experience'}
               </p>
@@ -77,28 +50,28 @@ export default function PwaInstallPrompt() {
           </div>
           <button
             onClick={handleDismiss}
-            className="text-white/40 hover:text-white shrink-0 mt-0.5"
+            className="text-white/40 hover:text-white shrink-0 mt-0.5 p-1"
             aria-label="Dismiss install prompt"
           >
             <X size={16} />
           </button>
         </div>
 
-        {showIosHint && !deferredPrompt ? (
-          // iOS instruction — just show the share icon hint
+        {state === 'ios' ? (
           <div className="mt-3 flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2">
             <Share size={14} className="text-primary shrink-0" />
             <p className="text-xs text-white/70">
-              Tap <span className="text-white font-medium">Share</span> → <span className="text-white font-medium">Add to Home Screen</span>
+              Tap <span className="text-white font-medium">Share</span> →{' '}
+              <span className="text-white font-medium">Add to Home Screen</span>
             </p>
           </div>
         ) : (
           <button
             onClick={handleInstall}
-            className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-orange-500 text-white text-sm font-semibold py-2.5 rounded-xl transition"
+            className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 rounded-xl transition"
           >
             <Download size={15} />
-            Install App
+            {/* Install App */}
           </button>
         )}
       </div>

@@ -11,11 +11,18 @@ interface Props {
 type PayMethod = 'upi' | 'card' | 'wallet' | 'cod';
 
 const PAY_LABEL: Record<PayMethod, { label: string; icon: React.ReactNode }> = {
-  upi:    { label: 'UPI',              icon: <Smartphone size={14} /> },
+  upi:    { label: 'UPI',                 icon: <Smartphone size={14} /> },
   card:   { label: 'Credit / Debit Card', icon: <CreditCard size={14} /> },
-  wallet: { label: 'Wallet',           icon: <Wallet size={14} /> },
-  cod:    { label: 'Cash on Delivery', icon: <Truck size={14} /> },
+  wallet: { label: 'Wallet',              icon: <Wallet size={14} /> },
+  cod:    { label: 'Cash on Delivery',    icon: <Truck size={14} /> },
 };
+
+const VALID_METHODS = new Set<PayMethod>(['upi', 'card', 'wallet', 'cod']);
+
+function safeMethod(raw: unknown): PayMethod {
+  if (typeof raw === 'string' && VALID_METHODS.has(raw as PayMethod)) return raw as PayMethod;
+  return 'upi';
+}
 
 /** Random delivery time between 10-25 minutes */
 function getDeliveryTime() {
@@ -24,8 +31,8 @@ function getDeliveryTime() {
 
 export default function OrderSuccessPage({ ctx }: Props) {
   const location = useLocation();
-  const navState = location.state as { paymentMethod?: PayMethod; activeTab?: string } | null;
-  const payMethod: PayMethod = navState?.paymentMethod ?? 'upi';
+  const navState = location.state as { paymentMethod?: unknown; activeTab?: string } | null;
+  const payMethod: PayMethod = safeMethod(navState?.paymentMethod);
   const activeTab = navState?.activeTab ?? 'recommended';
 
   const [showConfetti, setShowConfetti] = useState(true);

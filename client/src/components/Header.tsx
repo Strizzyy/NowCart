@@ -1,7 +1,10 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Search, LogOut, User, Activity } from 'lucide-react';
+import { ShoppingCart, Search, LogOut, User, Activity, Download, Share, MapPin, ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { AppContext } from '../App';
+import { usePwaInstall } from '../hooks/usePwaInstall';
+import { useLocation as useDeliveryLoc } from '../context/LocationContext';
+import AddressManager from './AddressManager';
 
 interface Props {
   ctx: AppContext;
@@ -11,8 +14,18 @@ interface Props {
 export default function Header({ ctx, onLogout }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showIosInstall, setShowIosInstall] = useState(false);
+  const [showAddressManager, setShowAddressManager] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { state: pwaState, triggerInstall } = usePwaInstall();
+  const { locState, activeAddress } = useDeliveryLoc();
+
+  const handleInstallClick = async () => {
+    if (pwaState === 'ios') { setShowIosInstall(true); return; }
+    if (pwaState === 'dev') { setShowIosInstall(true); return; } // show demo modal in dev
+    await triggerInstall();
+  };
 
   const itemCount = ctx.cart?.items.length ?? 0;
   const cartTotal = ctx.cart?.total ?? 0;
@@ -70,7 +83,7 @@ export default function Header({ ctx, onLogout }: Props) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder='Search "milk", "paneer"...'
+              placeholder='Search "milk"...'
               className="flex-1 px-3 md:px-4 py-2 md:py-2.5 text-sm outline-none bg-transparent text-dark min-w-0"
             />
             <button
@@ -85,6 +98,8 @@ export default function Header({ ctx, onLogout }: Props) {
 
         {/* Right actions */}
         <nav className="flex items-center gap-2 md:gap-3 ml-auto" aria-label="Primary actions">
+
+
           <button
             onClick={() => ctx.setCartOpen(true)}
             className="relative flex items-center gap-2 bg-primary text-white px-3 md:px-4 py-2.5 rounded-lg hover:bg-primary-dark transition min-h-[44px]"
@@ -156,6 +171,48 @@ export default function Header({ ctx, onLogout }: Props) {
         </nav>
       </div>
 
+      {/* ── Location bar — Zepto/Blinkit style ── */}
+      <div className="border-t border-border/60 bg-surface px-4 py-1.5">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={() => setShowAddressManager(true)}
+            className="flex items-center gap-1.5 group min-h-[32px]"
+            aria-label={activeAddress ? `Delivering to ${activeAddress.area}` : 'Set delivery location'}
+          >
+            <MapPin
+              size={14}
+              className={locState === 'granted' ? 'text-primary-ink shrink-0' : 'text-muted shrink-0'}
+              aria-hidden="true"
+            />
+            {locState === 'requesting' ? (
+              <span className="flex items-center gap-1.5 text-xs text-muted">
+                <Loader2 size={12} className="animate-spin" />
+                Detecting location…
+              </span>
+            ) : locState === 'granted' && activeAddress ? (
+              <span className="flex items-center gap-1 text-xs">
+                <span className="font-bold text-dark truncate max-w-[140px] sm:max-w-xs">
+                  {activeAddress.area}
+                </span>
+                {activeAddress.city && activeAddress.city !== activeAddress.area && (
+                  <span className="text-muted hidden sm:inline">, {activeAddress.city}</span>
+                )}
+                {activeAddress.pincode && (
+                  <span className="text-muted hidden md:inline"> — {activeAddress.pincode}</span>
+                )}
+                <ChevronDown size={12} className="text-muted ml-0.5 group-hover:text-dark transition" />
+              </span>
+            ) : locState === 'denied' ? (
+              <span className="text-xs text-accent-dark font-medium">Location blocked — tap to add manually</span>
+            ) : (
+              <span className="text-xs text-muted group-hover:text-primary-ink transition font-medium">
+                Set delivery location
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Category nav — Zepto-style icon + label chips, horizontal scroll */}
       <nav className="border-t border-border bg-surface" aria-label="Categories">
         <div className="max-w-7xl mx-auto px-4 overflow-x-auto scrollbar-none">
@@ -220,6 +277,50 @@ export default function Header({ ctx, onLogout }: Props) {
         </div>
       </nav>
 
+      {/* Address Manager */}
+      {showAddressManager && <AddressManager onClose={() => setShowAddressManager(false)} />}
+
+      {/* iOS install instructions modal */}
+      {showIosInstall && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center md:hidden" onClick={() => setShowIosInstall(false)}>
+          <div className="absolute inset-0 bg-dark/50" aria-hidden="true" />
+          <div
+            className="relative bg-surface rounded-t-2xl w-full max-w-sm mx-auto p-6 pb-8 shadow-[var(--shadow-pop)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/icons/icon-192.png" alt="NowCart" className="w-12 h-12 rounded-xl" />
+              <div>
+                <p className="font-heading font-bold text-dark">Install NowCart</p>
+                <p className="text-xs text-muted">
+                  {pwaState === 'dev' ? 'Dev mode — in production this triggers native install' : 'Add to your Home Screen'}
+                </p>
+              </div>
+            </div>
+            <ol className="space-y-3 mb-5">
+              {[
+                { icon: <Share size={16} className="text-primary-ink shrink-0" />, text: <>Tap the <strong>Share</strong> button at the bottom of Safari</> },
+                { icon: <span className="text-base leading-none shrink-0">⊕</span>, text: <>Scroll down and tap <strong>Add to Home Screen</strong></> },
+                { icon: <span className="text-base leading-none shrink-0">✓</span>, text: <>Tap <strong>Add</strong> in the top-right corner</> },
+              ].map((step, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-dark">
+                  <span className="w-6 h-6 rounded-full bg-primary-light flex items-center justify-center shrink-0 mt-0.5">
+                    {step.icon}
+                  </span>
+                  <span className="leading-snug">{step.text}</span>
+                </li>
+              ))}
+            </ol>
+            <button
+              onClick={() => setShowIosInstall(false)}
+              className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

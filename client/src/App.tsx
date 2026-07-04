@@ -19,6 +19,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
 import { ToastProvider } from './ui';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
+import { LocationProvider } from './context/LocationContext';
 import type { CartResponse } from './api/client';
 
 export interface UserInfo {
@@ -143,6 +144,7 @@ function App() {
   const ctx: AppContext = { cart, setCart, cartOpen, setCartOpen, user };
 
   return (
+    <LocationProvider>
     <ToastProvider>
       <BrowserRouter>
         <ScrollToTop />
@@ -189,6 +191,7 @@ function App() {
         </div>
       </BrowserRouter>
     </ToastProvider>
+    </LocationProvider>
   );
 }
 
