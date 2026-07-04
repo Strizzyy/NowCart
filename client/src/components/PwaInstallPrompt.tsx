@@ -23,7 +23,7 @@ export default function PwaInstallPrompt() {
     // User dismissed or accepted before — never show again
     if (localStorage.getItem(STORAGE_KEY)) return;
     // Show for new/returning-not-yet-installed users when browser is ready
-    if (state === 'ready' || state === 'ios') {
+    if (state === 'ready' || state === 'ios' || state === 'manual') {
       // Small delay so it doesn't flash immediately on page load
       const t = setTimeout(() => setVisible(true), 2500);
       return () => clearTimeout(t);

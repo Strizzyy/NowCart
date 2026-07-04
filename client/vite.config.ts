@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg', 'logo-wordmark.svg'],
+      includeAssets: ['favicon.svg', 'logo.svg', 'logo-wordmark.svg', 'logoo.jpeg'],
       manifest: {
         name: 'NowCart — Smart Grocery Shopping',
         short_name: 'NowCart',

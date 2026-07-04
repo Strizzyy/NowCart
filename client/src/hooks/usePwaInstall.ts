@@ -5,7 +5,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-export type InstallState = 'unavailable' | 'ready' | 'ios' | 'installed' | 'dev';
+export type InstallState = 'unavailable' | 'ready' | 'ios' | 'installed' | 'dev' | 'manual';
 
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -38,14 +38,26 @@ export function usePwaInstall() {
     // never fires — mark as 'dev' so the button stays visible for testing
     if (import.meta.env.DEV) {
       setState('dev');
+      return () => window.removeEventListener('beforeinstallprompt', handler);
     }
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    // Production fallback: if beforeinstallprompt hasn't fired after 4 s
+    // (e.g. already installed in background, browser suppressed the event,
+    // or criteria gap), show a manual install option so the button is always
+    // visible to users who haven't installed yet.
+    const fallback = setTimeout(() => {
+      setState((prev) => (prev === 'unavailable' ? 'manual' : prev));
+    }, 4000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      clearTimeout(fallback);
+    };
   }, []);
 
-  const triggerInstall = async (): Promise<'accepted' | 'dismissed' | 'ios' | 'unavailable' | 'dev'> => {
-    if (state === 'ios') return 'ios';
-    if (state === 'dev') return 'dev';  // simulate in dev
+  const triggerInstall = async (): Promise<'accepted' | 'dismissed' | 'ios' | 'unavailable' | 'dev' | 'manual'> => {
+    if (state === 'ios' || state === 'manual') return 'ios'; // show manual instructions sheet
+    if (state === 'dev') return 'dev';
     if (!deferredPrompt) return 'unavailable';
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;

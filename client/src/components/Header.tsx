@@ -110,7 +110,7 @@ export default function Header({ ctx, onLogout }: Props) {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <img
-            src="/logo.svg"
+            src="/logoo.jpeg"
             alt="NowCart logo"
             className="w-10 h-10 rounded-xl"
           />
@@ -161,7 +161,7 @@ export default function Header({ ctx, onLogout }: Props) {
         <nav className="flex items-center gap-2 md:gap-3 ml-auto" aria-label="Primary actions">
 
           {/* Install app button — shown on all screen sizes when installable */}
-          {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev') && (
+          {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev' || pwaState === 'manual') && (
             <button
               onClick={handleInstallClick}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary-light transition min-h-[44px]"

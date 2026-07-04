@@ -88,9 +88,28 @@ export default function LoginPage({ onLogin }: Props) {
     <div className="min-h-screen bg-gradient-to-br from-primary-light via-light-bg to-white flex items-center justify-center px-4 py-8">
       <FadeIn>
         <div className="w-full max-w-md">
-          {/* Logo */}
+          {/* Logo / Wordmark */}
           <div className="text-center mb-8">
-            <img src="/logo-wordmark.svg" alt="NowCart" className="h-16 mx-auto mb-2" />
+            <div className="inline-flex items-center justify-center gap-0 font-heading font-bold text-4xl tracking-tight select-none mb-2">
+              <span
+                style={{
+                  fontWeight: 700,
+                  letterSpacing: '-0.01em',
+                  background: 'linear-gradient(135deg, #3bb77e 0%, #157347 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                Now
+              </span>
+              <span style={{ fontWeight: 800, letterSpacing: '-0.02em' }} className="text-dark">
+                Cart
+              </span>
+              <span className="ml-1 text-primary self-start mt-1 text-xl" aria-hidden="true" style={{ lineHeight: 1 }}>
+                🛒
+              </span>
+            </div>
             <p className="text-muted text-sm mt-1">Five ways in, one confident cart out</p>
           </div>
 

@@ -109,7 +109,7 @@ export default function Footer() {
         <div>
           <Link to="/" className="flex items-center gap-2.5 mb-3">
             <img
-              src="/logo.svg"
+              src="/logoo.jpeg"
               alt="NowCart logo"
               className="w-10 h-10 rounded-xl"
             />
