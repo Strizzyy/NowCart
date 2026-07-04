@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Check, MapPin, Clock, Package, Sparkles, PartyPopper, Truck } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Check, MapPin, Clock, Package, Sparkles, PartyPopper, Truck, CreditCard, Smartphone, Wallet } from 'lucide-react';
 import type { AppContext } from '../App';
 import { Button, FadeIn } from '../ui';
 
@@ -8,12 +8,26 @@ interface Props {
   ctx: AppContext;
 }
 
+type PayMethod = 'upi' | 'card' | 'wallet' | 'cod';
+
+const PAY_LABEL: Record<PayMethod, { label: string; icon: React.ReactNode }> = {
+  upi:    { label: 'UPI',              icon: <Smartphone size={14} /> },
+  card:   { label: 'Credit / Debit Card', icon: <CreditCard size={14} /> },
+  wallet: { label: 'Wallet',           icon: <Wallet size={14} /> },
+  cod:    { label: 'Cash on Delivery', icon: <Truck size={14} /> },
+};
+
 /** Random delivery time between 10-25 minutes */
 function getDeliveryTime() {
   return Math.floor(Math.random() * 16) + 10;
 }
 
 export default function OrderSuccessPage({ ctx }: Props) {
+  const location = useLocation();
+  const navState = location.state as { paymentMethod?: PayMethod; activeTab?: string } | null;
+  const payMethod: PayMethod = navState?.paymentMethod ?? 'upi';
+  const activeTab = navState?.activeTab ?? 'recommended';
+
   const [showConfetti, setShowConfetti] = useState(true);
   const [progress, setProgress] = useState(0);
   const [deliveryMin] = useState(getDeliveryTime);
@@ -21,7 +35,9 @@ export default function OrderSuccessPage({ ctx }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const itemCount = ctx.cart?.items.length ?? 0;
-  const total = ctx.cart?.total ?? 0;
+  const total = ctx.cart
+    ? (activeTab === 'economical' ? ctx.cart.economical_total : ctx.cart.total)
+    : 0;
 
   // Animate progress bar
   useEffect(() => {
@@ -165,9 +181,15 @@ export default function OrderSuccessPage({ ctx }: Props) {
                 </span>
                 <span className="text-sm font-bold text-primary-ink">₹{total.toFixed(0)}</span>
               </div>
-              <p className="text-xs text-muted">
-                {itemCount} item{itemCount !== 1 ? 's' : ''} · Delivery in {deliveryMin} min · Payment: Cash on Delivery
+              <p className="text-xs text-muted mb-2">
+                {itemCount} item{itemCount !== 1 ? 's' : ''} · Delivery in {deliveryMin} min
               </p>
+              {/* Payment method pill */}
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-surface border border-border rounded-full px-3 py-1 text-dark">
+                {PAY_LABEL[payMethod].icon}
+                {PAY_LABEL[payMethod].label}
+                <span className="text-primary-ink ml-0.5">· Paid ✓</span>
+              </span>
             </div>
           )}
 

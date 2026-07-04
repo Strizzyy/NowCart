@@ -1,7 +1,7 @@
 import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, PackageX, XCircle, BadgeDollarSign, Star, Truck, Clock, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
-import { postCartOp, placeOrder } from '../api/client';
+import { postCartOp } from '../api/client';
 import { useEffect, useState } from 'react';
 import { Button, Chip, EmptyState, type ChipTone } from '../ui';
 import WhyThisOne from './cart/WhyThisOne';
@@ -15,38 +15,11 @@ interface Props {
 
 const LOW_CONFIDENCE = 0.6;
 
-/** Map logged-in user to backend user_id */
-function resolveUserId(user: { email?: string; userId?: string } | null | undefined): string {
-  if (!user) return 'user-005';
-  if (user.userId) return user.userId;
-  const email = user.email;
-  if (!email) return 'user-005';
-  const map: Record<string, string> = {
-    'rahul@gmail.com': 'rahul',
-    'priya@example.com': 'user-001',
-    'rahul@example.com': 'user-002',
-    'anita@example.com': 'user-003',
-    'vikram@example.com': 'user-004',
-    'demo@example.com': 'user-005',
-    'demo@nowcart.app': 'user-005',
-    'admin@nowcart.app': 'user-001',
-    'guest@nowcart.app': 'user-005',
-  };
-  return map[email.toLowerCase()] || email.split('@')[0];
-}
-
 function confidenceTone(c: number): ChipTone {
   if (c >= 0.8) return 'success';
   if (c >= 0.5) return 'warning';
   return 'danger';
 }
-
-const PAYMENT_OPTIONS: { value: 'upi' | 'card' | 'cod' | 'wallet'; label: string; icon: string }[] = [
-  { value: 'upi', label: 'UPI', icon: '📱' },
-  { value: 'card', label: 'Card', icon: '💳' },
-  { value: 'wallet', label: 'Wallet', icon: '👛' },
-  { value: 'cod', label: 'Cash on Delivery', icon: '💵' },
-];
 
 export default function CartDrawer({ ctx }: Props) {
   const { cart, cartOpen, setCartOpen, setCart } = ctx;
@@ -54,8 +27,6 @@ export default function CartDrawer({ ctx }: Props) {
   const [proceeded, setProceeded] = useState(false);
   const [highlightLow, setHighlightLow] = useState(false);
   const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
-  const [placingOrder, setPlacingOrder] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cod' | 'wallet'>('upi');
   const navigate = useNavigate();
 
   // reset whenever a new cart arrives
@@ -387,31 +358,6 @@ export default function CartDrawer({ ctx }: Props) {
               </div>
             )}
 
-            {/* Payment method selector */}
-            <div>
-              <p className="text-xs font-semibold text-dark mb-2">Payment method</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {PAYMENT_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setPaymentMethod(opt.value)}
-                    className={[
-                      'flex flex-col items-center gap-1 py-3 px-2 rounded-xl border text-center transition min-h-[60px]',
-                      paymentMethod === opt.value
-                        ? 'border-primary bg-primary-light text-primary-ink font-semibold'
-                        : 'border-border text-muted hover:border-primary/40',
-                    ].join(' ')}
-                  >
-                    <span className="text-lg leading-none">{opt.icon}</span>
-                    <span className="text-[11px] leading-tight">{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-              {paymentMethod === 'cod' && (
-                <p className="text-[10px] text-muted mt-1">Payment collected on delivery.</p>
-              )}
-            </div>
-
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-muted">
@@ -429,23 +375,13 @@ export default function CartDrawer({ ctx }: Props) {
               <Button
                 variant="primary"
                 size="md"
-                loading={placingOrder}
-                onClick={async () => {
-                  if (!cart) return;
-                  setPlacingOrder(true);
-                  try {
-                    const userId = resolveUserId(ctx.user);
-                    await placeOrder(cart.session_id, userId, paymentMethod);
-                  } catch {
-                    // Order placement failed — continue to success page for demo
-                  }
-                  setPlacingOrder(false);
+                onClick={() => {
                   setCartOpen(false);
-                  navigate('/order-success');
+                  navigate('/checkout', { state: { activeTab } });
                 }}
-                leftIcon={!placingOrder ? <Truck size={16} /> : undefined}
+                leftIcon={<Truck size={16} />}
               >
-                {placingOrder ? 'Placing Order...' : 'Place Order →'}
+                Proceed to Payment →
               </Button>
             </div>
 

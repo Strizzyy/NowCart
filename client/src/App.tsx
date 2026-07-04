@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import PaymentPage from './pages/PaymentPage';
 import AboutPage from './pages/AboutPage';
 import DeliveryInfoPage from './pages/DeliveryInfoPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -161,6 +162,7 @@ function App() {
                   <Route path="/search" element={<SearchResultsPage ctx={ctx} />} />
                   <Route path="/product/:id" element={<ProductPage ctx={ctx} />} />
                   <Route path="/order-success" element={<OrderSuccessPage ctx={ctx} />} />
+                  <Route path="/checkout" element={<PaymentPage ctx={ctx} />} />
                   <Route path="/orders" element={<OrderHistoryPage ctx={ctx} />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/delivery-info" element={<DeliveryInfoPage />} />

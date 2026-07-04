@@ -131,9 +131,9 @@ export default function ProductPage({ ctx }: Props) {
             {product.name}
           </h1>
 
-          {/* Rating */}
+          {/* Rating + stock status inline */}
           {product.rating && (
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <div className="flex">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
@@ -144,6 +144,12 @@ export default function ProductPage({ ctx }: Props) {
                 ))}
               </div>
               <span className="text-sm text-muted">({product.rating.toFixed(1)})</span>
+              <span className="text-muted text-sm">·</span>
+              {product.in_stock ? (
+                <span className="text-xs font-semibold text-primary-ink bg-primary-light px-2 py-0.5 rounded-full">In Stock</span>
+              ) : (
+                <span className="text-xs font-semibold text-accent-dark bg-red-50 px-2 py-0.5 rounded-full">Out of Stock</span>
+              )}
             </div>
           )}
 
@@ -158,16 +164,7 @@ export default function ProductPage({ ctx }: Props) {
           {/* Meta */}
           <div className="space-y-2 mb-6 text-sm">
             <p><span className="text-muted">Brand:</span> <span className="font-medium">{product.brand}</span></p>
-            <p><span className="text-muted">Category:</span> <span className="font-medium">{product.category}</span></p>
             <p><span className="text-muted">Unit:</span> <span className="font-medium">{product.unit}</span></p>
-            <p>
-              <span className="text-muted">Availability:</span>{' '}
-              {product.in_stock ? (
-                <span className="text-primary font-medium">In Stock</span>
-              ) : (
-                <span className="text-accent font-medium">Out of Stock</span>
-              )}
-            </p>
           </div>
 
           {/* Description */}

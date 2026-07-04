@@ -80,10 +80,45 @@ export default function HomePage({ ctx }: Props) {
           </FadeIn>
 
           <FadeIn delay={60}>
-            <h1 className="text-3xl md:text-5xl font-heading font-bold text-dark leading-tight mb-4">
-              NowCart
+            <h1 className="leading-tight mb-4">
+              {/* NowCart wordmark */}
+              <span className="inline-flex items-center justify-center gap-0 font-heading font-bold text-4xl md:text-6xl tracking-tight select-none">
+                <span
+                  className="text-primary-ink"
+                  style={{
+                    fontWeight: 700,
+                    letterSpacing: '-0.01em',
+                    background: 'linear-gradient(135deg, #3bb77e 0%, #157347 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Now
+                </span>
+                <span
+                  className="text-dark"
+                  style={{
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  Cart
+                </span>
+                {/* Small cart dot accent */}
+                <span
+                  className="ml-1 text-primary self-start mt-1 md:mt-2 text-xl md:text-2xl"
+                  aria-hidden="true"
+                  style={{ lineHeight: 1 }}
+                >
+                  🛒
+                </span>
+              </span>
+              {/* Tagline on next line */}
               <br />
-              <span className="text-primary-ink">We solve the deciding.</span>
+              <span className="text-2xl md:text-4xl font-heading font-semibold text-primary-ink">
+                We solve the deciding.
+              </span>
             </h1>
           </FadeIn>
 
@@ -113,7 +148,7 @@ export default function HomePage({ ctx }: Props) {
         {/* Section label */}
         <div className="flex items-center gap-2 mb-3">
           <Star size={13} className="text-secondary fill-secondary" aria-hidden="true" />
-          <span className="text-xs font-bold text-secondary-dark uppercase tracking-widest">Signature features</span>
+          <span className="text-xs font-bold text-secondary-dark uppercase tracking-widest">Key features</span>
         </div>
 
         {/* ── FEATURED: Show + Share + Subscribe ── */}
@@ -131,7 +166,7 @@ export default function HomePage({ ctx }: Props) {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className={`w-11 h-11 rounded-xl flex items-center justify-center ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
-                    <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full">✦ Core</span>
+                    <span className="text-[10px] font-bold bg-secondary/15 text-secondary-dark px-1.5 py-0.5 rounded-full">✦</span>
                   </div>
                   <h3 className="font-heading font-bold text-base text-dark mb-1">{door.label}</h3>
                   <p className="text-xs text-muted line-clamp-2 mb-3">{door.tagline}</p>
@@ -178,7 +213,7 @@ export default function HomePage({ ctx }: Props) {
               >
                 <div className="flex items-start justify-between mb-4">
                   <span className={`w-12 h-12 rounded-xl flex items-center justify-center ${DOOR_ACCENT[door.tone]}`}>{door.icon}</span>
-                  <span className="text-[11px] font-bold bg-secondary/15 text-secondary-dark px-2 py-1 rounded-full">✦ Core feature</span>
+                  {/* <span className="text-[11px] font-bold bg-secondary/15 text-secondary-dark px-2 py-1 rounded-full">✦ Core feature</span> */}
                 </div>
                 <h3 className="font-heading font-bold text-xl text-dark mb-1">{door.label}</h3>
                 <p className="text-sm text-muted mb-2">{door.tagline}</p>

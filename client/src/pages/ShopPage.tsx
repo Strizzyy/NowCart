@@ -114,8 +114,27 @@ export default function ShopPage({ ctx }: Props) {
         {category !== 'All' && <> / <span className="text-primary">{CATEGORY_LABELS[category] || category}</span></>}
       </p>
 
+      {/* Mobile category pill row — horizontally scrollable, same style as Fresh picks */}
+      <div className="md:hidden -mx-4 px-4 mb-4 overflow-x-auto scrollbar-none">
+        <div className="flex gap-2 pb-1" style={{ width: 'max-content' }}>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => handleCategoryClick(cat)}
+              className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition min-h-[36px] whitespace-nowrap ${
+                category === cat
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'bg-surface border border-border text-muted hover:border-primary/40 hover:text-dark'
+              }`}
+            >
+              {CATEGORY_LABELS[cat] || cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex gap-6">
-        {/* Sidebar */}
+        {/* Sidebar — desktop only */}
         <aside className="hidden md:block w-56 shrink-0">
           <div className="bg-white border border-border rounded-xl p-4 sticky top-36">
             <h3 className="font-heading font-bold text-dark mb-3 flex items-center gap-2">
@@ -154,22 +173,10 @@ export default function ShopPage({ ctx }: Props) {
         </aside>
 
         {/* Products grid */}
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
-            <p className="text-sm text-muted">
-              {loading ? 'Loading...' : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1}–${Math.min(currentPage * ITEMS_PER_PAGE, products.length)} of ${products.length} products`}
-            </p>
-            {/* Mobile filter */}
-            <select
-              className="md:hidden border border-border rounded-lg px-3 py-2.5 text-sm min-h-[44px] w-full sm:w-auto"
-              value={category}
-              onChange={(e) => handleCategoryClick(e.target.value)}
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>{CATEGORY_LABELS[cat] || cat}</option>
-              ))}
-            </select>
-          </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-muted mb-4">
+            {loading ? 'Loading...' : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1}–${Math.min(currentPage * ITEMS_PER_PAGE, products.length)} of ${products.length} products`}
+          </p>
 
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -203,7 +210,7 @@ export default function ShopPage({ ctx }: Props) {
                     <ChevronLeft size={16} /> <span className="hidden xs:inline">Prev</span>
                   </button>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap justify-center">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
