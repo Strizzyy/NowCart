@@ -53,7 +53,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [followUp, setFollowUp] = useState('');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // null = no error, 'denied' = permission denied, 'unsupported' = API missing
   const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const speechSupported = !!getRecognition();
@@ -80,8 +79,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = () => {
-    // Stop any previous instance cleanly before creating a new one
+  const startListening = async () => {
+    // Clean up any previous recognition instance
     if (recRef.current) {
       recRef.current.onend = null;
       recRef.current.onerror = null;
@@ -95,10 +94,35 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       return;
     }
 
+    // ─── Mobile Chrome fix ─────────────────────────────────────────────────
+    // On Android Chrome, webkitSpeechRecognition fires 'not-allowed' even when
+    // Chrome site permissions show Microphone as Allowed. This is because mobile
+    // Chrome requires an active getUserMedia stream to be present when
+    // SpeechRecognition.start() is called — it shares the audio track.
+    //
+    // The stream must stay open until recognition ends. Closing it early causes
+    // the mic to cut out mid-sentence on some Android devices.
+    // ─────────────────────────────────────────────────────────────────────────
+    let stream: MediaStream | null = null;
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        // getUserMedia rejected — SpeechRecognition will also fail, but let it
+        // try anyway so the onerror path sets the right micStatus
+      }
+    }
+
     const rec = getRecognition()!;
     recRef.current = rec;
     setTranscript('');
+    setMicStatus('ok');
     setPhase('listening');
+
+    const releaseStream = () => {
+      stream?.getTracks().forEach(t => t.stop());
+      stream = null;
+    };
 
     rec.onresult = (e) => {
       const text = Array.from(e.results)
@@ -108,14 +132,16 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     };
 
     rec.onerror = (e) => {
+      releaseStream();
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setMicStatus('denied');
       }
-      // 'no-speech', 'aborted', 'audio-capture' etc — just go idle, no error banner
+      // no-speech / aborted / audio-capture → go idle quietly, no banner
       setPhase('idle');
     };
 
     rec.onend = () => {
+      releaseStream();
       setTranscript((current) => {
         if (current.trim()) void submit(current);
         else setPhase('idle');
@@ -210,16 +236,16 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   // ----- idle / listening -----
   return (
     <div className="space-y-4">
-      {/* Permission denied banner — only shown when SpeechRecognition itself returns not-allowed */}
+      {/* Only shown when SpeechRecognition explicitly fires not-allowed */}
       {micStatus === 'denied' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
-          <p className="text-sm font-semibold text-amber-800">Microphone blocked</p>
+          <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>
           <p className="text-xs text-amber-700 leading-snug">
-            In Chrome, tap the <strong>lock icon</strong> in the address bar → <strong>Permissions</strong> →
-            turn on <strong>Microphone</strong>. Then reload and try again.
+            Tap the lock icon in Chrome's address bar → <strong>Permissions</strong> → enable
+            <strong> Microphone</strong>. Then tap the mic button below.
           </p>
           <button
-            onClick={() => { setMicStatus('ok'); setPhase('idle'); }}
+            onClick={() => setMicStatus('ok')}
             className="text-xs font-semibold text-amber-800 underline"
           >
             Try again
@@ -227,15 +253,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         </div>
       )}
 
-      {/* API not supported */}
       {micStatus === 'unsupported' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
           Voice isn't supported in this browser. Type your request below.
         </div>
       )}
 
-      {/* Mic button — always shown when speech is supported */}
-      {speechSupported && micStatus !== 'unsupported' && (
+      {/* Mic button */}
+      {speechSupported && (
         <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
