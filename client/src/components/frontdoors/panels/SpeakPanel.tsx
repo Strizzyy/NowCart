@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Send, Settings } from 'lucide-react';
+import { Mic, Square, Send } from 'lucide-react';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
 import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
@@ -53,12 +53,16 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [followUp, setFollowUp] = useState('');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [micError, setMicError] = useState<'blocked' | 'unavailable' | null>(null);
+  // null = no error, 'denied' = permission denied, 'unsupported' = API missing
+  const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const speechSupported = useRef(!!getRecognition());
+  const speechSupported = !!getRecognition();
 
   useEffect(() => {
-    return () => recRef.current?.stop();
+    return () => {
+      recRef.current?.stop();
+      recRef.current = null;
+    };
   }, []);
 
   const submit = async (text: string) => {
@@ -76,39 +80,24 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = async () => {
-    const rec = getRecognition();
-    if (!rec) {
-      setMicError('unavailable');
+  const startListening = () => {
+    // Stop any previous instance cleanly before creating a new one
+    if (recRef.current) {
+      recRef.current.onend = null;
+      recRef.current.onerror = null;
+      recRef.current.onresult = null;
+      recRef.current.stop();
+      recRef.current = null;
+    }
+
+    if (!speechSupported) {
+      setMicStatus('unsupported');
       return;
     }
 
-    // Android PWA permission bridge:
-    // The installed PWA runs as a separate Android app. Even if Chrome site
-    // settings allows the domain, the PWA needs its OWN Android system-level
-    // mic permission. getUserMedia triggers the Android "Allow NowCart to
-    // access your microphone?" system dialog — without this, SpeechRecognition
-    // silently gets 'not-allowed' because the OS never granted the app permission.
-    // We keep the stream alive during recognition (don't stop tracks early)
-    // because closing it can cause the permission to lapse on some Android builds.
-    let stream: MediaStream | null = null;
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (err: unknown) {
-        const name = (err as { name?: string })?.name ?? '';
-        if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-          setMicError('blocked');
-        } else {
-          setMicError('unavailable');
-        }
-        return;
-      }
-    }
-
+    const rec = getRecognition()!;
     recRef.current = rec;
     setTranscript('');
-    setMicError(null);
     setPhase('listening');
 
     rec.onresult = (e) => {
@@ -119,19 +108,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     };
 
     rec.onerror = (e) => {
-      stream?.getTracks().forEach(t => t.stop());
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setMicError('blocked');
-      } else if (e.error === 'no-speech') {
-        // user didn't speak — go back to idle quietly
-      } else {
-        setMicError('unavailable');
+        setMicStatus('denied');
       }
+      // 'no-speech', 'aborted', 'audio-capture' etc — just go idle, no error banner
       setPhase('idle');
     };
 
     rec.onend = () => {
-      stream?.getTracks().forEach(t => t.stop());
       setTranscript((current) => {
         if (current.trim()) void submit(current);
         else setPhase('idle');
@@ -139,13 +123,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       });
     };
 
-    try {
-      rec.start();
-    } catch {
-      stream?.getTracks().forEach(t => t.stop());
-      setMicError('unavailable');
-      setPhase('idle');
-    }
+    rec.start();
   };
 
   const stopListening = () => recRef.current?.stop();
@@ -215,7 +193,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {speechSupported.current && micError !== 'blocked' && (
+            {speechSupported && micStatus === 'ok' && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
               </Button>
@@ -230,40 +208,34 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   }
 
   // ----- idle / listening -----
-  const showBlockedHelp = micError === 'blocked';
-  const showUnavailable = micError === 'unavailable' || !speechSupported.current;
-
   return (
     <div className="space-y-4">
-      {/* Mic blocked — Android system permission not granted */}
-      {showBlockedHelp && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
-          <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
-            <Settings size={14} className="shrink-0" />
-            Microphone access needed
-          </p>
+      {/* Permission denied banner — only shown when SpeechRecognition itself returns not-allowed */}
+      {micStatus === 'denied' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
+          <p className="text-sm font-semibold text-amber-800">Microphone blocked</p>
           <p className="text-xs text-amber-700 leading-snug">
-            Go to <strong>Android Settings → Apps → NowCart → Permissions</strong> and
-            allow <strong>Microphone</strong>. Then come back and tap the mic again.
+            In Chrome, tap the <strong>lock icon</strong> in the address bar → <strong>Permissions</strong> →
+            turn on <strong>Microphone</strong>. Then reload and try again.
           </p>
           <button
-            onClick={() => setMicError(null)}
+            onClick={() => { setMicStatus('ok'); setPhase('idle'); }}
             className="text-xs font-semibold text-amber-800 underline"
           >
-            I've allowed it — try again
+            Try again
           </button>
         </div>
       )}
 
-      {/* Speech API not supported */}
-      {showUnavailable && !showBlockedHelp && (
+      {/* API not supported */}
+      {micStatus === 'unsupported' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-          Voice recognition isn't available in this browser. Type your request below.
+          Voice isn't supported in this browser. Type your request below.
         </div>
       )}
 
-      {/* Mic button */}
-      {!showUnavailable && (
+      {/* Mic button — always shown when speech is supported */}
+      {speechSupported && micStatus !== 'unsupported' && (
         <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
@@ -273,29 +245,20 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               'w-24 h-24 rounded-full flex items-center justify-center transition-all',
               phase === 'listening'
                 ? 'bg-accent text-white nc-pulse shadow-[var(--shadow-pop)]'
-                : showBlockedHelp
-                ? 'bg-muted/30 text-muted cursor-not-allowed'
                 : 'bg-primary text-white hover:bg-primary-dark shadow-[var(--shadow-card)]',
             ].join(' ')}
-            disabled={showBlockedHelp}
           >
             {phase === 'listening' ? <Square size={30} /> : <Mic size={34} />}
           </button>
           <p className="text-sm font-semibold text-dark" aria-live="polite">
-            {phase === 'listening'
-              ? 'Listening… tap to stop'
-              : showBlockedHelp
-              ? 'Allow microphone in Android Settings'
-              : 'Tap and say a meal or moment'}
+            {phase === 'listening' ? 'Listening… tap to stop' : 'Tap and say a meal or moment'}
           </p>
           {transcript && (
             <p className="text-sm text-muted text-center max-w-sm" aria-live="polite">
               "{transcript}"
             </p>
           )}
-          {!showBlockedHelp && (
-            <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
-          )}
+          <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
         </div>
       )}
 
@@ -307,7 +270,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
           placeholder="e.g. healthy breakfast for two people"
-          autoFocus={showUnavailable}
+          autoFocus={micStatus === 'unsupported'}
           className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
         />
         <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
