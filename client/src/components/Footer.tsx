@@ -81,8 +81,8 @@ export default function Footer() {
               </button>
             </form>
 
-            {/* Install App button — always shown (never hides, even if PWA is installed in another profile) */}
-            {pwaState !== 'unavailable' && (
+            {/* Install App button — shown in browser only, hidden when running as installed PWA */}
+            {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev' || pwaState === 'manual') && (
               <>
                 <button
                   onClick={handleInstallClick}

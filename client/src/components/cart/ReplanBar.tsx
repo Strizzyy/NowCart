@@ -28,11 +28,11 @@ function resolveUserId(user: { email?: string; userId?: string } | null | undefi
 }
 
 const CHIPS = [
-  { label: 'Cheaper',   value: 'make it cheaper' },
-  { label: 'Vegan',     value: "I'm vegan, remove dairy and eggs" },
-  { label: 'No onion',  value: 'no onion no garlic, jain' },
-  { label: 'Protein',   value: 'add more high-protein items' },
-  { label: 'Swap poha', value: 'swap poha for idli' },
+  { label: 'Cheaper',    value: 'make it cheaper' },
+  { label: 'Vegan',      value: "I'm vegan, remove dairy and eggs" },
+  { label: 'No onion',   value: 'no onion no garlic, jain' },
+  { label: 'Protein',    value: 'add more high-protein items' },
+  { label: 'Swap poha',  value: 'swap poha for oats' },
 ];
 
 export default function ReplanBar({ cart, onReplan, ctx }: Props) {

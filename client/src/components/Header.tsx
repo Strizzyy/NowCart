@@ -160,8 +160,8 @@ export default function Header({ ctx, onLogout }: Props) {
         {/* Right actions */}
         <nav className="flex items-center gap-2 md:gap-3 ml-auto" aria-label="Primary actions">
 
-          {/* Install app button — always visible so demo shows it in Chrome even if PWA is installed */}
-          {pwaState !== 'unavailable' && (
+          {/* Install app button — shown in browser, hidden when running as installed PWA */}
+          {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev' || pwaState === 'manual') && (
             <button
               onClick={handleInstallClick}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary-light transition min-h-[44px]"

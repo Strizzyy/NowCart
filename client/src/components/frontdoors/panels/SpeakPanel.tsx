@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Send } from 'lucide-react';
+import { Mic, Square, Send, Settings } from 'lucide-react';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
 import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
@@ -12,7 +12,6 @@ interface Props {
 
 type Phase = 'idle' | 'listening' | 'processing' | 'confirming' | 'error';
 
-// Minimal typing for the Web Speech API (not in the DOM lib types).
 interface SpeechRecognitionLike {
   lang: string;
   continuous: boolean;
@@ -38,7 +37,6 @@ function getRecognition(): SpeechRecognitionLike | null {
   return rec;
 }
 
-/** Parse a spoken/typed follow-up into a structured cart op, or null. */
 function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
   const t = text.trim().toLowerCase();
   const add = t.match(/^(?:add|include|put in)\s+(?:(\d+)\s+)?(?:more\s+)?(.+)$/);
@@ -55,7 +53,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [followUp, setFollowUp] = useState('');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [micBlocked, setMicBlocked] = useState(false);
+  const [micError, setMicError] = useState<'blocked' | 'unavailable' | null>(null);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const speechSupported = useRef(!!getRecognition());
 
@@ -78,38 +76,39 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = async () => {
-    // Explicitly request mic permission first — required for PWA/Chrome on Android.
-    // getUserMedia triggers the browser's permission prompt before SpeechRecognition starts.
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Release immediately — we just needed the permission grant
-        stream.getTracks().forEach(t => t.stop());
-      } catch {
-        setMicBlocked(true);
-        return;
-      }
-    }
-
+  const startListening = () => {
+    // Don't call getUserMedia — let SpeechRecognition request permission itself.
+    // On Chrome Android PWA, getUserMedia can fail even when mic is allowed for
+    // the site. SpeechRecognition.start() triggers the browser permission prompt
+    // directly and returns 'not-allowed' in onerror if the user denies.
     const rec = getRecognition();
     if (!rec) {
-      setMicBlocked(true);
+      setMicError('unavailable');
       return;
     }
     recRef.current = rec;
     setTranscript('');
+    setMicError(null);
     setPhase('listening');
+
     rec.onresult = (e) => {
       const text = Array.from(e.results)
         .map((r) => r[0].transcript)
         .join(' ');
       setTranscript(text);
     };
+
     rec.onerror = (e) => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicBlocked(true);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setMicError('blocked');
+      } else if (e.error === 'no-speech') {
+        // User didn't speak — just go back to idle, don't show an error
+      } else {
+        setMicError('unavailable');
+      }
       setPhase('idle');
     };
+
     rec.onend = () => {
       setTranscript((current) => {
         if (current.trim()) void submit(current);
@@ -117,7 +116,13 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         return current;
       });
     };
-    rec.start();
+
+    try {
+      rec.start();
+    } catch {
+      setMicError('unavailable');
+      setPhase('idle');
+    }
   };
 
   const stopListening = () => recRef.current?.stop();
@@ -187,7 +192,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {speechSupported.current && !micBlocked && (
+            {speechSupported.current && micError !== 'blocked' && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
               </Button>
@@ -202,19 +207,42 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   }
 
   // ----- idle / listening -----
-  const showTypedFallback = micBlocked || !speechSupported.current;
+  // Show mic-blocked help only after the user actually tried and was denied
+  const showBlockedHelp = micError === 'blocked';
+  const showUnavailable = micError === 'unavailable' || !speechSupported.current;
 
   return (
-    <div className="space-y-5">
-      {showTypedFallback ? (
-        /* Mic blocked — single clean banner */
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
-          <Mic size={15} aria-hidden="true" />
-          Microphone unavailable — type your request below.
+    <div className="space-y-4">
+      {/* Mic blocked — actionable help, not a dead end */}
+      {showBlockedHelp && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+          <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+            <Settings size={14} className="shrink-0" />
+            Microphone access needed
+          </p>
+          <p className="text-xs text-amber-700 leading-snug">
+            Open <strong>Chrome settings → Site settings → Microphone</strong> and allow
+            this site. Then come back and tap the mic again.
+          </p>
+          <button
+            onClick={() => setMicError(null)}
+            className="text-xs font-semibold text-amber-800 underline"
+          >
+            I've allowed it — try again
+          </button>
         </div>
-      ) : (
-        /* Mic available — big tap-to-speak button */
-        <div className="flex flex-col items-center gap-4 py-4">
+      )}
+
+      {/* API not available */}
+      {showUnavailable && !showBlockedHelp && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+          Voice recognition isn't available in this browser. Type your request below.
+        </div>
+      )}
+
+      {/* Mic button — only show if not permanently unavailable */}
+      {!showUnavailable && (
+        <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
             onClick={phase === 'listening' ? stopListening : startListening}
@@ -223,24 +251,33 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               'w-24 h-24 rounded-full flex items-center justify-center transition-all',
               phase === 'listening'
                 ? 'bg-accent text-white nc-pulse shadow-[var(--shadow-pop)]'
+                : showBlockedHelp
+                ? 'bg-muted/30 text-muted cursor-not-allowed'
                 : 'bg-primary text-white hover:bg-primary-dark shadow-[var(--shadow-card)]',
             ].join(' ')}
+            disabled={showBlockedHelp}
           >
             {phase === 'listening' ? <Square size={30} /> : <Mic size={34} />}
           </button>
           <p className="text-sm font-semibold text-dark" aria-live="polite">
-            {phase === 'listening' ? 'Listening… tap to stop' : 'Tap and say a meal or moment'}
+            {phase === 'listening'
+              ? 'Listening… tap to stop'
+              : showBlockedHelp
+              ? 'Allow microphone to use voice'
+              : 'Tap and say a meal or moment'}
           </p>
           {transcript && (
-            <p className="text-sm text-muted text-center max-w-sm min-h-[1.25rem]" aria-live="polite">
+            <p className="text-sm text-muted text-center max-w-sm" aria-live="polite">
               "{transcript}"
             </p>
           )}
-          <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
+          {!showBlockedHelp && (
+            <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
+          )}
         </div>
       )}
 
-      {/* Single text input — no duplicate label */}
+      {/* Text input — always available */}
       <div className="flex gap-2">
         <input
           id="speak-typed"
@@ -248,7 +285,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
           placeholder="e.g. healthy breakfast for two people"
-          autoFocus={showTypedFallback}
+          autoFocus={showUnavailable}
           className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
         />
         <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>

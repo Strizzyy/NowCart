@@ -7,15 +7,26 @@ interface BeforeInstallPromptEvent extends Event {
 
 export type InstallState = 'unavailable' | 'ready' | 'ios' | 'installed' | 'dev' | 'manual';
 
+/** True when the app is running as an installed PWA (standalone/fullscreen display mode). */
+export function isRunningAsInstalledPwa(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    // iOS Safari standalone
+    (window.navigator as any).standalone === true
+  );
+}
+
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [state, setState] = useState<InstallState>('unavailable');
 
   useEffect(() => {
-    // NOTE: We intentionally do NOT hide the install button when running as a
-    // standalone PWA. The user may be viewing the app in Chrome browser while
-    // the PWA is also installed — the button should always be visible for demo
-    // purposes and to let users install on a different device/profile.
+    // Running as installed PWA — hide install button entirely
+    if (isRunningAsInstalledPwa()) {
+      setState('installed');
+      return;
+    }
 
     // iOS Safari — no beforeinstallprompt, show manual instructions
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -41,8 +52,8 @@ export function usePwaInstall() {
     }
 
     // Production fallback: if beforeinstallprompt hasn't fired after 4 s
-    // (already installed, browser suppressed the event, or criteria gap),
-    // show a manual install option so the button is ALWAYS visible.
+    // (app already installed so Chrome won't re-prompt, or criteria not met yet)
+    // show a manual install option so the button stays visible in the browser.
     const fallback = setTimeout(() => {
       setState((prev) => (prev === 'unavailable' ? 'manual' : prev));
     }, 4000);
@@ -54,12 +65,11 @@ export function usePwaInstall() {
   }, []);
 
   const triggerInstall = async (): Promise<'accepted' | 'dismissed' | 'ios' | 'unavailable' | 'dev' | 'manual'> => {
-    if (state === 'ios' || state === 'manual') return 'ios'; // show manual instructions sheet
+    if (state === 'ios' || state === 'manual') return 'ios';
     if (state === 'dev') return 'dev';
     if (!deferredPrompt) return 'unavailable';
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    // Do NOT set state to 'installed' — keep the button visible always
     setDeferredPrompt(null);
     return outcome;
   };
