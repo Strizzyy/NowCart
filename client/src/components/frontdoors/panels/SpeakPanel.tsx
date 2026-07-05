@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Keyboard, Send } from 'lucide-react';
+import { Mic, Square, Send } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
@@ -13,7 +13,6 @@ interface Props {
 
 type Phase = 'idle' | 'listening' | 'processing' | 'confirming' | 'error';
 
-// Minimal typing for the Web Speech API (not in the DOM lib types).
 interface SpeechRecognitionLike {
   lang: string;
   continuous: boolean;
@@ -40,8 +39,10 @@ function getWebRecognition(): SpeechRecognitionLike | null {
 }
 
 const isNative = Capacitor.isNativePlatform();
+const webSpeechSupported = !!getWebRecognition();
+// Speech is supported if we're on native (Capacitor plugin) or web Speech API is available
+const speechSupported = isNative || webSpeechSupported;
 
-/** Parse a spoken/typed follow-up into a structured cart op, or null. */
 function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
   const t = text.trim().toLowerCase();
   const add = t.match(/^(?:add|include|put in)\s+(?:(\d+)\s+)?(?:more\s+)?(.+)$/);
@@ -58,15 +59,13 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [followUp, setFollowUp] = useState('');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [micBlocked, setMicBlocked] = useState(false);
+  const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  // On native, Capacitor plugin is used — web speech always unavailable in WebView
-  const speechSupported = useRef(isNative || !!getWebRecognition());
 
   useEffect(() => {
     return () => {
       recRef.current?.stop();
-      // Clean up Capacitor listener on unmount
+      recRef.current = null;
       if (isNative) {
         import('@capacitor-community/speech-recognition').then(({ SpeechRecognition }) => {
           SpeechRecognition.removeAllListeners();
@@ -90,34 +89,33 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
+  // ── Native Android: Capacitor SpeechRecognition plugin ──────────────────
   const startListeningNative = async () => {
     try {
       const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
 
-      // Request permission first
       const permStatus = await SpeechRecognition.requestPermissions();
       if (permStatus.speechRecognition !== 'granted') {
-        setMicBlocked(true);
+        setMicStatus('denied');
         return;
       }
 
-      const available = await SpeechRecognition.available();
-      if (!available.available) {
-        setMicBlocked(true);
+      const { available } = await SpeechRecognition.available();
+      if (!available) {
+        setMicStatus('unsupported');
         return;
       }
 
+      setMicStatus('ok');
       setTranscript('');
       setPhase('listening');
 
       await SpeechRecognition.removeAllListeners();
 
-      // Capture partial results as user speaks
       await SpeechRecognition.addListener('partialResults', (data: { matches: string[] }) => {
         if (data.matches?.length) setTranscript(data.matches[0]);
       });
 
-      // When recognition ends, submit whatever was captured
       await SpeechRecognition.addListener('listeningState', async (state: { status: string }) => {
         if (state.status === 'stopped') {
           await SpeechRecognition.removeAllListeners();
@@ -129,7 +127,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         }
       });
 
-      // start() may also return final results directly on some devices
       const result = await SpeechRecognition.start({
         language: 'en-IN',
         maxResults: 1,
@@ -137,7 +134,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         partialResults: true,
       });
 
-      // If we got direct results (no partialResults event path), use them
+      // Some devices return final result directly from start()
       if (result?.matches?.length) {
         await SpeechRecognition.removeAllListeners();
         const text = result.matches[0];
@@ -145,8 +142,9 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         void submit(text);
       }
     } catch (e: any) {
-      const msg = e?.message ?? '';
-      if (msg.includes('permission') || msg.includes('not-allowed')) setMicBlocked(true);
+      const msg = (e?.message ?? '').toLowerCase();
+      if (msg.includes('permission') || msg.includes('not-allowed')) setMicStatus('denied');
+      else setMicStatus('unsupported');
       setPhase('idle');
     }
   };
@@ -158,20 +156,30 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     } catch { /* ignore */ }
   };
 
-  const startListening = () => {
-    if (isNative) { void startListeningNative(); return; }
+  // ── Web: standard SpeechRecognition API ─────────────────────────────────
+  const startListeningWeb = () => {
+    if (recRef.current) {
+      recRef.current.onend = null;
+      recRef.current.onerror = null;
+      recRef.current.onresult = null;
+      recRef.current.stop();
+      recRef.current = null;
+    }
 
     const rec = getWebRecognition();
-    if (!rec) { setMicBlocked(true); return; }
+    if (!rec) { setMicStatus('unsupported'); return; }
+
     recRef.current = rec;
+    setMicStatus('ok');
     setTranscript('');
     setPhase('listening');
+
     rec.onresult = (e) => {
       const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
       setTranscript(text);
     };
     rec.onerror = (e) => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicBlocked(true);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicStatus('denied');
       setPhase('idle');
     };
     rec.onend = () => {
@@ -182,6 +190,11 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       });
     };
     rec.start();
+  };
+
+  const startListening = () => {
+    if (isNative) { void startListeningNative(); return; }
+    startListeningWeb();
   };
 
   const stopListening = () => {
@@ -224,7 +237,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <Spinner size={28} />
         <p className="text-sm font-semibold text-dark">Building your cart…</p>
-        {transcript && <p className="text-xs text-muted max-w-sm">“{transcript}”</p>}
+        {transcript && <p className="text-xs text-muted max-w-sm">"{transcript}"</p>}
       </div>
     );
   }
@@ -239,11 +252,11 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             ctx.setCartOpen(true);
             onClose();
           }}
-          caption={transcript ? <>Heard: “{transcript}”</> : undefined}
+          caption={transcript ? <>Heard: "{transcript}"</> : undefined}
         />
         <div className="border-t border-border pt-3">
           <label htmlFor="speak-followup" className="text-xs font-semibold text-dark">
-            Follow up (e.g. “add 2 more onions”, “remove ghee”)
+            Follow up (e.g. "remove onions", "add more protein")
           </label>
           <div className="flex gap-2 mt-1.5">
             <input
@@ -251,10 +264,10 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               value={followUp}
               onChange={(e) => setFollowUp(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendFollowUp(followUp)}
-              placeholder="Add, remove, or change items"
-              className="flex-1 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+              placeholder="e.g. remove onions"
+              className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {speechSupported.current && !micBlocked && (
+            {speechSupported && micStatus === 'ok' && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
               </Button>
@@ -269,12 +282,31 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   }
 
   // ----- idle / listening -----
-  const showTypedFallback = micBlocked || !speechSupported.current;
-
   return (
-    <div className="space-y-5">
-      {!showTypedFallback ? (
-        <div className="flex flex-col items-center gap-4 py-4">
+    <div className="space-y-4">
+      {micStatus === 'denied' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
+          <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>
+          <p className="text-xs text-amber-700 leading-snug">
+            {isNative
+              ? 'Allow microphone access in your phone\'s app settings, then try again.'
+              : 'Tap the lock icon in Chrome\'s address bar → Permissions → enable Microphone.'}
+          </p>
+          <button onClick={() => setMicStatus('ok')} className="text-xs font-semibold text-amber-800 underline">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {micStatus === 'unsupported' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+          Voice isn't supported on this device. Type your request below.
+        </div>
+      )}
+
+      {/* Mic button */}
+      {speechSupported && micStatus !== 'unsupported' && (
+        <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
             onClick={phase === 'listening' ? stopListening : startListening}
@@ -292,38 +324,28 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             {phase === 'listening' ? 'Listening… tap to stop' : 'Tap and say a meal or moment'}
           </p>
           {transcript && (
-            <p className="text-sm text-muted text-center max-w-sm min-h-[1.25rem]" aria-live="polite">
-              “{transcript}”
+            <p className="text-sm text-muted text-center max-w-sm" aria-live="polite">
+              "{transcript}"
             </p>
           )}
-          <p className="text-xs text-faint">Try: “Biryani for four” or “healthy breakfast for two”</p>
-        </div>
-      ) : (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-800 flex items-center gap-2">
-          <Keyboard size={15} aria-hidden="true" />
-          Microphone unavailable — type your request below instead.
+          <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
         </div>
       )}
 
-      {/* Typed input is always available as a hands-free alternative */}
-      <div>
-        <label htmlFor="speak-typed" className="text-xs font-semibold text-dark">
-          Or type it
-        </label>
-        <div className="flex gap-2 mt-1.5">
-          <input
-            id="speak-typed"
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
-            placeholder="e.g. I'm making pasta for 3"
-            data-autofocus={showTypedFallback || undefined}
-            className="flex-1 border border-border rounded-lg px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
-          />
-          <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
-            Build
-          </Button>
-        </div>
+      {/* Text input — always available */}
+      <div className="flex gap-2">
+        <input
+          id="speak-typed"
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
+          placeholder="e.g. healthy breakfast for two people"
+          autoFocus={micStatus === 'unsupported'}
+          className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
+        />
+        <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
+          Build
+        </Button>
       </div>
     </div>
   );

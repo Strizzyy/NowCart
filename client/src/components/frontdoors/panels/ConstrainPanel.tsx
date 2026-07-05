@@ -13,10 +13,10 @@ interface Props {
 type Phase = 'idle' | 'processing' | 'confirming' | 'error';
 
 export default function ConstrainPanel({ ctx, onClose }: Props) {
-  const [budget, setBudget] = useState('');
-  const [servings, setServings] = useState('4');
-  const [hint, setHint] = useState('');
-  const [phase, setPhase] = useState<Phase>('idle');
+  // Pre-filled with demo values for the video — ₹1000, dinner for 2
+  const [budget, setBudget] = useState('1000');
+  const [servings, setServings] = useState('2');
+  const [hint, setHint] = useState('dinner');  const [phase, setPhase] = useState<Phase>('idle');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);

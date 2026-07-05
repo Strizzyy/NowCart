@@ -84,7 +84,7 @@ export default function Header({ ctx, onLogout }: Props) {
 
   const handleInstallClick = async () => {
     if (pwaState === 'ios') { setShowIosInstall(true); return; }
-    if (pwaState === 'dev') { setShowIosInstall(true); return; } // show demo modal in dev
+    if (pwaState === 'dev' || pwaState === 'manual') { setShowIosInstall(true); return; } // show install instructions
     await triggerInstall();
   };
 
@@ -160,7 +160,7 @@ export default function Header({ ctx, onLogout }: Props) {
         {/* Right actions */}
         <nav className="flex items-center gap-2 md:gap-3 ml-auto" aria-label="Primary actions">
 
-          {/* Install app button — shown on all screen sizes when installable */}
+          {/* Install app button — shown in browser, hidden when running as installed PWA */}
           {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev' || pwaState === 'manual') && (
             <button
               onClick={handleInstallClick}

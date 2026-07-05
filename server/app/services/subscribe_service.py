@@ -298,12 +298,22 @@ class SubscribeService:
         return predictions[:12]
 
     async def _build_predicted_cart(self, predictions: list[PredictedNeed]) -> Cart | None:
-        """Build a cart from predictions (suggestions only — not auto-added)."""
+        """Build a cart from predictions (suggestions only — not auto-added).
+        
+        Filters out products that are clearly non-grocery (e.g. pet clippers,
+        appliances) to keep the predicted restock cart sensible for a demo.
+        """
         catalog = get_catalog_service()
         items: list[CartItem] = []
         notes: list[str] = ["🔮 Predicted restock — based on your purchase patterns"]
 
+        # Products to exclude from predicted restock (non-grocery, high-value appliances, etc.)
+        _EXCLUDE_KEYWORDS = {"clipper", "bravura", "trimmer", "appliance", "machine"}
+
         for pred in predictions:
+            # Skip non-grocery items
+            if any(kw in pred.product_name.lower() for kw in _EXCLUDE_KEYWORDS):
+                continue
             if await catalog.check_availability(pred.product_id):
                 product = await catalog.get_product_by_id(pred.product_id)
                 if product:

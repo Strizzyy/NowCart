@@ -225,7 +225,7 @@ export default function CartDrawer({ ctx }: Props) {
 
               {/* Items */}
               {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {
-                const isVerified = item.confidence >= 0.8;
+                const isVerified = activeTab === 'recommended' && item.confidence >= 0.8;
                 return (
                   <div
                     key={item.product_id}

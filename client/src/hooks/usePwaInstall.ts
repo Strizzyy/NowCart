@@ -7,13 +7,23 @@ interface BeforeInstallPromptEvent extends Event {
 
 export type InstallState = 'unavailable' | 'ready' | 'ios' | 'installed' | 'dev' | 'manual';
 
+/** True when the app is running as an installed PWA (standalone/fullscreen display mode). */
+export function isRunningAsInstalledPwa(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    // iOS Safari standalone
+    (window.navigator as any).standalone === true
+  );
+}
+
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [state, setState] = useState<InstallState>('unavailable');
 
   useEffect(() => {
-    // Already running as installed PWA
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Running as installed PWA — hide install button entirely
+    if (isRunningAsInstalledPwa()) {
       setState('installed');
       return;
     }
@@ -42,9 +52,8 @@ export function usePwaInstall() {
     }
 
     // Production fallback: if beforeinstallprompt hasn't fired after 4 s
-    // (e.g. already installed in background, browser suppressed the event,
-    // or criteria gap), show a manual install option so the button is always
-    // visible to users who haven't installed yet.
+    // (app already installed so Chrome won't re-prompt, or criteria not met yet)
+    // show a manual install option so the button stays visible in the browser.
     const fallback = setTimeout(() => {
       setState((prev) => (prev === 'unavailable' ? 'manual' : prev));
     }, 4000);
@@ -56,12 +65,11 @@ export function usePwaInstall() {
   }, []);
 
   const triggerInstall = async (): Promise<'accepted' | 'dismissed' | 'ios' | 'unavailable' | 'dev' | 'manual'> => {
-    if (state === 'ios' || state === 'manual') return 'ios'; // show manual instructions sheet
+    if (state === 'ios' || state === 'manual') return 'ios';
     if (state === 'dev') return 'dev';
     if (!deferredPrompt) return 'unavailable';
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setState('installed');
     setDeferredPrompt(null);
     return outcome;
   };

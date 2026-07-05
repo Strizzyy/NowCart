@@ -40,6 +40,7 @@ class ReplanRequest(BaseModel):
     feedback: str = Field(..., min_length=1)
     user_id: str | None = None
     servings: int | None = None
+    cart_items: list[dict] | None = None  # Current cart items for context
 
 
 class CounterfactualRequest(BaseModel):
@@ -307,7 +308,8 @@ async def replan_cart(req: ReplanRequest) -> CartResponse:
     """Re-plan a cart based on user feedback."""
     service = get_outcome_service()
     cart = await service.replan_cart(
-        text=req.text, feedback=req.feedback, user_id=req.user_id, servings=req.servings
+        text=req.text, feedback=req.feedback, user_id=req.user_id,
+        servings=req.servings, cart_items=req.cart_items
     )
     return CartResponse.from_domain(cart)
 
