@@ -90,8 +90,6 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
       try {
         const data = await searchCatalog(query, undefined, 8);
         setResults(data);
-        // Dismiss keyboard on mobile once results arrive so they aren't obscured
-        inputRef.current?.blur();
       } catch { setResults([]); }
       finally { setSearching(false); }
     }, 300);
@@ -126,8 +124,15 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
               inputMode="search"
               enterKeyHint="search"
               value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.blur(); }}
+              onChange={e => {
+                setQuery(e.target.value);
+                // Blur immediately so keyboard dismisses while results load
+                inputRef.current?.blur();
+              }}
+              onFocus={e => {
+                // Re-select all text when user taps to edit again
+                e.target.select();
+              }}
               placeholder="Search products…"
               className="flex-1 text-sm bg-transparent outline-none text-dark"
               autoFocus
