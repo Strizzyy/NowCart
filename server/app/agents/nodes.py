@@ -290,7 +290,8 @@ async def decompose_node(state: AgentState) -> dict:
                 quantity=float(li.get("quantity", 1)),
                 unit="unit",
                 category_hint="",
-                status=NeedStatus.PENDING,
+                status=NeedStatus.MATCHED,  # already matched — skip the catalog matcher
+                matched_product_id=li.get("product_id"),  # pre-set so match_node skips it
             )
             locked_needs.append(locked_need)
         all_needs = locked_needs + new_needs
@@ -349,7 +350,29 @@ async def match_node(state: AgentState) -> dict:
     economical_items: list[CartItem] = []
     notes: list[str] = []
 
+    # Build a lookup from locked_items for fast reconstruction of pre-matched needs
+    locked_items: list[dict] = state.get("locked_items", [])
+    locked_by_pid: dict[str, dict] = {li["product_id"]: li for li in locked_items if li.get("product_id")}
+
     for need in needs:
+        # ── Fast path: pre-matched locked item — skip catalog search entirely ──
+        if need.status == NeedStatus.MATCHED and need.matched_product_id and need.matched_product_id in locked_by_pid:
+            li = locked_by_pid[need.matched_product_id]
+            cart_quantity = _normalize_quantity_to_packs(need.quantity, need.unit)
+            locked_cart_item = CartItem(
+                product_id=li["product_id"],
+                name=li["name"],
+                brand=li.get("brand", ""),
+                price=float(li.get("price", 0)),
+                quantity=cart_quantity,
+                unit=need.unit,
+                reason="Kept from your existing cart",
+                confidence=0.99,
+                image_url=li.get("image_url"),
+            )
+            items.append(locked_cart_item)
+            economical_items.append(locked_cart_item)
+            continue
         # --- Hybrid retrieval ---
         hybrid_results: list[tuple[str, float]] = []
         if hybrid_service:
@@ -734,6 +757,12 @@ async def replan_node(state: AgentState) -> dict:
         budget_cap = new_constraints["max_price"]
         if f"budget under ₹{budget_cap}" not in raw_input:
             raw_input = f"{raw_input} | budget under ₹{budget_cap}, prefer cheaper alternatives"
+
+    # In augment mode, embed the feedback into raw_input so decompose_node
+    # knows what to add. Without this, the LLM only sees the meal context
+    # ("pasta for 2") and has no idea what the user actually asked for.
+    if preserve_cart and feedback:
+        raw_input = f"{feedback} (for: {raw_input})"
 
     mode = "ADDITIVE (preserve existing cart)" if preserve_cart else "REBUILD (apply constraints)"
     reasoning = (

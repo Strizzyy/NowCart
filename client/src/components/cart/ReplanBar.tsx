@@ -98,9 +98,12 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
       ) || cart.items.map(i => i.name).join(', ') || 'grocery cart';
 
       const cartItemsForContext = cart.items.map(i => ({
+        product_id: i.product_id,
         name: i.name,
+        brand: i.brand ?? '',
         price: i.price,
         quantity: i.quantity,
+        image_url: i.image_url ?? null,
       }));
 
       const updated = await postReplan(mealContext, trimmed, userId, undefined, cartItemsForContext);

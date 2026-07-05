@@ -142,8 +142,16 @@ class OutcomeService:
         locked_items: list[dict] = []
         if cart_items:
             locked_items = [
-                {"name": item["name"], "price": item.get("price", 0), "quantity": item.get("quantity", 1)}
+                {
+                    "product_id": item.get("product_id", ""),
+                    "name": item["name"],
+                    "brand": item.get("brand", ""),
+                    "price": item.get("price", 0),
+                    "quantity": item.get("quantity", 1),
+                    "image_url": item.get("image_url"),
+                }
                 for item in cart_items
+                if item.get("product_id")  # only keep items with a known product_id
             ]
 
         return await self.process_outcome(
