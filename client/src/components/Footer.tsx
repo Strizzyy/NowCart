@@ -12,7 +12,7 @@ export default function Footer() {
   const [showIosHint, setShowIosHint] = useState(false);
 
   const handleInstallClick = async () => {
-    if (pwaState === 'ios' || pwaState === 'dev') { setShowIosHint(true); return; }
+    if (pwaState === 'ios' || pwaState === 'dev' || pwaState === 'manual') { setShowIosHint(true); return; }
     await triggerInstall();
   };
 
@@ -81,8 +81,8 @@ export default function Footer() {
               </button>
             </form>
 
-            {/* Install App button — only shown when installable */}
-            {(pwaState === 'ready' || pwaState === 'ios' || pwaState === 'dev') && (
+            {/* Install App button — always shown (never hides, even if PWA is installed in another profile) */}
+            {pwaState !== 'unavailable' && (
               <>
                 <button
                   onClick={handleInstallClick}

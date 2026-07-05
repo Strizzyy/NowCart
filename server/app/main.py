@@ -59,6 +59,9 @@ async def lifespan(app: FastAPI):
 
         logger.info("Auto-seeded %d products, %d users, %d orders", len(products), len(users), len(orders))
 
+        # Seed demo subscriptions for Rahul — used in demo video flow
+        await _seed_demo_subscriptions()
+
     elif settings.data_backend == "dynamodb":
         # Auto-seed DynamoDB if tables are empty (first boot)
         from app.seed.seed_dynamodb import seed_dynamodb
@@ -100,6 +103,66 @@ async def lifespan(app: FastAPI):
 
     yield
     logger.info("NowCart shutting down")
+
+
+async def _seed_demo_subscriptions() -> None:
+    """Seed Rahul's subscriptions with clean demo data on every startup.
+
+    This overwrites any stale runtime data (e.g. Bravura Clipper added during
+    testing) so the demo video flow always starts from a known-good state.
+    Only sets subscriptions if none exist yet, to avoid overwriting demo
+    subscriptions the user deliberately added during a session.
+    """
+    import json
+    from datetime import datetime, timedelta
+    from app.repositories import get_cache
+
+    cache = get_cache()
+    key = "subscriptions:rahul"
+    existing = await cache._get(key)
+    if existing:
+        try:
+            subs = json.loads(existing)
+            # Remove Bravura Clipper if it crept in (product name contains "Bravura" or "Clipper")
+            cleaned = [
+                s for s in subs
+                if "bravura" not in s.get("product_name", "").lower()
+                and "clipper" not in s.get("product_name", "").lower()
+            ]
+            if len(cleaned) != len(subs):
+                await cache._set(key, json.dumps(cleaned))
+                logger.info("Removed Bravura Clipper from Rahul's subscriptions (now %d items)", len(cleaned))
+            return  # Don't overwrite legitimate subscriptions
+        except Exception:
+            pass
+
+    # No subscriptions yet — seed with demo data
+    today = datetime.now().date()
+    demo_subs = [
+        {
+            "user_id": "rahul",
+            "product_id": "milk-amul-001",
+            "product_name": "Toned Milk",
+            "frequency": "daily",
+            "next_due_date": today.isoformat(),
+        },
+        {
+            "user_id": "rahul",
+            "product_id": "eggs-amul-001",
+            "product_name": "Eggs",
+            "frequency": "weekly",
+            "next_due_date": (today + timedelta(days=2)).isoformat(),
+        },
+        {
+            "user_id": "rahul",
+            "product_id": "bread-britannia-001",
+            "product_name": "Bread",
+            "frequency": "weekly",
+            "next_due_date": (today + timedelta(days=4)).isoformat(),
+        },
+    ]
+    await cache._set(key, json.dumps(demo_subs))
+    logger.info("Seeded %d demo subscriptions for Rahul", len(demo_subs))
 
 
 def create_app() -> FastAPI:

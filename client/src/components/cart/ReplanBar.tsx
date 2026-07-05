@@ -32,7 +32,7 @@ const CHIPS = [
   { label: 'Vegan',     value: "I'm vegan, remove dairy and eggs" },
   { label: 'No onion',  value: 'no onion no garlic, jain' },
   { label: 'Protein',   value: 'add more high-protein items' },
-  { label: 'Swap paneer', value: 'swap paneer for tofu' },
+  { label: 'Swap poha', value: 'swap poha for idli' },
 ];
 
 export default function ReplanBar({ cart, onReplan, ctx }: Props) {
@@ -47,16 +47,29 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     setLoading(true);
     try {
       const userId = resolveUserId(ctx?.user);
-      let originalText = 'meal';
-      const decomposeStep = cart.reasoning_trail.find(t => t.includes('Decomposed') || t.includes('label='));
-      if (decomposeStep) {
-        const m = decomposeStep.match(/label=([^,)]+)/);
-        if (m && m[1] !== 'unknown') originalText = m[1].trim();
+
+      // Build a meaningful text from current cart items — this gives the backend
+      // full context of what's actually in the cart right now.
+      const cartItemNames = cart.items.map(i => i.name);
+      let originalText = cartItemNames.join(', ');
+
+      // Fall back to reasoning trail if cart is empty (shouldn't happen normally)
+      if (!originalText) {
+        const decomposeStep = cart.reasoning_trail.find(t => t.includes('Decomposed') || t.includes('label='));
+        if (decomposeStep) {
+          const m = decomposeStep.match(/label=([^,)]+)/);
+          if (m && m[1] !== 'unknown') originalText = m[1].trim();
+        }
       }
-      if (originalText === 'meal' && cart.items.length > 0) {
-        originalText = cart.items.map(i => i.name).slice(0, 5).join(', ');
-      }
-      const updated = await postReplan(originalText, trimmed, userId);
+      if (!originalText) originalText = 'grocery cart';
+
+      const cartItemsForContext = cart.items.map(i => ({
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      }));
+
+      const updated = await postReplan(originalText, trimmed, userId, undefined, cartItemsForContext);
       onReplan(updated);
       setInput('');
     } catch { /* keep stale cart */ }

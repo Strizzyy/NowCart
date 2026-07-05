@@ -13,9 +13,10 @@ interface Props {
 type Phase = 'idle' | 'processing' | 'confirming' | 'error';
 
 export default function ConstrainPanel({ ctx, onClose }: Props) {
-  const [budget, setBudget] = useState('');
-  const [servings, setServings] = useState('4');
-  const [hint, setHint] = useState('');
+  // Pre-filled with demo values for the video — ₹1000, dinner for 2
+  const [budget, setBudget] = useState('1000');
+  const [servings, setServings] = useState('2');
+  const [hint, setHint] = useState('dinner');
   const [phase, setPhase] = useState<Phase>('idle');
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +89,36 @@ export default function ConstrainPanel({ ctx, onClose }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* Quick presets */}
+      <div>
+        <p className="text-xs font-semibold text-dark mb-2">Quick presets</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: '₹500 · lunch for 1', budget: '500', servings: '1', hint: 'lunch' },
+            { label: '₹1000 · dinner for 2', budget: '1000', servings: '2', hint: 'dinner' },
+            { label: '₹1500 · family dinner', budget: '1500', servings: '4', hint: 'family dinner' },
+          ].map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => {
+                setBudget(p.budget);
+                setServings(p.servings);
+                setHint(p.hint);
+                setFieldError(null);
+              }}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold border transition ${
+                budget === p.budget && servings === p.servings && hint === p.hint
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-light-bg text-muted border-border hover:border-primary/40 hover:text-dark'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="budget" className="text-xs font-semibold text-dark flex items-center gap-1">

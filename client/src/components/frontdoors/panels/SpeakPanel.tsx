@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Keyboard, Send } from 'lucide-react';
+import { Mic, Square, Send } from 'lucide-react';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
 import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
@@ -78,7 +78,20 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = () => {
+  const startListening = async () => {
+    // Explicitly request mic permission first — required for PWA/Chrome on Android.
+    // getUserMedia triggers the browser's permission prompt before SpeechRecognition starts.
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Release immediately — we just needed the permission grant
+        stream.getTracks().forEach(t => t.stop());
+      } catch {
+        setMicBlocked(true);
+        return;
+      }
+    }
+
     const rec = getRecognition();
     if (!rec) {
       setMicBlocked(true);
@@ -144,7 +157,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <Spinner size={28} />
         <p className="text-sm font-semibold text-dark">Building your cart…</p>
-        {transcript && <p className="text-xs text-muted max-w-sm">“{transcript}”</p>}
+        {transcript && <p className="text-xs text-muted max-w-sm">"{transcript}"</p>}
       </div>
     );
   }
@@ -159,11 +172,11 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             ctx.setCartOpen(true);
             onClose();
           }}
-          caption={transcript ? <>Heard: “{transcript}”</> : undefined}
+          caption={transcript ? <>Heard: "{transcript}"</> : undefined}
         />
         <div className="border-t border-border pt-3">
           <label htmlFor="speak-followup" className="text-xs font-semibold text-dark">
-            Follow up (e.g. “add 2 more onions”, “remove ghee”)
+            Follow up (e.g. "remove onions", "add more protein")
           </label>
           <div className="flex gap-2 mt-1.5">
             <input
@@ -171,8 +184,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               value={followUp}
               onChange={(e) => setFollowUp(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendFollowUp(followUp)}
-              placeholder="Add, remove, or change items"
-              className="flex-1 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+              placeholder="e.g. remove onions"
+              className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
             {speechSupported.current && !micBlocked && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
@@ -193,7 +206,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
 
   return (
     <div className="space-y-5">
-      {!showTypedFallback ? (
+      {showTypedFallback ? (
+        /* Mic blocked — single clean banner */
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+          <Mic size={15} aria-hidden="true" />
+          Microphone unavailable — type your request below.
+        </div>
+      ) : (
+        /* Mic available — big tap-to-speak button */
         <div className="flex flex-col items-center gap-4 py-4">
           <button
             type="button"
@@ -213,37 +233,27 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
           </p>
           {transcript && (
             <p className="text-sm text-muted text-center max-w-sm min-h-[1.25rem]" aria-live="polite">
-              “{transcript}”
+              "{transcript}"
             </p>
           )}
-          <p className="text-xs text-faint">Try: “Biryani for four” or “healthy breakfast for two”</p>
-        </div>
-      ) : (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-800 flex items-center gap-2">
-          <Keyboard size={15} aria-hidden="true" />
-          Microphone unavailable — type your request below instead.
+          <p className="text-xs text-faint">Try: "Biryani for four" or "healthy breakfast for two"</p>
         </div>
       )}
 
-      {/* Typed input is always available as a hands-free alternative */}
-      <div>
-        <label htmlFor="speak-typed" className="text-xs font-semibold text-dark">
-          Or type it
-        </label>
-        <div className="flex gap-2 mt-1.5">
-          <input
-            id="speak-typed"
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
-            placeholder="e.g. I'm making pasta for 3"
-            data-autofocus={showTypedFallback || undefined}
-            className="flex-1 border border-border rounded-lg px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
-          />
-          <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
-            Build
-          </Button>
-        </div>
+      {/* Single text input — no duplicate label */}
+      <div className="flex gap-2">
+        <input
+          id="speak-typed"
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
+          placeholder="e.g. healthy breakfast for two people"
+          autoFocus={showTypedFallback}
+          className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
+        />
+        <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
+          Build
+        </Button>
       </div>
     </div>
   );

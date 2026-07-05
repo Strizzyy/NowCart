@@ -12,11 +12,10 @@ export function usePwaInstall() {
   const [state, setState] = useState<InstallState>('unavailable');
 
   useEffect(() => {
-    // Already running as installed PWA
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setState('installed');
-      return;
-    }
+    // NOTE: We intentionally do NOT hide the install button when running as a
+    // standalone PWA. The user may be viewing the app in Chrome browser while
+    // the PWA is also installed — the button should always be visible for demo
+    // purposes and to let users install on a different device/profile.
 
     // iOS Safari — no beforeinstallprompt, show manual instructions
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -42,9 +41,8 @@ export function usePwaInstall() {
     }
 
     // Production fallback: if beforeinstallprompt hasn't fired after 4 s
-    // (e.g. already installed in background, browser suppressed the event,
-    // or criteria gap), show a manual install option so the button is always
-    // visible to users who haven't installed yet.
+    // (already installed, browser suppressed the event, or criteria gap),
+    // show a manual install option so the button is ALWAYS visible.
     const fallback = setTimeout(() => {
       setState((prev) => (prev === 'unavailable' ? 'manual' : prev));
     }, 4000);
@@ -61,7 +59,7 @@ export function usePwaInstall() {
     if (!deferredPrompt) return 'unavailable';
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setState('installed');
+    // Do NOT set state to 'installed' — keep the button visible always
     setDeferredPrompt(null);
     return outcome;
   };
