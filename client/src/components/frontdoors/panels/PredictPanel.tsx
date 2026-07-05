@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Clock, Package, TrendingUp, ShoppingCart, Sparkles, Bell,
@@ -67,6 +67,7 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
   const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<Product | null>(null);
   const [freq, setFreq] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Lock background scroll while picker is open
   useEffect(() => {
@@ -89,6 +90,8 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
       try {
         const data = await searchCatalog(query, undefined, 8);
         setResults(data);
+        // Dismiss keyboard on mobile once results arrive so they aren't obscured
+        inputRef.current?.blur();
       } catch { setResults([]); }
       finally { setSearching(false); }
     }, 300);
@@ -118,9 +121,13 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
           <div className="flex items-center gap-2 border border-border rounded-xl px-3 py-2 bg-light-bg">
             <Search size={14} className="text-muted shrink-0" />
             <input
-              type="text"
+              ref={inputRef}
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') inputRef.current?.blur(); }}
               placeholder="Search products…"
               className="flex-1 text-sm bg-transparent outline-none text-dark"
               autoFocus
@@ -141,7 +148,10 @@ function BrandPicker({ initialQuery, onSelect, onCancel }: BrandPickerProps) {
           {results.map(p => (
             <button
               key={p.product_id}
-              onClick={() => setSelected(selected?.product_id === p.product_id ? null : p)}
+              onClick={() => {
+                inputRef.current?.blur(); // dismiss keyboard when picking a result
+                setSelected(selected?.product_id === p.product_id ? null : p);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 border-b border-border last:border-0 hover:bg-light-bg transition text-left ${
                 selected?.product_id === p.product_id ? 'bg-primary-light' : ''
               }`}
@@ -209,6 +219,7 @@ export default function PredictPanel({ ctx }: Props) {
   const [removingSubId, setRemovingSubId] = useState<string | null>(null);
   const [dueCart, setDueCart] = useState<SubscribeResponse['cart'] | null>(null);
   const [insights, setInsights] = useState<{ product_name: string; avg_interval_days: number; confidence: number; product_id: string }[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(true);
   const [pickerQuery, setPickerQuery] = useState<string | null>(null);
   const [showPantry, setShowPantry] = useState(false);
   const navigate = useNavigate();
@@ -236,10 +247,12 @@ export default function PredictPanel({ ctx }: Props) {
   };
 
   const loadInsights = async () => {
+    setInsightsLoading(true);
     try {
       const data = await getPredictionInsights(userId);
       setInsights((data.predictions || []).slice(0, 5));
     } catch { /* ignore */ }
+    finally { setInsightsLoading(false); }
   };
 
   const loadPantry = async () => {
@@ -399,7 +412,6 @@ export default function PredictPanel({ ctx }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <Chip tone={isStarter ? 'info' : 'success'} size="xs">{Math.round(item.confidence * 100)}%</Chip>
                     <span className="text-xs font-semibold text-dark">₹{item.price}</span>
                   </div>
                 </div>
@@ -465,7 +477,14 @@ export default function PredictPanel({ ctx }: Props) {
       </div>
 
       {/* ── Smart suggestions from order history ── */}
-      {insights.length > 0 && (
+      {insightsLoading ? (
+        <div className="px-1 py-2">
+          <div className="h-3 w-40 bg-border rounded animate-pulse mb-2" />
+          <div className="space-y-2">
+            {[1,2,3].map(i => <div key={i} className="h-14 bg-light-bg rounded-xl animate-pulse" />)}
+          </div>
+        </div>
+      ) : insights.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-semibold text-dark px-1">💡 Based on your order history:</p>
           {insights.filter(ins => !isSubscribed(ins.product_id)).map(ins => {
@@ -491,10 +510,8 @@ export default function PredictPanel({ ctx }: Props) {
             );
           })}
         </div>
-      )}
-
-      {/* ── Quick-start for new users (no history) ── */}
-      {insights.length === 0 && (
+      ) : (
+        /* ── Quick-start for new users (no history) ── */
         <div className="space-y-2">
           <p className="text-xs font-semibold text-dark px-1">✨ Quick-start — pick a brand:</p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -534,7 +551,7 @@ export default function PredictPanel({ ctx }: Props) {
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {pantry.map(item => (
                   <div key={item.product_id} className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
-                    <span className="text-xs font-medium text-dark font-mono truncate">{item.product_id}</span>
+                    <span className="text-xs font-medium text-dark truncate">{item.name}</span>
                     <Chip tone={item.days_ago <= 7 ? 'warning' : 'info'} size="xs">{item.days_ago}d ago</Chip>
                   </div>
                 ))}

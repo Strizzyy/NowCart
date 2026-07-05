@@ -116,18 +116,16 @@ async def get_all_subscriptions_cart(user_id: str):
         return {"cart": None, "message": "No subscriptions set up yet."}
 
     from app.services.catalog_service import get_catalog_service
-    from app.repositories import get_repository
     from app.models.domain.cart import Cart, CartItem
     from app.models.domain.enums import IntentMode
     from app.repositories import get_cache
     import uuid
 
     catalog = get_catalog_service()
-    repo = get_repository()
     items: list[CartItem] = []
 
     for sub in subs:
-        product = await repo.get_product(sub["product_id"])
+        product = await catalog.get_product_by_id(sub["product_id"])
         if product and await catalog.check_availability(product.product_id):
             items.append(CartItem(
                 product_id=product.product_id,
@@ -235,24 +233,73 @@ async def get_user_preferences(user_id: str):
 
 @router.get("/pantry/{user_id}")
 async def get_recently_ordered(user_id: str):
-    """Get products the user ordered in the last 30 days (recently-ordered prompt data)."""
+    """Get products the user ordered in the last 30 days (recently-ordered prompt data).
+
+    Returns items with resolved product names:
+    - Up to 3 items come from the user's actual order history (names from order line items or catalog).
+    - Remaining slots (up to 7 total) are filled from the catalog using other recently ordered products.
+    - If order history is sparse, pads with random catalog staples so the section is never empty.
+    """
     service = get_pantry_service()
-    # Return raw recently-ordered data — no specific product_ids to filter against here
-    # so we scan last 5 orders and return what was found
     from app.repositories import get_repository
+    from app.services.catalog_service import get_catalog_service
+    import random
+
     repo = get_repository()
+    catalog = get_catalog_service()
     orders = await repo.get_orders(user_id)
 
+    # Collect product_id → name from order line items (most recent orders first)
+    order_name_map: dict[str, str] = {}
     product_ids_seen: list[str] = []
     for order in orders[:5]:
         for item in order.items:
             pid = item.get("product_id", "")
-            if pid and pid not in product_ids_seen:
+            if not pid:
+                continue
+            if pid not in order_name_map:
+                order_name_map[pid] = item.get("name", "")
+            if pid not in product_ids_seen:
                 product_ids_seen.append(pid)
 
     recently = await service.get_recently_ordered(user_id, product_ids_seen)
-    items = [{"product_id": pid, "days_ago": days} for pid, days in recently.items()]
-    return {"user_id": user_id, "items": items, "count": len(items)}
+
+    # Sort by most recent first
+    sorted_pids = sorted(recently.keys(), key=lambda p: recently[p])
+
+    result_items: list[dict] = []
+
+    # 1. First 3 slots: real order history with resolved names
+    for pid in sorted_pids[:3]:
+        name = order_name_map.get(pid, "")
+        if not name:
+            product = await catalog.get_product_by_id(pid)
+            name = product.name if product else None
+        if not name:
+            continue  # skip if we truly can't resolve the name
+        result_items.append({"product_id": pid, "name": name, "days_ago": recently[pid]})
+
+    # 2. Remaining slots from order history (up to 7 total)
+    max_catalog_fill = max(0, 7 - len(result_items))
+    for pid in sorted_pids[3:3 + max_catalog_fill]:
+        name = order_name_map.get(pid, "")
+        if not name:
+            product = await catalog.get_product_by_id(pid)
+            name = product.name if product else None
+        if not name:
+            continue
+        result_items.append({"product_id": pid, "name": name, "days_ago": recently[pid]})
+
+    # 3. If still fewer than 3 items (sparse order history), pad with catalog staples
+    if len(result_items) < 3:
+        all_products = await catalog._get_all_products()
+        # Pick from the first 300 catalog items for variety (stable staples range)
+        pool = [p for p in all_products[:300] if p.name]
+        picks = random.sample(pool, min(3 - len(result_items), len(pool)))
+        for p in picks:
+            result_items.append({"product_id": p.product_id, "name": p.name, "days_ago": 0})
+
+    return {"user_id": user_id, "items": result_items, "count": len(result_items)}
 
 
 @router.post("/replan", response_model=CartResponse)

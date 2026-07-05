@@ -261,6 +261,7 @@ export async function getUserPreferences(userId: string): Promise<{ message: str
 /** Pantry — recently ordered items (ordered in last 30 days) */
 export interface PantryItem {
   product_id: string;
+  name: string;
   days_ago: number;
 }
 

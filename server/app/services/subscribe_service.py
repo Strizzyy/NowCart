@@ -300,13 +300,12 @@ class SubscribeService:
     async def _build_predicted_cart(self, predictions: list[PredictedNeed]) -> Cart | None:
         """Build a cart from predictions (suggestions only — not auto-added)."""
         catalog = get_catalog_service()
-        repo = get_repository()
         items: list[CartItem] = []
         notes: list[str] = ["🔮 Predicted restock — based on your purchase patterns"]
 
         for pred in predictions:
             if await catalog.check_availability(pred.product_id):
-                product = await repo.get_product(pred.product_id)
+                product = await catalog.get_product_by_id(pred.product_id)
                 if product:
                     items.append(CartItem(
                         product_id=product.product_id,
@@ -508,11 +507,10 @@ class SubscribeService:
             return None
 
         catalog = get_catalog_service()
-        repo = get_repository()
         items: list[CartItem] = []
 
         for sub in due:
-            product = await repo.get_product(sub["product_id"])
+            product = await catalog.get_product_by_id(sub["product_id"])
             if product and await catalog.check_availability(product.product_id):
                 items.append(CartItem(
                     product_id=product.product_id,
