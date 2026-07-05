@@ -89,8 +89,13 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     setLoading(true);
     try {
       const userId = resolveUserId(ctx?.user);
-      const cartItemNames = cart.items.map(i => i.name);
-      let originalText = cartItemNames.join(', ') || 'grocery cart';
+
+      // Pass the original meal context from cart notes (e.g. "pasta for 2")
+      // so the backend knows what dish this cart is for — not just item names.
+      const mealContext = cart.notes?.find(n =>
+        !n.startsWith('🔮') && !n.startsWith('📅') && !n.startsWith('🛒') &&
+        !n.toLowerCase().includes('predicted') && !n.toLowerCase().includes('subscription')
+      ) || cart.items.map(i => i.name).join(', ') || 'grocery cart';
 
       const cartItemsForContext = cart.items.map(i => ({
         name: i.name,
@@ -98,7 +103,7 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
         quantity: i.quantity,
       }));
 
-      const updated = await postReplan(originalText, trimmed, userId, undefined, cartItemsForContext);
+      const updated = await postReplan(mealContext, trimmed, userId, undefined, cartItemsForContext);
       onReplan(updated);
       setInput('');
     } catch { /* keep stale cart */ }

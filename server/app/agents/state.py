@@ -64,5 +64,11 @@ class AgentState(TypedDict, total=False):
     replan_count: int
     constraints: dict  # {"dietary": ["vegan"], "max_price": 500, "swap": {"paneer": "tofu"}}
 
+    # Cart augmentation — set by replan_node for additive feedback
+    # When True, decompose_node uses an augment prompt instead of rebuilding from scratch.
+    preserve_cart: bool
+    # Items from the existing cart that must be carried forward unchanged.
+    locked_items: list[dict]  # [{"name": str, "price": float, "quantity": float}]
+
     # Counterfactuals
     counterfactuals: dict[str, list[dict]]

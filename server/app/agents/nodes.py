@@ -133,7 +133,14 @@ _REGION_HINTS: dict[str, str] = {
 
 
 async def decompose_node(state: AgentState) -> dict:
-    """Decompose the outcome into structured needs using the LLM. Region-aware + age/gender-aware."""
+    """Decompose the outcome into structured needs using the LLM. Region-aware + age/gender-aware.
+
+    Two modes:
+    - Normal: decompose raw_input into a full ingredient list from scratch.
+    - Augment (preserve_cart=True): keep all locked_items, only identify NEW items
+      to add based on feedback. The LLM sees the existing cart and the feedback
+      and returns only the additions.
+    """
     raw = state.get("raw_input", "")
     servings = state.get("servings", 1)
     mode = state.get("mode", IntentMode.TEXT)
@@ -142,6 +149,9 @@ async def decompose_node(state: AgentState) -> dict:
     user_region = state.get("user_region")
     user_age = state.get("user_age")
     user_gender = state.get("user_gender")
+    preserve_cart = state.get("preserve_cart", False)
+    locked_items: list[dict] = state.get("locked_items", [])
+    feedback_hint = ""  # used in augment mode
 
     llm = get_text_provider()
 
@@ -167,7 +177,7 @@ async def decompose_node(state: AgentState) -> dict:
             f"Prefer regional items like: {_REGION_HINTS[user_region]}."
         )
 
-    # Age + gender hint for personalised ingredient suggestions
+    # Age + gender hint
     demographic_context = ""
     if user_age or user_gender:
         parts = []
@@ -187,7 +197,34 @@ async def decompose_node(state: AgentState) -> dict:
         if parts:
             demographic_context = f"\nUser profile: {'; '.join(parts)}."
 
-    if mode == IntentMode.GOAL:
+    schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+
+    # ── AUGMENT MODE — preserve existing cart, only identify new additions ────
+    if preserve_cart and locked_items:
+        existing_desc = "\n".join(
+            f"  - {item['name']} (qty {item.get('quantity', 1)}, ₹{item.get('price', 0)})"
+            for item in locked_items
+        )
+        system_prompt = (
+            "You are a grocery assistant helping refine an existing shopping cart. "
+            "The user already has items in their cart and wants to ADD something based on feedback. "
+            "Do NOT list the existing items in your response — they are already in the cart. "
+            "ONLY return the NEW items that should be added to satisfy the user's feedback.\n\n"
+            f"Existing cart items (DO NOT repeat these):\n{existing_desc}\n\n"
+            "Rules:\n"
+            "- Suggest items that are compatible with and complement the existing cart.\n"
+            "- If the cart is for a specific dish (e.g. pasta), suggest protein sources that work with that dish.\n"
+            "- Return 1–4 new items only. Do not rebuild the full cart.\n"
+            "- Return quantities as number of packs/units to buy from a grocery store.\n"
+            "- For category_hint use: meat, chicken, fish, eggs, dairy, paneer, pulses, nuts, or other relevant category.\n"
+            "Return JSON with \"dish\" (null) and \"needs\" (array of new items only)."
+            + constraint_context + region_context + demographic_context
+        )
+        # The raw input in augment mode is the user's feedback
+        llm_input = raw
+        reasoning_prefix = "AUGMENT"
+
+    elif mode == IntentMode.GOAL:
         system_prompt = (
             "You are a smart grocery wellness assistant. Given a user's health/lifestyle goal, "
             "recommend a curated grocery shopping list of products that help achieve that goal. "
@@ -198,6 +235,9 @@ async def decompose_node(state: AgentState) -> dict:
             + constraint_context + region_context + demographic_context
         )
         schema_hint = '{"goal": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "GOAL"
+
     elif mode == IntentMode.BUDGET:
         system_prompt = (
             "You are a grocery meal planner for an Indian grocery app. The user wants to plan a meal "
@@ -208,6 +248,9 @@ async def decompose_node(state: AgentState) -> dict:
             + constraint_context + region_context + demographic_context
         )
         schema_hint = '{"dish": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "BUDGET"
+
     else:
         system_prompt = (
             "You are a grocery assistant for an Indian grocery delivery app. Given a user's food/cooking "
@@ -220,16 +263,17 @@ async def decompose_node(state: AgentState) -> dict:
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
             + constraint_context + region_context + demographic_context
         )
-        schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "DECOMPOSE"
 
-    result = await llm.complete_json(system_prompt, raw, schema_hint)
+    result = await llm.complete_json(system_prompt, llm_input, schema_hint)
 
     raw_needs = result.get("needs", [])
-    needs: list[Need] = []
+    new_needs: list[Need] = []
     for item in raw_needs:
         quantity = float(item.get("quantity", 1))
         unit = item.get("unit", "unit")
-        needs.append(Need(
+        new_needs.append(Need(
             name=item.get("name", "unknown"),
             quantity=quantity,
             unit=unit,
@@ -237,12 +281,32 @@ async def decompose_node(state: AgentState) -> dict:
             status=NeedStatus.PENDING,
         ))
 
+    # In augment mode, prepend locked items as pre-matched needs
+    if preserve_cart and locked_items:
+        locked_needs: list[Need] = []
+        for li in locked_items:
+            locked_need = Need(
+                name=li["name"],
+                quantity=float(li.get("quantity", 1)),
+                unit="unit",
+                category_hint="",
+                status=NeedStatus.PENDING,
+            )
+            locked_needs.append(locked_need)
+        all_needs = locked_needs + new_needs
+    else:
+        all_needs = new_needs
+
     label = result.get("goal") or result.get("dish") or "unknown"
     region_note = f", region={user_region}" if user_region else ""
-    reasoning = f"Decomposed into {len(needs)} needs (label={label}, mode={mode.value}, servings={servings}{region_note})"
+    augment_note = f", +{len(new_needs)} new items (kept {len(locked_items)} existing)" if preserve_cart else ""
+    reasoning = (
+        f"{reasoning_prefix}: decomposed into {len(all_needs)} needs "
+        f"(label={label}, mode={mode.value}, servings={servings}{region_note}{augment_note})"
+    )
 
     return {
-        "needs": needs,
+        "needs": all_needs,
         "reasoning_trail": trail + [reasoning],
     }
 
@@ -577,12 +641,22 @@ async def counterfactual_node(state: AgentState) -> dict:
 
 
 async def replan_node(state: AgentState) -> dict:
-    """Process user feedback and prepare state for re-planning."""
+    """Process user feedback and prepare state for re-planning.
+
+    Key behaviour:
+    - Additive feedback ("add protein", "more fibre") → sets preserve_cart=True so
+      decompose_node uses an augment prompt. Existing items stay; only new ones are added.
+    - Destructive feedback ("remove fatty", "no dairy", "cheaper") → rebuilds with
+      constraints applied. preserve_cart=False.
+    - Mixed feedback ("remove fatty and add protein") → preserve_cart=False but
+      constraints carry both the removal and addition intent.
+    """
     feedback = state.get("feedback", "")
     trail: list[str] = state.get("reasoning_trail", [])
     constraints = state.get("constraints", {})
     needs: list[Need] = state.get("needs", [])
     replan_count = state.get("replan_count", 0)
+    locked_items: list[dict] = state.get("locked_items", [])
 
     if not feedback:
         return {"reasoning_trail": trail + ["Replan: no feedback, skipped"]}
@@ -590,12 +664,30 @@ async def replan_node(state: AgentState) -> dict:
     feedback_lower = feedback.lower()
     new_constraints = dict(constraints)
 
-    # Budget constraints — when user says cheaper, cap each item's price and
-    # also inject a budget cap into raw_input so decompose/match knows
+    # ── Detect destructive keywords (these require rebuilding the cart) ──────
+    destructive_keywords = (
+        "cheaper", "budget", "less expensive", "reduce cost", "save money",
+        "vegan", "vegetarian", "no dairy", "no meat", "no egg", "no gluten",
+        "jain", "no onion", "keto", "low carb",
+        "remove", "drop", "without", "exclude", "swap", "replace", "change",
+        "less fat", "low fat", "no fat", "less oil", "less sugar", "low sugar",
+    )
+    # ── Detect purely additive keywords ──────────────────────────────────────
+    additive_keywords = (
+        "add", "more", "extra", "include", "protein", "fibre", "fiber",
+        "vitamins", "calcium", "iron", "healthy", "nutritious", "boost",
+    )
+
+    has_destructive = any(kw in feedback_lower for kw in destructive_keywords)
+    has_additive = any(kw in feedback_lower for kw in additive_keywords)
+
+    # Pure additive — keep existing cart, only add new items
+    preserve_cart = has_additive and not has_destructive
+
+    # Budget constraints
     if any(k in feedback_lower for k in ("cheaper", "budget", "less expensive", "reduce cost", "save money")):
         cart: Cart = state.get("cart", Cart(session_id=""))
         if cart.total > 0:
-            # Set max per-item price well below current average
             avg_price = cart.total / max(len(cart.items), 1)
             new_constraints["max_item_price"] = round(avg_price * 0.6, 0)
             new_constraints["max_price"] = round(cart.total * 0.65, 0)
@@ -625,26 +717,29 @@ async def replan_node(state: AgentState) -> dict:
         new_constraints.setdefault("swap", {})
         new_constraints["swap"][swap_pattern.group(1)] = swap_pattern.group(2)
 
-    # Remove requests
+    # Explicit remove requests — drop matching needs
     for item_name in re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower):
         needs = [n for n in needs if item_name not in n.name.lower()]
+        # Also remove from locked_items so they don't get re-added
+        locked_items = [li for li in locked_items if item_name not in li["name"].lower()]
 
     # Reset needs status for re-matching
     for need in needs:
         need.status = NeedStatus.PENDING
         need.matched_product_id = None
 
-    reasoning = (
-        f"Replan #{replan_count + 1}: applied feedback '{feedback[:50]}' → "
-        f"constraints={new_constraints}"
-    )
-
-    # Build updated raw_input with budget constraint hint for decompose node
+    # Build updated raw_input
     raw_input = state.get("raw_input", "")
     if new_constraints.get("max_price"):
         budget_cap = new_constraints["max_price"]
         if f"budget under ₹{budget_cap}" not in raw_input:
             raw_input = f"{raw_input} | budget under ₹{budget_cap}, prefer cheaper alternatives"
+
+    mode = "ADDITIVE (preserve existing cart)" if preserve_cart else "REBUILD (apply constraints)"
+    reasoning = (
+        f"Replan #{replan_count + 1}: feedback='{feedback[:60]}' | mode={mode} | "
+        f"constraints={new_constraints}"
+    )
 
     return {
         "needs": needs,
@@ -652,5 +747,7 @@ async def replan_node(state: AgentState) -> dict:
         "constraints": new_constraints,
         "feedback": None,
         "replan_count": replan_count + 1,
+        "preserve_cart": preserve_cart,
+        "locked_items": locked_items,
         "reasoning_trail": trail + [reasoning],
     }

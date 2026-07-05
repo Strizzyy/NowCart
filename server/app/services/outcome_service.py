@@ -32,6 +32,7 @@ class OutcomeService:
         mode: IntentMode | None = None,
         user_id: str | None = None,
         feedback: str | None = None,
+        locked_items: list[dict] | None = None,
     ) -> Cart:
         """Process a user's natural-language outcome into a confident cart."""
         pipeline_start = time.perf_counter()
@@ -50,6 +51,8 @@ class OutcomeService:
             initial_state["user_id"] = user_id
         if feedback:
             initial_state["feedback"] = feedback
+        if locked_items:
+            initial_state["locked_items"] = locked_items
 
         # Inject user region for region-aware decompose
         if user_id:
@@ -129,27 +132,26 @@ class OutcomeService:
     ) -> Cart:
         """Re-plan an existing cart based on user feedback.
 
-        cart_items: the current cart items passed from the frontend so the
-        engine has full context of what's in the cart (names, prices, quantities).
-        This is used to build a richer raw_input that tells the decompose node
-        exactly what items are in the cart so swaps/removals/cheaper requests
-        work semantically rather than blindly.
+        cart_items: the current cart items from the frontend.
+        text: the original meal context (e.g. "pasta for 2") extracted from cart notes,
+              NOT just a list of item names.
+
+        Passes preserve_cart=True and locked_items into state so decompose_node
+        uses an augment prompt — keeping existing items unless feedback demands removal.
         """
-        # Build a rich text from the current cart items so the LLM knows what to work with
+        locked_items: list[dict] = []
         if cart_items:
-            items_desc = ", ".join(
-                f"{item['name']} (qty {item.get('quantity', 1)}, ₹{item.get('price', 0)})"
+            locked_items = [
+                {"name": item["name"], "price": item.get("price", 0), "quantity": item.get("quantity", 1)}
                 for item in cart_items
-            )
-            enriched_text = f"{text} | current cart: {items_desc}"
-        else:
-            enriched_text = text
+            ]
 
         return await self.process_outcome(
-            text=enriched_text,
+            text=text,
             servings=servings,
             user_id=user_id,
             feedback=feedback,
+            locked_items=locked_items if locked_items else None,
         )
 
     async def _inject_user_context(self, state: AgentState, user_id: str) -> None:
