@@ -76,16 +76,36 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = () => {
-    // Don't call getUserMedia — let SpeechRecognition request permission itself.
-    // On Chrome Android PWA, getUserMedia can fail even when mic is allowed for
-    // the site. SpeechRecognition.start() triggers the browser permission prompt
-    // directly and returns 'not-allowed' in onerror if the user denies.
+  const startListening = async () => {
     const rec = getRecognition();
     if (!rec) {
       setMicError('unavailable');
       return;
     }
+
+    // Android PWA permission bridge:
+    // The installed PWA runs as a separate Android app. Even if Chrome site
+    // settings allows the domain, the PWA needs its OWN Android system-level
+    // mic permission. getUserMedia triggers the Android "Allow NowCart to
+    // access your microphone?" system dialog — without this, SpeechRecognition
+    // silently gets 'not-allowed' because the OS never granted the app permission.
+    // We keep the stream alive during recognition (don't stop tracks early)
+    // because closing it can cause the permission to lapse on some Android builds.
+    let stream: MediaStream | null = null;
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err: unknown) {
+        const name = (err as { name?: string })?.name ?? '';
+        if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+          setMicError('blocked');
+        } else {
+          setMicError('unavailable');
+        }
+        return;
+      }
+    }
+
     recRef.current = rec;
     setTranscript('');
     setMicError(null);
@@ -99,10 +119,11 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     };
 
     rec.onerror = (e) => {
+      stream?.getTracks().forEach(t => t.stop());
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setMicError('blocked');
       } else if (e.error === 'no-speech') {
-        // User didn't speak — just go back to idle, don't show an error
+        // user didn't speak — go back to idle quietly
       } else {
         setMicError('unavailable');
       }
@@ -110,6 +131,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     };
 
     rec.onend = () => {
+      stream?.getTracks().forEach(t => t.stop());
       setTranscript((current) => {
         if (current.trim()) void submit(current);
         else setPhase('idle');
@@ -120,6 +142,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     try {
       rec.start();
     } catch {
+      stream?.getTracks().forEach(t => t.stop());
       setMicError('unavailable');
       setPhase('idle');
     }
@@ -207,13 +230,12 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   }
 
   // ----- idle / listening -----
-  // Show mic-blocked help only after the user actually tried and was denied
   const showBlockedHelp = micError === 'blocked';
   const showUnavailable = micError === 'unavailable' || !speechSupported.current;
 
   return (
     <div className="space-y-4">
-      {/* Mic blocked — actionable help, not a dead end */}
+      {/* Mic blocked — Android system permission not granted */}
       {showBlockedHelp && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
           <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
@@ -221,8 +243,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             Microphone access needed
           </p>
           <p className="text-xs text-amber-700 leading-snug">
-            Open <strong>Chrome settings → Site settings → Microphone</strong> and allow
-            this site. Then come back and tap the mic again.
+            Go to <strong>Android Settings → Apps → NowCart → Permissions</strong> and
+            allow <strong>Microphone</strong>. Then come back and tap the mic again.
           </p>
           <button
             onClick={() => setMicError(null)}
@@ -233,14 +255,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         </div>
       )}
 
-      {/* API not available */}
+      {/* Speech API not supported */}
       {showUnavailable && !showBlockedHelp && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
           Voice recognition isn't available in this browser. Type your request below.
         </div>
       )}
 
-      {/* Mic button — only show if not permanently unavailable */}
+      {/* Mic button */}
       {!showUnavailable && (
         <div className="flex flex-col items-center gap-4 py-2">
           <button
@@ -263,7 +285,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             {phase === 'listening'
               ? 'Listening… tap to stop'
               : showBlockedHelp
-              ? 'Allow microphone to use voice'
+              ? 'Allow microphone in Android Settings'
               : 'Tap and say a meal or moment'}
           </p>
           {transcript && (

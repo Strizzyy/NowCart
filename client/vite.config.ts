@@ -20,6 +20,7 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        permissions: ['microphone', 'geolocation'],
         icons: [
           {
             src: '/icons/icon-192.png',
