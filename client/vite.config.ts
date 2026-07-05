@@ -20,7 +20,10 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
-        permissions: ['microphone', 'geolocation'],
+        // permissions is a valid Web App Manifest field but not typed by vite-plugin-pwa.
+        // It tells Android to surface Microphone and Location in the PWA's App Info → Permissions
+        // so the user can grant them at OS level (required for installed PWAs).
+        ...({ permissions: ['microphone', 'geolocation'] } as object),
         icons: [
           {
             src: '/icons/icon-192.png',
