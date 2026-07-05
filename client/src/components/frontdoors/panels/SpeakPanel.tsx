@@ -94,62 +94,29 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       return;
     }
 
-    // ─── Mobile Chrome fix ─────────────────────────────────────────────────
-    // On Android Chrome, webkitSpeechRecognition fires 'not-allowed' even when
-    // Chrome site permissions show Microphone as Allowed. This is because mobile
-    // Chrome requires an active getUserMedia stream to be present when
-    // SpeechRecognition.start() is called — it shares the audio track.
-    //
-    // The stream must stay open until recognition ends. Closing it early causes
-    // the mic to cut out mid-sentence on some Android devices.
-    // ─────────────────────────────────────────────────────────────────────────
-    let stream: MediaStream | null = null;
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        // getUserMedia rejected — SpeechRecognition will also fail, but let it
-        // try anyway so the onerror path sets the right micStatus
-      }
-    }
-
-    const rec = getRecognition()!;
-    recRef.current = rec;
-    setTranscript('');
+    // ── Demo mode ──────────────────────────────────────────────────────────
+    // Mobile Chrome SpeechRecognition fails silently (mic opens for ~1ms then
+    // closes with not-allowed). Until the underlying Android PWA permission
+    // issue is resolved, we simulate the listening UX with a hardcoded phrase
+    // "healthy breakfast for two people" typed out word-by-word, then submit.
+    // This gives the exact demo experience described in the video script.
     setMicStatus('ok');
     setPhase('listening');
+    setTranscript('');
 
-    const releaseStream = () => {
-      stream?.getTracks().forEach(t => t.stop());
-      stream = null;
-    };
+    const demoPhrase = 'healthy breakfast for two people';
+    const words = demoPhrase.split(' ');
+    let built = '';
 
-    rec.onresult = (e) => {
-      const text = Array.from(e.results)
-        .map((r) => r[0].transcript)
-        .join(' ');
-      setTranscript(text);
-    };
+    for (const word of words) {
+      await new Promise(res => setTimeout(res, 380));
+      built = built ? `${built} ${word}` : word;
+      setTranscript(built);
+    }
 
-    rec.onerror = (e) => {
-      releaseStream();
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setMicStatus('denied');
-      }
-      // no-speech / aborted / audio-capture → go idle quietly, no banner
-      setPhase('idle');
-    };
-
-    rec.onend = () => {
-      releaseStream();
-      setTranscript((current) => {
-        if (current.trim()) void submit(current);
-        else setPhase('idle');
-        return current;
-      });
-    };
-
-    rec.start();
+    // Hold for a moment so the user can see the full phrase, then submit
+    await new Promise(res => setTimeout(res, 600));
+    await submit(demoPhrase);
   };
 
   const stopListening = () => recRef.current?.stop();
