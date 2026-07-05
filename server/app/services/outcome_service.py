@@ -125,10 +125,28 @@ class OutcomeService:
         feedback: str,
         user_id: str | None = None,
         servings: int | None = None,
+        cart_items: list[dict] | None = None,
     ) -> Cart:
-        """Re-plan an existing cart based on user feedback."""
+        """Re-plan an existing cart based on user feedback.
+
+        cart_items: the current cart items passed from the frontend so the
+        engine has full context of what's in the cart (names, prices, quantities).
+        This is used to build a richer raw_input that tells the decompose node
+        exactly what items are in the cart so swaps/removals/cheaper requests
+        work semantically rather than blindly.
+        """
+        # Build a rich text from the current cart items so the LLM knows what to work with
+        if cart_items:
+            items_desc = ", ".join(
+                f"{item['name']} (qty {item.get('quantity', 1)}, ₹{item.get('price', 0)})"
+                for item in cart_items
+            )
+            enriched_text = f"{text} | current cart: {items_desc}"
+        else:
+            enriched_text = text
+
         return await self.process_outcome(
-            text=text,
+            text=enriched_text,
             servings=servings,
             user_id=user_id,
             feedback=feedback,

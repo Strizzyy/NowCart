@@ -231,6 +231,15 @@ _CATEGORY_ALIASES: dict[str, list[str]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Module-level product cache — shared across all CatalogService instances and
+# hot-reloads. Populated once at startup (or on first request) and reused
+# for the lifetime of the process. This is the key to sub-millisecond search.
+# ---------------------------------------------------------------------------
+_products_cache: list[Product] | None = None
+_products_by_id: dict[str, Product] = {}
+
+
 class CatalogService:
     """Handles product search, filtering, availability, and fuzzy matching."""
 
@@ -241,8 +250,6 @@ class CatalogService:
     ) -> None:
         self._repo = repo
         self._cache = cache
-        # In-memory product cache to avoid repeated DynamoDB scans
-        self._products_cache: list[Product] | None = None
 
     # ------------------------------------------------------------------
     # Recommendation: best-rated + alternatives (search without adding to cart)
@@ -365,10 +372,28 @@ class CatalogService:
         return self._cache
 
     async def _get_all_products(self) -> list[Product]:
-        """Return all products, using an in-memory cache to avoid repeated DynamoDB scans."""
-        if self._products_cache is None:
-            self._products_cache = await self.repo.list_products()
-        return self._products_cache
+        """Return all products, using a module-level cache to avoid repeated DynamoDB scans.
+
+        The cache is module-level (not instance-level) so it survives hot-reloads
+        and is shared across all CatalogService instances and callers.
+        """
+        global _products_cache, _products_by_id
+        if _products_cache is None:
+            _products_cache = await self.repo.list_products()
+            _products_by_id = {p.product_id: p for p in _products_cache}
+        return _products_cache
+
+    async def get_product_by_id(self, product_id: str) -> Product | None:
+        """Fast O(1) product lookup using the in-memory cache dict.
+
+        Falls back to the repository only if the cache hasn't been populated yet.
+        """
+        global _products_by_id
+        if _products_by_id:
+            return _products_by_id.get(product_id)
+        # Cache not yet warm — fetch from repo and populate
+        await self._get_all_products()
+        return _products_by_id.get(product_id)
 
     # ------------------------------------------------------------------
     # Search & filter
@@ -382,6 +407,9 @@ class CatalogService:
     ) -> list[Product]:
         """Search products by text query and/or category with relevance ranking.
 
+        Uses the in-memory product cache to avoid repeated full DynamoDB scans.
+        Falls back to the repository only when no products are cached yet.
+
         Uses category-aware scoring to rank results: primary products
         (where the query IS the product) rank above derived/compound products
         (where the query is just an ingredient or flavor).
@@ -389,7 +417,26 @@ class CatalogService:
         Example: searching "tomato" returns actual Tomatoes first, then
         Tomato Ketchup, Tomato Sauce, etc. lower in the list.
         """
-        results = await self.repo.list_products(category=category, search=query)
+        # Use the in-memory cache — avoids a full DynamoDB scan on every keystroke
+        all_products = await self._get_all_products()
+
+        # Category filter
+        if category:
+            cat_lower = category.lower()
+            results = [p for p in all_products if cat_lower in p.category.lower()]
+        else:
+            results = all_products
+
+        # Text filter
+        if query:
+            term = query.lower().strip()
+            results = [
+                p for p in results
+                if term in p.name.lower()
+                or term in p.sub_category.lower()
+                or term in p.brand.lower()
+                or term in p.category.lower()
+            ]
 
         # If no text query, no relevance ranking needed (pure category browse)
         if not query or not results:
@@ -414,15 +461,15 @@ class CatalogService:
 
         Priority:
         1. Cache override (stock:{product_id}) — demo control
-        2. Product.in_stock field from the repository
+        2. Product.in_stock field from the in-memory product cache (no DynamoDB hit)
         """
         # Check override first
         override = await self.cache.get_stock_override(product_id)
         if override is not None:
             return override
 
-        # Fall back to product record
-        product = await self.repo.get_product(product_id)
+        # Use in-memory product cache — avoids a DynamoDB get_item per product
+        product = await self.get_product_by_id(product_id)
         if product is None:
             return False
         return product.in_stock

@@ -379,13 +379,23 @@ async def match_node(state: AgentState) -> dict:
         else:
             need.status = NeedStatus.UNMATCHED
 
+        # Build a human-readable reason — no raw scores exposed to the frontend
+        if score >= 0.9:
+            human_reason = "Top-rated pick — highest match confidence for this ingredient"
+        elif score >= 0.75:
+            human_reason = "Strong match — verified against catalog name and category"
+        elif score >= 0.55:
+            human_reason = "Good match — closest available product for this ingredient"
+        else:
+            human_reason = "Best available option — added based on catalog similarity"
+
         items.append(CartItem(
             product_id=product_id,
             name=name,
             price=price,
             quantity=cart_quantity,
             unit=need.unit,
-            reason=f"Best match (score={score*100:.0f})",
+            reason=human_reason,
             confidence=confidence,
             image_url=image_url,
             out_of_stock_suggestion=oos_suggestion,
@@ -580,12 +590,17 @@ async def replan_node(state: AgentState) -> dict:
     feedback_lower = feedback.lower()
     new_constraints = dict(constraints)
 
-    # Budget constraints
-    if any(k in feedback_lower for k in ("cheaper", "budget", "less")):
+    # Budget constraints — when user says cheaper, cap each item's price and
+    # also inject a budget cap into raw_input so decompose/match knows
+    if any(k in feedback_lower for k in ("cheaper", "budget", "less expensive", "reduce cost", "save money")):
         cart: Cart = state.get("cart", Cart(session_id=""))
         if cart.total > 0:
-            new_constraints["max_price"] = cart.total * 0.7
+            # Set max per-item price well below current average
+            avg_price = cart.total / max(len(cart.items), 1)
+            new_constraints["max_item_price"] = round(avg_price * 0.6, 0)
+            new_constraints["max_price"] = round(cart.total * 0.65, 0)
         new_constraints.setdefault("prefer_economical", True)
+        new_constraints["prefer_budget_brands"] = True
 
     # Dietary constraints
     dietary_keywords = {
@@ -624,8 +639,16 @@ async def replan_node(state: AgentState) -> dict:
         f"constraints={new_constraints}"
     )
 
+    # Build updated raw_input with budget constraint hint for decompose node
+    raw_input = state.get("raw_input", "")
+    if new_constraints.get("max_price"):
+        budget_cap = new_constraints["max_price"]
+        if f"budget under ₹{budget_cap}" not in raw_input:
+            raw_input = f"{raw_input} | budget under ₹{budget_cap}, prefer cheaper alternatives"
+
     return {
         "needs": needs,
+        "raw_input": raw_input,
         "constraints": new_constraints,
         "feedback": None,
         "replan_count": replan_count + 1,

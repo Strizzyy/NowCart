@@ -34,19 +34,30 @@ function saveAddresses(list: SavedAddress[]) {
 export async function reverseGeocode(lat: number, lng: number): Promise<Pick<SavedAddress, 'area' | 'city' | 'pincode' | 'fullAddress'>> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16`,
       { headers: { 'Accept-Language': 'en' } }
     );
     if (!res.ok) throw new Error('Nominatim error');
     const data = await res.json();
     const addr = data.address ?? {};
 
+    // Pick the most precise locality name available, in order of specificity
     const area =
-      addr.suburb || addr.neighbourhood || addr.quarter ||
-      addr.village || addr.town || addr.county || '';
+      addr.road ||               // street name — most precise
+      addr.neighbourhood ||
+      addr.suburb ||
+      addr.quarter ||
+      addr.village ||
+      addr.town ||
+      addr.county || '';
+
     const city =
-      addr.city || addr.town || addr.village ||
-      addr.state_district || addr.state || '';
+      addr.city ||
+      addr.town ||
+      addr.village ||
+      addr.state_district ||
+      addr.state || '';
+
     const pincode = addr.postcode;
     const fullAddress = data.display_name ?? '';
 
@@ -86,16 +97,34 @@ export function useDeliveryLocation() {
     return new Promise((resolve) => {
       if (!navigator.geolocation) { setLocState('error'); resolve(null); return; }
       setLocState('requesting');
+
+      // Try high-accuracy (GPS chip) first with a generous timeout.
+      // Falls back to network-based if GPS isn't available.
       navigator.geolocation.getCurrentPosition(
         async ({ coords }) => {
           const geo = await reverseGeocode(coords.latitude, coords.longitude);
           resolve({ ...geo, lat: coords.latitude, lng: coords.longitude, isManual: false });
         },
         (err) => {
-          setLocState(err.code === 1 ? 'denied' : 'error');
-          resolve(null);
+          if (err.code === err.TIMEOUT) {
+            // GPS timed out — retry once with low-accuracy (faster, uses cell/wifi)
+            navigator.geolocation.getCurrentPosition(
+              async ({ coords }) => {
+                const geo = await reverseGeocode(coords.latitude, coords.longitude);
+                resolve({ ...geo, lat: coords.latitude, lng: coords.longitude, isManual: false });
+              },
+              (fallbackErr) => {
+                setLocState(fallbackErr.code === 1 ? 'denied' : 'error');
+                resolve(null);
+              },
+              { enableHighAccuracy: false, timeout: 8000 }
+            );
+          } else {
+            setLocState(err.code === 1 ? 'denied' : 'error');
+            resolve(null);
+          }
         },
-        { enableHighAccuracy: false, timeout: 8000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
       );
     });
   }, []);

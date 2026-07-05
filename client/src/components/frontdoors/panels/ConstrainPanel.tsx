@@ -14,7 +14,7 @@ type Phase = 'idle' | 'processing' | 'confirming' | 'error';
 
 export default function ConstrainPanel({ ctx, onClose }: Props) {
   const [budget, setBudget] = useState('');
-  const [servings, setServings] = useState('4');
+  const [servings, setServings] = useState('2');
   const [hint, setHint] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [cart, setCart] = useState<CartResponse | null>(null);

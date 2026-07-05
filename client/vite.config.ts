@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg', 'logo-wordmark.svg'],
+      includeAssets: ['favicon.svg', 'logo.svg', 'logo-wordmark.svg', 'logoo.jpeg'],
       manifest: {
         name: 'NowCart — Smart Grocery Shopping',
         short_name: 'NowCart',
@@ -20,6 +20,10 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        // permissions is a valid Web App Manifest field but not typed by vite-plugin-pwa.
+        // It tells Android to surface Microphone and Location in the PWA's App Info → Permissions
+        // so the user can grant them at OS level (required for installed PWAs).
+        ...({ permissions: ['microphone', 'geolocation'] } as object),
         icons: [
           {
             src: '/icons/icon-192.png',

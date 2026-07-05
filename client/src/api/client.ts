@@ -261,6 +261,7 @@ export async function getUserPreferences(userId: string): Promise<{ message: str
 /** Pantry — recently ordered items (ordered in last 30 days) */
 export interface PantryItem {
   product_id: string;
+  name: string;
   days_ago: number;
 }
 
@@ -269,10 +270,10 @@ export async function getUserPantry(userId: string): Promise<{ items: PantryItem
 }
 
 /** Replan — conversational cart refinement */
-export async function postReplan(text: string, feedback: string, userId?: string, servings?: number): Promise<CartResponse> {
+export async function postReplan(text: string, feedback: string, userId?: string, servings?: number, cartItems?: Array<{name: string; price: number; quantity: number}>): Promise<CartResponse> {
   return request<CartResponse>('/replan', {
     method: 'POST',
-    body: JSON.stringify({ text, feedback, user_id: userId, servings }),
+    body: JSON.stringify({ text, feedback, user_id: userId, servings, cart_items: cartItems }),
   });
 }
 

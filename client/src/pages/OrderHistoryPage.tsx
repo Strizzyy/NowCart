@@ -124,13 +124,9 @@ export default function OrderHistoryPage({ ctx }: Props) {
                           {order.payment_method}
                         </span>
                       )}
-                      {order.payment_status && (
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                          order.payment_status === 'paid'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-orange-100 text-orange-700'
-                        }`}>
-                          {order.payment_status === 'paid' ? '✓ Paid' : 'Pending'}
+                      {order.payment_status && order.payment_status === 'paid' && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                          ✓ Paid
                         </span>
                       )}
                     </div>
