@@ -2,7 +2,7 @@ name: Deploy NowCart
 
 on:
   push:
-    branches: [master, prod_dev]
+    branches: [prod_dev]   # locked to prod_dev during demo — switch back to [master, prod_dev] after
   workflow_dispatch: # allows manual trigger from GitHub UI
 
 jobs:
