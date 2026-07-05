@@ -51,7 +51,6 @@ function humanStep(raw: string): string | null {
     const m = raw.match(/Matched (\d+)\/(\d+)/);
     if (m) {
       const [, found, total] = m;
-      const totalNum = Number(total);
       const eco = raw.match(/economical=₹([\d.]+)/);
       const ecoAmt = eco ? `₹${Math.round(Number(eco[1]))}` : null;
       if (found === total) {
