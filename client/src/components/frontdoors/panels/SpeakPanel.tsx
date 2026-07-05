@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square, Keyboard, Send } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
 import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
@@ -24,7 +25,7 @@ interface SpeechRecognitionLike {
   onend: (() => void) | null;
 }
 
-function getRecognition(): SpeechRecognitionLike | null {
+function getWebRecognition(): SpeechRecognitionLike | null {
   const w = window as unknown as {
     SpeechRecognition?: new () => SpeechRecognitionLike;
     webkitSpeechRecognition?: new () => SpeechRecognitionLike;
@@ -37,6 +38,8 @@ function getRecognition(): SpeechRecognitionLike | null {
   rec.interimResults = true;
   return rec;
 }
+
+const isNative = Capacitor.isNativePlatform();
 
 /** Parse a spoken/typed follow-up into a structured cart op, or null. */
 function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
@@ -57,10 +60,19 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [micBlocked, setMicBlocked] = useState(false);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const speechSupported = useRef(!!getRecognition());
+  // On native, Capacitor plugin is used — web speech always unavailable in WebView
+  const speechSupported = useRef(isNative || !!getWebRecognition());
 
   useEffect(() => {
-    return () => recRef.current?.stop();
+    return () => {
+      recRef.current?.stop();
+      // Clean up Capacitor listener on unmount
+      if (isNative) {
+        import('@capacitor-community/speech-recognition').then(({ SpeechRecognition }) => {
+          SpeechRecognition.removeAllListeners();
+        }).catch(() => {});
+      }
+    };
   }, []);
 
   const submit = async (text: string) => {
@@ -78,19 +90,84 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const startListening = () => {
-    const rec = getRecognition();
-    if (!rec) {
-      setMicBlocked(true);
-      return;
+  const startListeningNative = async () => {
+    try {
+      const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
+
+      // Request permission first
+      const permStatus = await SpeechRecognition.requestPermissions();
+      if (permStatus.speechRecognition !== 'granted') {
+        setMicBlocked(true);
+        return;
+      }
+
+      const available = await SpeechRecognition.available();
+      if (!available.available) {
+        setMicBlocked(true);
+        return;
+      }
+
+      setTranscript('');
+      setPhase('listening');
+
+      await SpeechRecognition.removeAllListeners();
+
+      // Capture partial results as user speaks
+      await SpeechRecognition.addListener('partialResults', (data: { matches: string[] }) => {
+        if (data.matches?.length) setTranscript(data.matches[0]);
+      });
+
+      // When recognition ends, submit whatever was captured
+      await SpeechRecognition.addListener('listeningState', async (state: { status: string }) => {
+        if (state.status === 'stopped') {
+          await SpeechRecognition.removeAllListeners();
+          setTranscript((current) => {
+            if (current.trim()) void submit(current);
+            else setPhase('idle');
+            return current;
+          });
+        }
+      });
+
+      // start() may also return final results directly on some devices
+      const result = await SpeechRecognition.start({
+        language: 'en-IN',
+        maxResults: 1,
+        popup: false,
+        partialResults: true,
+      });
+
+      // If we got direct results (no partialResults event path), use them
+      if (result?.matches?.length) {
+        await SpeechRecognition.removeAllListeners();
+        const text = result.matches[0];
+        setTranscript(text);
+        void submit(text);
+      }
+    } catch (e: any) {
+      const msg = e?.message ?? '';
+      if (msg.includes('permission') || msg.includes('not-allowed')) setMicBlocked(true);
+      setPhase('idle');
     }
+  };
+
+  const stopListeningNative = async () => {
+    try {
+      const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
+      await SpeechRecognition.stop();
+    } catch { /* ignore */ }
+  };
+
+  const startListening = () => {
+    if (isNative) { void startListeningNative(); return; }
+
+    const rec = getWebRecognition();
+    if (!rec) { setMicBlocked(true); return; }
     recRef.current = rec;
     setTranscript('');
     setPhase('listening');
     rec.onresult = (e) => {
-      const text = Array.from(e.results)
-        .map((r) => r[0].transcript)
-        .join(' ');
+      const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
       setTranscript(text);
     };
     rec.onerror = (e) => {
@@ -107,7 +184,10 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     rec.start();
   };
 
-  const stopListening = () => recRef.current?.stop();
+  const stopListening = () => {
+    if (isNative) { void stopListeningNative(); return; }
+    recRef.current?.stop();
+  };
 
   const sendFollowUp = async (text: string) => {
     if (!text.trim() || !cart) return;
