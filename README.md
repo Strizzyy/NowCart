@@ -24,6 +24,65 @@ Every cart returns a **recommended pick** and a **cheaper alternative** per item
 
 ---
 
+## Architecture
+
+<details>
+<summary>System diagram</summary>
+
+```mermaid
+flowchart TB
+    subgraph L1["① Feature Layer"]
+        FD["Share · Show · Speak · Constrain · Subscribe"]
+    end
+
+    subgraph L2["② Security & Capture — FastAPI"]
+        CAP["Vision API · JSON-LD fetch · Speech-to-Text · Budget parser"]
+        SEC["SSRF guard · Rate limiting · Input sanitization"]
+    end
+
+    subgraph L3["③ Decision"]
+        DEC{"Needs cart assembly?"}
+    end
+
+    subgraph L4["④ Engine Layer"]
+        ENG["Outcome Engine — Decompose → Match → Optimize → Confidence"]
+        RET["Retrieval Pipeline\n① Bi-encoder  ② Cross-encoder  ③ Rapidfuzz\n→ Verified badge picks"]
+        LLM["Groq LLM — region-aware reasoning"]
+        OOS["Out-of-stock handler — suggests alternative, user decides"]
+    end
+
+    subgraph L5["⑤ Storage"]
+        STR[("DynamoDB — products · users · orders\nRedis — cart · sessions · LLM cache")]
+    end
+
+    subgraph L6["⑥ One Confident Cart"]
+        CART["Best pick · Economical alternative · Verified badge · Confidence % + reasoning"]
+    end
+
+    subgraph L7["⑦ Checkout"]
+        CHK["Place Order → Payment → Confirmed → Storage"]
+    end
+
+    FD --> CAP --> SEC --> DEC
+    DEC -->|"assemble cart"| ENG
+    DEC -->|"exact product"| CART
+    ENG <--> RET
+    ENG <--> LLM
+    ENG <--> STR
+    RET <--> STR
+    RET -.->|out of stock| OOS
+    OOS -.-> CART
+    ENG --> CART
+    CART -.->|refine| ENG
+    CART --> CHK
+    CHK --> STR
+    CHK -.->|order history feeds predictions| FD
+```
+
+</details>
+
+---
+
 ## Stack
 
 | Layer | Technology |
