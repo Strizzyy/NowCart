@@ -90,12 +90,20 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     try {
       const userId = resolveUserId(ctx?.user);
 
-      // Pass the original meal context from cart notes (e.g. "pasta for 2")
-      // so the backend knows what dish this cart is for — not just item names.
-      const mealContext = cart.notes?.find(n =>
-        !n.startsWith('🔮') && !n.startsWith('📅') && !n.startsWith('🛒') &&
-        !n.toLowerCase().includes('predicted') && !n.toLowerCase().includes('subscription')
-      ) || cart.items.map(i => i.name).join(', ') || 'grocery cart';
+      // Extract the meal context — prefer the 🍽️-prefixed note stored by the engine,
+      // which holds the original user query (e.g. "pasta for 2").
+      // Fall back to other non-system notes, then to item names as last resort.
+      const mealNote = cart.notes?.find(n => n.startsWith('🍽️'));
+      const mealContext = mealNote
+        ? mealNote.replace(/^🍽️\s*/, '')
+        : cart.notes?.find(n =>
+            !n.startsWith('🔮') && !n.startsWith('📅') && !n.startsWith('🛒') &&
+            !n.toLowerCase().includes('predicted') && !n.toLowerCase().includes('subscription')
+          ) || '';
+
+      // The `text` field sent to the backend: prefer the clean meal context.
+      // If we couldn't extract one, send the feedback itself so the server still has context.
+      const mealText = mealContext || trimmed;
 
       const cartItemsForContext = cart.items.map(i => ({
         product_id: i.product_id,
@@ -106,7 +114,14 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
         image_url: i.image_url ?? null,
       }));
 
-      const updated = await postReplan(mealContext, trimmed, userId, undefined, cartItemsForContext);
+      const updated = await postReplan(
+        mealText,
+        trimmed,
+        userId,
+        undefined,
+        cartItemsForContext,
+        mealContext,   // pass meal context explicitly so backend augment prompt uses it
+      );
       onReplan(updated);
       setInput('');
     } catch { /* keep stale cart */ }
@@ -117,8 +132,8 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     if (chip.type === 'swap') {
       void handleDirectSwap(chip);
     } else {
-      setInput(chip.value);
-      inputRef.current?.focus();
+      // Auto-submit replan chips immediately instead of just pre-filling
+      void handleSubmit(chip.value);
     }
   };
 

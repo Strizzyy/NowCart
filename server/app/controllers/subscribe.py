@@ -41,6 +41,7 @@ class ReplanRequest(BaseModel):
     user_id: str | None = None
     servings: int | None = None
     cart_items: list[dict] | None = None  # Current cart items for context
+    meal_context: str | None = None       # Original meal/dish context (e.g. "pasta for 2")
 
 
 class CounterfactualRequest(BaseModel):
@@ -309,7 +310,8 @@ async def replan_cart(req: ReplanRequest) -> CartResponse:
     service = get_outcome_service()
     cart = await service.replan_cart(
         text=req.text, feedback=req.feedback, user_id=req.user_id,
-        servings=req.servings, cart_items=req.cart_items
+        servings=req.servings, cart_items=req.cart_items,
+        meal_context=req.meal_context,
     )
     return CartResponse.from_domain(cart)
 

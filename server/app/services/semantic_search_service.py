@@ -470,6 +470,7 @@ class HybridRetrievalService:
         """Return (product_index, fuzzy_score/100) for top-K by fuzzy match.
 
         Scores are normalised to [0, 1] to match cross-encoder output.
+        Safe to call from a thread pool executor.
         """
         from rapidfuzz import fuzz, process as rfprocess
 
@@ -539,9 +540,10 @@ class HybridRetrievalService:
                 seen_indices = {idx for idx, _ in reranked}
 
                 if top_score < _CROSS_ENCODER_LOW_CONF:
-                    # Low confidence from cross-encoder — supplement with rapidfuzz
-                    fuzzy_results = self._rapidfuzz_search(
-                        query, top_k, exclude_indices=seen_indices
+                    # Low confidence from cross-encoder — supplement with rapidfuzz (in executor)
+                    loop = asyncio.get_event_loop()
+                    fuzzy_results = await loop.run_in_executor(
+                        _executor, self._rapidfuzz_search, query, top_k, seen_indices
                     )
                     # Blend: use max of cross-encoder and fuzzy scores for overlapping products
                     reranked_dict = {idx: score for idx, score in reranked}
@@ -556,7 +558,10 @@ class HybridRetrievalService:
                 return results
 
         # --- Fallback: rapidfuzz only (models not loaded) ---
-        fuzzy_raw = self._rapidfuzz_search(query, top_k)
+        loop = asyncio.get_event_loop()
+        fuzzy_raw = await loop.run_in_executor(
+            _executor, self._rapidfuzz_search, query, top_k, None
+        )
         return [
             (self._product_ids[idx], score)
             for idx, score in fuzzy_raw

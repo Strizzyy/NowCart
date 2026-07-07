@@ -18,7 +18,6 @@ import logging
 from typing import TYPE_CHECKING
 
 from app.models.domain.product import Product
-from app.repositories import get_repository
 from app.services.preference_service import UserPreference
 
 if TYPE_CHECKING:
@@ -69,19 +68,11 @@ class CounterfactualService:
         candidates: list[tuple[str, str, float, float, str | None]],
         preference: UserPreference | None = None,
     ) -> list[dict]:
-        """For a selected product, explain why each alternative was not picked.
+        """For a selected product, explain why each alternative was not picked."""
+        from app.services.catalog_service import get_catalog_service
+        catalog = get_catalog_service()
 
-        Args:
-            selected_product_id: The product that WAS selected.
-            candidates: List of (product_id, name, score, price, image_url) tuples
-                       from the match node.
-            preference: Optional user preference for personalized explanations.
-
-        Returns:
-            List of RejectedAlternative dicts with reasons.
-        """
-        repo = get_repository()
-        selected = await repo.get_product(selected_product_id)
+        selected = await catalog.get_product_by_id(selected_product_id)
         if not selected:
             return []
 
@@ -91,7 +82,7 @@ class CounterfactualService:
             if pid == selected_product_id:
                 continue
 
-            product = await repo.get_product(pid)
+            product = await catalog.get_product_by_id(pid)
             reasons = self._generate_reasons(
                 selected=selected,
                 alternative=product or Product(product_id=pid, name=name, sale_price=price),
