@@ -8,6 +8,7 @@ Entry point for all front-door inputs. Enriched with:
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 import uuid
@@ -21,6 +22,15 @@ from app.repositories import get_cache
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# In-process user context cache (Option 1)
+# Avoids hitting DynamoDB on every replan call for the same user.
+# TTL: 60 seconds — short enough to pick up profile changes, long enough
+# to cover a full cart-build + replan session.
+# ---------------------------------------------------------------------------
+_USER_CONTEXT_CACHE: dict[str, tuple[float, dict]] = {}  # user_id → (expires_at, context_dict)
+_USER_CONTEXT_TTL = 60.0  # seconds
+
 
 class OutcomeService:
     """Run the Outcome Engine pipeline and persist the cart."""
@@ -32,6 +42,8 @@ class OutcomeService:
         mode: IntentMode | None = None,
         user_id: str | None = None,
         feedback: str | None = None,
+        locked_items: list[dict] | None = None,
+        meal_context: str | None = None,
     ) -> Cart:
         """Process a user's natural-language outcome into a confident cart."""
         pipeline_start = time.perf_counter()
@@ -50,6 +62,10 @@ class OutcomeService:
             initial_state["user_id"] = user_id
         if feedback:
             initial_state["feedback"] = feedback
+        if locked_items:
+            initial_state["locked_items"] = locked_items
+        if meal_context:
+            initial_state["meal_context"] = meal_context
 
         # Inject user region for region-aware decompose
         if user_id:
@@ -126,56 +142,108 @@ class OutcomeService:
         user_id: str | None = None,
         servings: int | None = None,
         cart_items: list[dict] | None = None,
+        meal_context: str | None = None,
     ) -> Cart:
         """Re-plan an existing cart based on user feedback.
 
-        cart_items: the current cart items passed from the frontend so the
-        engine has full context of what's in the cart (names, prices, quantities).
-        This is used to build a richer raw_input that tells the decompose node
-        exactly what items are in the cart so swaps/removals/cheaper requests
-        work semantically rather than blindly.
+        cart_items: the current cart items from the frontend.
+        text: the original meal context (e.g. "pasta for 2") extracted from cart notes.
+        meal_context: explicit meal/dish context stored separately for augment prompts.
+
+        Passes preserve_cart=True and locked_items into state so decompose_node
+        uses an augment prompt — keeping existing items unless feedback demands removal.
         """
-        # Build a rich text from the current cart items so the LLM knows what to work with
+        locked_items: list[dict] = []
         if cart_items:
-            items_desc = ", ".join(
-                f"{item['name']} (qty {item.get('quantity', 1)}, ₹{item.get('price', 0)})"
+            locked_items = [
+                {
+                    "product_id": item.get("product_id", ""),
+                    "name": item["name"],
+                    "brand": item.get("brand", ""),
+                    "price": item.get("price", 0),
+                    "quantity": item.get("quantity", 1),
+                    "image_url": item.get("image_url"),
+                }
                 for item in cart_items
-            )
-            enriched_text = f"{text} | current cart: {items_desc}"
-        else:
-            enriched_text = text
+                if item.get("product_id")  # only keep items with a known product_id
+            ]
 
         return await self.process_outcome(
-            text=enriched_text,
+            text=text,
             servings=servings,
             user_id=user_id,
             feedback=feedback,
+            locked_items=locked_items if locked_items else None,
+            meal_context=meal_context or text,
         )
 
     async def _inject_user_context(self, state: AgentState, user_id: str) -> None:
-        """Inject user region, age, and gender into state for personalised decompose."""
-        try:
-            from app.repositories import get_repository
-            repo = get_repository()
-            user = await repo.get_user(user_id)
-            if user:
-                if user.location and user.location.region:
-                    state["user_region"] = user.location.region
-                if user.age:
-                    state["user_age"] = user.age
-                if user.gender:
-                    state["user_gender"] = user.gender
-        except Exception as exc:
-            logger.debug("Could not load user context: %s", exc)
+        """Inject user region, age, gender, and preferences into state.
+
+        Checks an in-process cache first (60s TTL) so repeated calls within the
+        same session (initial cart + replan) don't hit DynamoDB again.
+        Falls back to concurrent DynamoDB fetches with a 10s hard timeout.
+        """
+        t0 = time.perf_counter()
+
+        # ── Cache hit ──────────────────────────────────────────────────────
+        cached = _USER_CONTEXT_CACHE.get(user_id)
+        if cached:
+            expires_at, ctx = cached
+            if time.monotonic() < expires_at:
+                state.update(ctx)
+                logger.info(
+                    "_inject_user_context: cache hit %.0fms for user=%s",
+                    (time.perf_counter() - t0) * 1000,
+                    user_id,
+                )
+                return
+
+        # ── Cache miss — fetch from DynamoDB concurrently ──────────────────
+        fetched: dict = {}
+
+        async def _fetch_user() -> None:
+            try:
+                from app.repositories import get_repository
+                repo = get_repository()
+                user = await repo.get_user(user_id)
+                if user:
+                    if user.location and user.location.region:
+                        fetched["user_region"] = user.location.region
+                    if user.age:
+                        fetched["user_age"] = user.age
+                    if user.gender:
+                        fetched["user_gender"] = user.gender
+            except Exception as exc:
+                logger.debug("Could not load user profile: %s", exc)
+
+        async def _fetch_preferences() -> None:
+            try:
+                from app.services.preference_service import get_preference_service
+                pref_service = get_preference_service()
+                preference = await pref_service.get_user_preference(user_id)
+                if preference:
+                    fetched["user_preferences"] = preference.model_dump()
+            except Exception as exc:
+                logger.debug("Could not load user preferences: %s", exc)
 
         try:
-            from app.services.preference_service import get_preference_service
-            pref_service = get_preference_service()
-            preference = await pref_service.get_user_preference(user_id)
-            if preference:
-                state["user_preferences"] = preference.model_dump()
-        except Exception as exc:
-            logger.debug("Could not load user preferences: %s", exc)
+            await asyncio.wait_for(
+                asyncio.gather(_fetch_user(), _fetch_preferences()),
+                timeout=10.0,
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                "_inject_user_context timed out after 10s for user=%s — proceeding without personalisation",
+                user_id,
+            )
+
+        # Populate state and store in cache
+        state.update(fetched)
+        _USER_CONTEXT_CACHE[user_id] = (time.monotonic() + _USER_CONTEXT_TTL, fetched)
+
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        logger.info("_inject_user_context: %.0fms for user=%s (cache miss)", elapsed_ms, user_id)
 
     async def _annotate_recently_ordered(self, cart: Cart, user_id: str) -> None:
         """Mark cart items ordered in the last 30 days for the recently-ordered prompt."""

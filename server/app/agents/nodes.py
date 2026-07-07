@@ -133,15 +133,26 @@ _REGION_HINTS: dict[str, str] = {
 
 
 async def decompose_node(state: AgentState) -> dict:
-    """Decompose the outcome into structured needs using the LLM. Region-aware + age/gender-aware."""
+    """Decompose the outcome into structured needs using the LLM. Region-aware + age/gender-aware.
+
+    Two modes:
+    - Normal: decompose raw_input into a full ingredient list from scratch.
+    - Augment (preserve_cart=True): keep all locked_items, only identify NEW items
+      to add based on feedback. The LLM sees the existing cart and the feedback
+      and returns only the additions.
+    """
     raw = state.get("raw_input", "")
     servings = state.get("servings", 1)
     mode = state.get("mode", IntentMode.TEXT)
     trail: list[str] = state.get("reasoning_trail", [])
     constraints = state.get("constraints", {})
+    excluded_items: list[str] = list(state.get("excluded_items") or [])
     user_region = state.get("user_region")
     user_age = state.get("user_age")
     user_gender = state.get("user_gender")
+    preserve_cart = state.get("preserve_cart", False)
+    locked_items: list[dict] = state.get("locked_items", [])
+    feedback_hint = ""  # used in augment mode
 
     llm = get_text_provider()
 
@@ -159,6 +170,15 @@ async def decompose_node(state: AgentState) -> dict:
         if parts:
             constraint_context = "\nAdditional constraints: " + "; ".join(parts)
 
+    # Hard exclusions — items the user explicitly removed must never appear in output
+    exclusion_context = ""
+    if excluded_items:
+        exclusion_context = (
+            f"\nDo NOT include these ingredients under any circumstances: "
+            f"{', '.join(excluded_items)}. "
+            "Even if they are typical for this dish, omit them completely."
+        )
+
     # Region-aware hint
     region_context = ""
     if user_region and user_region in _REGION_HINTS:
@@ -167,7 +187,7 @@ async def decompose_node(state: AgentState) -> dict:
             f"Prefer regional items like: {_REGION_HINTS[user_region]}."
         )
 
-    # Age + gender hint for personalised ingredient suggestions
+    # Age + gender hint
     demographic_context = ""
     if user_age or user_gender:
         parts = []
@@ -187,7 +207,46 @@ async def decompose_node(state: AgentState) -> dict:
         if parts:
             demographic_context = f"\nUser profile: {'; '.join(parts)}."
 
-    if mode == IntentMode.GOAL:
+    schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+
+    # ── AUGMENT MODE — preserve existing cart, only identify new additions ────
+    if preserve_cart and locked_items:
+        existing_desc = "\n".join(
+            f"  - {item['name']} (qty {item.get('quantity', 1)}, ₹{item.get('price', 0)})"
+            for item in locked_items
+        )
+        # Include meal context so the LLM picks dish-appropriate additions
+        meal_context = state.get("meal_context", "")
+        meal_context_line = (
+            f"\nThis cart is for: {meal_context}.\n"
+            "When adding proteins or other items, choose ones appropriate for this dish "
+            "(e.g. for pasta: chicken breast, not sardines or canned fish)."
+            if meal_context else ""
+        )
+        system_prompt = (
+            "You are a grocery assistant helping refine an existing shopping cart. "
+            "The user already has items in their cart and wants to ADD something based on feedback. "
+            "Do NOT list the existing items in your response — they are already in the cart. "
+            "ONLY return the NEW items that should be added to satisfy the user's feedback.\n\n"
+            f"Existing cart items (DO NOT repeat these):\n{existing_desc}\n"
+            f"{meal_context_line}\n"
+            "Rules:\n"
+            "- Suggest items that are compatible with and complement the existing cart.\n"
+            "- If the cart is for a specific dish (e.g. pasta), suggest ingredients that work with that dish "
+            "(pasta → chicken breast, bacon, shrimp; NOT sardines, canned fish, or unrelated proteins).\n"
+            "- If the user explicitly names an ingredient (e.g. 'add chicken'), return EXACTLY that ingredient — "
+            "do not substitute or pick a different protein.\n"
+            "- Return 1–4 new items only. Do not rebuild the full cart.\n"
+            "- Return quantities as number of packs/units to buy from a grocery store.\n"
+            "- For category_hint use: meat, chicken, fish, eggs, dairy, paneer, pulses, nuts, or other relevant category.\n"
+            "Return JSON with \"dish\" (null) and \"needs\" (array of new items only)."
+            + constraint_context + exclusion_context + region_context + demographic_context
+        )
+        # The raw input in augment mode is the user's feedback
+        llm_input = raw
+        reasoning_prefix = "AUGMENT"
+
+    elif mode == IntentMode.GOAL:
         system_prompt = (
             "You are a smart grocery wellness assistant. Given a user's health/lifestyle goal, "
             "recommend a curated grocery shopping list of products that help achieve that goal. "
@@ -195,9 +254,12 @@ async def decompose_node(state: AgentState) -> dict:
             "Return quantities as number of packs/units to buy (e.g. 1 pack, 2 bottles). "
             "Return JSON with \"goal\" (string) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many packs to buy.'
-            + constraint_context + region_context + demographic_context
+            + constraint_context + exclusion_context + region_context + demographic_context
         )
         schema_hint = '{"goal": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "GOAL"
+
     elif mode == IntentMode.BUDGET:
         system_prompt = (
             "You are a grocery meal planner for an Indian grocery app. The user wants to plan a meal "
@@ -205,9 +267,12 @@ async def decompose_node(state: AgentState) -> dict:
             "ingredients. Return quantities as number of packs/units to buy from a grocery store. "
             "Return JSON with \"dish\" (string) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = number of packs to buy.'
-            + constraint_context + region_context + demographic_context
+            + constraint_context + exclusion_context + region_context + demographic_context
         )
         schema_hint = '{"dish": "string", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "BUDGET"
+
     else:
         system_prompt = (
             "You are a grocery assistant for an Indian grocery delivery app. Given a user's food/cooking "
@@ -218,18 +283,31 @@ async def decompose_node(state: AgentState) -> dict:
             "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs. "
             "Return JSON with \"dish\" (string or null) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
-            + constraint_context + region_context + demographic_context
+            + constraint_context + exclusion_context + region_context + demographic_context
         )
-        schema_hint = '{"dish": "string|null", "needs": [{"name": "str", "quantity": "number", "unit": "str", "category_hint": "str"}]}'
+        llm_input = raw
+        reasoning_prefix = "DECOMPOSE"
 
-    result = await llm.complete_json(system_prompt, raw, schema_hint)
+    import logging as _logging
+    _decompose_log = _logging.getLogger("app.agents.decompose")
+    _decompose_log.info(
+        "\n=== DECOMPOSE NODE ===\npreserve_cart=%s\n--- SYSTEM PROMPT ---\n%s\n--- LLM INPUT ---\n%s\n=====================",
+        preserve_cart, system_prompt, llm_input,
+    )
+
+    result = await llm.complete_json(system_prompt, llm_input, schema_hint)
+
+    _decompose_log.info(
+        "\n=== DECOMPOSE RESULT ===\n%s\n========================",
+        result,
+    )
 
     raw_needs = result.get("needs", [])
-    needs: list[Need] = []
+    new_needs: list[Need] = []
     for item in raw_needs:
         quantity = float(item.get("quantity", 1))
         unit = item.get("unit", "unit")
-        needs.append(Need(
+        new_needs.append(Need(
             name=item.get("name", "unknown"),
             quantity=quantity,
             unit=unit,
@@ -237,12 +315,33 @@ async def decompose_node(state: AgentState) -> dict:
             status=NeedStatus.PENDING,
         ))
 
+    # In augment mode, prepend locked items as pre-matched needs
+    if preserve_cart and locked_items:
+        locked_needs: list[Need] = []
+        for li in locked_items:
+            locked_need = Need(
+                name=li["name"],
+                quantity=float(li.get("quantity", 1)),
+                unit="unit",
+                category_hint="",
+                status=NeedStatus.MATCHED,  # already matched — skip the catalog matcher
+                matched_product_id=li.get("product_id"),  # pre-set so match_node skips it
+            )
+            locked_needs.append(locked_need)
+        all_needs = locked_needs + new_needs
+    else:
+        all_needs = new_needs
+
     label = result.get("goal") or result.get("dish") or "unknown"
     region_note = f", region={user_region}" if user_region else ""
-    reasoning = f"Decomposed into {len(needs)} needs (label={label}, mode={mode.value}, servings={servings}{region_note})"
+    augment_note = f", +{len(new_needs)} new items (kept {len(locked_items)} existing)" if preserve_cart else ""
+    reasoning = (
+        f"{reasoning_prefix}: decomposed into {len(all_needs)} needs "
+        f"(label={label}, mode={mode.value}, servings={servings}{region_note}{augment_note})"
+    )
 
     return {
-        "needs": needs,
+        "needs": all_needs,
         "reasoning_trail": trail + [reasoning],
     }
 
@@ -253,18 +352,15 @@ async def decompose_node(state: AgentState) -> dict:
 
 
 async def match_node(state: AgentState) -> dict:
-    """For each need, find and pick the best product via hybrid retrieval.
-
-    This node merges the old match + optimize nodes into one step:
-    1. Hybrid retrieval: bi-encoder → cross-encoder → rapidfuzz
-    2. Pick best available candidate (in-stock first)
-    3. Build CartItems with economical alternatives
-    4. If best candidate is OOS, attach out_of_stock_suggestion metadata
-       so frontend can show "Original out of stock — you may also add X"
-    """
+    """For each need, find and pick the best product via hybrid retrieval."""
+    import asyncio as _asyncio
     needs: list[Need] = state.get("needs", [])
     trail: list[str] = state.get("reasoning_trail", [])
     mode = state.get("mode", IntentMode.TEXT)
+
+    import time as _time
+    import logging as _logging
+    _match_log = _logging.getLogger("app.agents.match")
 
     catalog = get_catalog_service()
 
@@ -272,7 +368,7 @@ async def match_node(state: AgentState) -> dict:
     try:
         from app.services.semantic_search_service import get_semantic_search_service
         svc = get_semantic_search_service()
-        if svc.is_ready:
+        if svc.is_ready and svc.using_neural_models:
             hybrid_service = svc
     except Exception:
         pass
@@ -280,13 +376,34 @@ async def match_node(state: AgentState) -> dict:
     from app.repositories import get_repository
     repo = get_repository()
 
+    _match_log.info("match_node: starting for %d needs, hybrid=%s", len(needs), hybrid_service is not None)
+
     candidates: dict[str, list[tuple[str, str, float, float, str | None]]] = {}
     items: list[CartItem] = []
     economical_items: list[CartItem] = []
     notes: list[str] = []
 
+    # Build a lookup from locked_items for fast reconstruction of pre-matched needs
+    locked_items: list[dict] = state.get("locked_items", [])
+    locked_by_pid: dict[str, dict] = {li["product_id"]: li for li in locked_items if li.get("product_id")}
+
+    # ── Separate locked needs (fast path) from needs that require catalog search ──
+    needs_to_search: list[Need] = []
     for need in needs:
-        # --- Hybrid retrieval ---
+        if (need.status == NeedStatus.MATCHED
+                and need.matched_product_id
+                and need.matched_product_id in locked_by_pid):
+            # Pre-matched locked item — will be handled in the assembly loop below
+            pass
+        else:
+            needs_to_search.append(need)
+
+    # ── Fire all catalog searches concurrently (Option 2) ─────────────────────
+    _search_start = _time.perf_counter()
+
+    async def _search_need(need: Need):
+        """Run hybrid + fuzzy search for a single need, return (fuzzy_matches, hybrid_results, timings)."""
+        _t0 = _time.perf_counter()
         hybrid_results: list[tuple[str, float]] = []
         if hybrid_service:
             hybrid_results = await hybrid_service.search_with_context(
@@ -295,20 +412,56 @@ async def match_node(state: AgentState) -> dict:
                 top_k=20,
                 min_score=0.1,
             )
+        _t1 = _time.perf_counter()
 
         fuzzy_matches = await catalog.fuzzy_match_need(
             need_name=need.name,
             category_hint=need.category_hint or None,
             top_k=10,
         )
+        _t2 = _time.perf_counter()
+        _match_log.info(
+            "need='%s' hybrid=%.3fs fuzzy=%.3fs hybrid_hits=%d fuzzy_hits=%d",
+            need.name, _t1 - _t0, _t2 - _t1, len(hybrid_results), len(fuzzy_matches),
+        )
+        return fuzzy_matches, hybrid_results
 
-        # Merge scores
+    search_results = await _asyncio.gather(*[_search_need(n) for n in needs_to_search])
+    _match_log.info(
+        "match_node: all %d searches completed in %.3fs (concurrent)",
+        len(needs_to_search),
+        _time.perf_counter() - _search_start,
+    )
+
+    # Map need → search result for the assembly loop
+    search_result_map: dict[int, tuple] = {
+        id(need): result for need, result in zip(needs_to_search, search_results)
+    }
+
+    # ── Bulk availability check (fix 1+2) ─────────────────────────────────────
+    # Build candidate_lists for all needs first (score merging only, no I/O),
+    # collect every candidate product_id across all needs, then resolve
+    # availability in one synchronous pass against the in-memory store.
+    # This replaces up to N_needs × 5 sequential check_availability calls
+    # with a single dict lookup per product_id.
+
+    # Step A: build candidate_lists and score_maps for every non-locked need
+    need_candidate_data: dict[int, tuple[
+        list[tuple[str, str, float, float, str | None]],  # candidate_list
+        dict[str, float],                                  # score_map
+    ]] = {}
+    all_candidate_pids: list[str] = []
+
+    for need in needs_to_search:
+        fuzzy_matches, hybrid_results = search_result_map[id(need)]
+
         score_map: dict[str, float] = {}
         for product, fscore in fuzzy_matches:
             score_map[product.product_id] = fscore / 100.0
         for pid, hscore in hybrid_results:
             score_map[pid] = max(score_map.get(pid, 0.0), hscore)
 
+        # Supplement fuzzy_matches with any hybrid-only hits (rare in rapidfuzz mode)
         for pid, _score in hybrid_results:
             if pid not in {p.product_id for p, _ in fuzzy_matches}:
                 product = await repo.get_product(pid)
@@ -328,6 +481,38 @@ async def match_node(state: AgentState) -> dict:
             )
             for product, fscore in top_matches
         ]
+        need_candidate_data[id(need)] = (candidate_list, score_map)
+        all_candidate_pids.extend(c[0] for c in candidate_list)
+
+    # Step B: single bulk availability pass — O(1) dict lookup per product_id
+    availability: dict[str, bool] = await catalog.bulk_check_availability(
+        list(dict.fromkeys(all_candidate_pids))  # deduplicate, preserve order
+    )
+
+    use_economical: bool = state.get("use_economical", False)
+
+    # ── Assembly loop ──────────────────────────────────────────────────────────
+    for need in needs:
+        # ── Fast path: pre-matched locked item ────────────────────────────
+        if need.status == NeedStatus.MATCHED and need.matched_product_id and need.matched_product_id in locked_by_pid:
+            li = locked_by_pid[need.matched_product_id]
+            cart_quantity = _normalize_quantity_to_packs(need.quantity, need.unit)
+            locked_cart_item = CartItem(
+                product_id=li["product_id"],
+                name=li["name"],
+                brand=li.get("brand", ""),
+                price=float(li.get("price", 0)),
+                quantity=cart_quantity,
+                unit=need.unit,
+                reason="Kept from your existing cart",
+                confidence=0.99,
+                image_url=li.get("image_url"),
+            )
+            items.append(locked_cart_item)
+            economical_items.append(locked_cart_item)
+            continue
+
+        candidate_list, score_map = need_candidate_data.get(id(need), ([], {}))
         candidates[need.name] = candidate_list
 
         if not candidate_list:
@@ -335,13 +520,13 @@ async def match_node(state: AgentState) -> dict:
             notes.append(f"No match found for: {need.name}")
             continue
 
-        # --- Pick best available candidate ---
+        # --- Pick best available candidate using pre-fetched availability dict ---
         best = None
-        oos_best = None  # best candidate even if OOS (for OOS suggestion)
+        oos_best = None
         available_candidates: list[tuple[str, str, float, float, str | None]] = []
 
         for product_id, name, score, price, image_url in candidate_list:
-            is_available = await catalog.check_availability(product_id)
+            is_available = availability.get(product_id, False)
             if is_available:
                 available_candidates.append((product_id, name, score, price, image_url))
                 if best is None:
@@ -349,10 +534,13 @@ async def match_node(state: AgentState) -> dict:
             elif oos_best is None:
                 oos_best = (product_id, name, score, price, image_url)
 
+        # In economical mode, override best with the cheapest in-stock candidate
+        if use_economical and available_candidates:
+            best = min(available_candidates, key=lambda c: c[3])
+
         # OOS suggestion: if top candidate was OOS, find next in-stock from shortlist
         oos_suggestion: dict | None = None
         if oos_best is not None and best is not None and oos_best[0] != best[0]:
-            # The top match was OOS and we found an in-stock alternative
             oos_suggestion = {
                 "product_id": best[0],
                 "name": best[1],
@@ -438,6 +626,12 @@ async def match_node(state: AgentState) -> dict:
         mode=mode,
         notes=notes,
     )
+    # Store the original meal context in notes so the frontend can extract it for replan.
+    # Use a prefixed note so the frontend filter can reliably pick it up.
+    raw_input = state.get("raw_input", "")
+    meal_context = state.get("meal_context") or raw_input
+    if meal_context and not any(n.startswith("🍽️") for n in cart.notes):
+        cart.notes.insert(0, f"🍽️ {meal_context}")
     cart.recompute_total()
 
     matched_count = sum(1 for n in needs if n.status == NeedStatus.MATCHED)
@@ -577,12 +771,36 @@ async def counterfactual_node(state: AgentState) -> dict:
 
 
 async def replan_node(state: AgentState) -> dict:
-    """Process user feedback and prepare state for re-planning."""
+    """Process user feedback and prepare state for re-planning.
+
+    Intent classification (determines graph routing after this node):
+
+    PURE REMOVAL  ("remove onion", "no garlic", "drop salt")
+        → skip_decompose=True, no LLM call.
+          Just filters locked_items and routes straight to match.
+
+    PURE CHEAPER  ("make it cheaper", "budget", "less expensive")
+        → skip_decompose=True, use_economical=True, no LLM call.
+          Keeps existing locked_items, match picks cheapest candidate per need.
+
+    REMOVAL + CHEAPER  ("remove onion and make it cheaper")
+        → skip_decompose=True, use_economical=True.
+          Filters out the removed item, then applies economical swap to the rest.
+
+    ADDITIVE  ("add chicken", "more protein", "extra fibre")
+        → skip_decompose=False, preserve_cart=True.
+          decompose_node uses augment prompt — only returns new items to add.
+
+    REBUILD  ("make it vegan", "jain", "swap paneer with tofu", "low carb")
+        → skip_decompose=False, preserve_cart=False.
+          Full decompose with constraints applied.
+    """
     feedback = state.get("feedback", "")
     trail: list[str] = state.get("reasoning_trail", [])
     constraints = state.get("constraints", {})
     needs: list[Need] = state.get("needs", [])
     replan_count = state.get("replan_count", 0)
+    locked_items: list[dict] = state.get("locked_items", [])
 
     if not feedback:
         return {"reasoning_trail": trail + ["Replan: no feedback, skipped"]}
@@ -590,19 +808,74 @@ async def replan_node(state: AgentState) -> dict:
     feedback_lower = feedback.lower()
     new_constraints = dict(constraints)
 
-    # Budget constraints — when user says cheaper, cap each item's price and
-    # also inject a budget cap into raw_input so decompose/match knows
-    if any(k in feedback_lower for k in ("cheaper", "budget", "less expensive", "reduce cost", "save money")):
+    # ── Keyword sets ─────────────────────────────────────────────────────────
+    cheaper_keywords = ("cheaper", "budget", "less expensive", "reduce cost", "save money")
+    removal_keywords = ("remove", "drop", "without", "exclude")
+    additive_keywords = (
+        "add", "more", "extra", "include", "protein", "fibre", "fiber",
+        "vitamins", "calcium", "iron", "healthy", "nutritious", "boost",
+    )
+    rebuild_keywords = (
+        "vegan", "vegetarian", "no dairy", "no meat", "no egg", "no gluten",
+        "jain", "no onion", "keto", "low carb", "swap", "replace", "change",
+        "less fat", "low fat", "no fat", "less oil", "less sugar", "low sugar",
+    )
+
+    has_cheaper = any(k in feedback_lower for k in cheaper_keywords)
+    has_removal = any(k in feedback_lower for k in removal_keywords)
+    has_additive = any(k in feedback_lower for k in additive_keywords)
+    has_rebuild = any(k in feedback_lower for k in rebuild_keywords)
+
+    # ── Explicit remove requests ──────────────────────────────────────────────
+    excluded_items: list[str] = list(state.get("excluded_items") or [])
+    for item_name in re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower):
+        needs = [n for n in needs if item_name not in n.name.lower()]
+        locked_items = [li for li in locked_items if item_name not in li["name"].lower()]
+        if item_name not in excluded_items:
+            excluded_items.append(item_name)
+
+    # ── Intent classification ─────────────────────────────────────────────────
+    # Rebuild takes priority over everything else (dietary/swap changes need a
+    # fresh LLM pass regardless of other signals).
+    if has_rebuild and not has_cheaper and not has_additive:
+        # Pure rebuild: vegan, jain, swap X for Y, etc.
+        skip_decompose = False
+        preserve_cart = False
+        use_economical = False
+        intent_mode = "REBUILD"
+
+    elif has_additive and not has_rebuild and not has_cheaper:
+        # Pure additive: add chicken, more protein, etc.
+        skip_decompose = False
+        preserve_cart = True
+        use_economical = False
+        intent_mode = "ADDITIVE"
+
+    elif (has_cheaper or has_removal) and not has_additive and not has_rebuild:
+        # Pure removal, pure cheaper, or removal+cheaper — no LLM needed
+        skip_decompose = True
+        preserve_cart = False
+        use_economical = has_cheaper
+        intent_mode = "CHEAPER" if has_cheaper else "REMOVAL"
+
+    else:
+        # Mixed signals — fall back to rebuild so nothing is missed
+        skip_decompose = False
+        preserve_cart = has_additive and not has_rebuild
+        use_economical = False
+        intent_mode = "MIXED"
+
+    # ── Budget constraint metadata (used by decompose prompt in REBUILD/MIXED) ─
+    if has_cheaper:
         cart: Cart = state.get("cart", Cart(session_id=""))
         if cart.total > 0:
-            # Set max per-item price well below current average
             avg_price = cart.total / max(len(cart.items), 1)
             new_constraints["max_item_price"] = round(avg_price * 0.6, 0)
             new_constraints["max_price"] = round(cart.total * 0.65, 0)
         new_constraints.setdefault("prefer_economical", True)
         new_constraints["prefer_budget_brands"] = True
 
-    # Dietary constraints
+    # ── Dietary constraints (for REBUILD/MIXED paths) ─────────────────────────
     dietary_keywords = {
         "vegan": "vegan", "vegetarian": "vegetarian", "veg": "vegetarian",
         "no dairy": "dairy-free", "no meat": "vegetarian",
@@ -616,7 +889,7 @@ async def replan_node(state: AgentState) -> dict:
             if tag not in new_constraints["dietary"]:
                 new_constraints["dietary"].append(tag)
 
-    # Swap requests
+    # ── Swap requests ─────────────────────────────────────────────────────────
     swap_pattern = re.search(
         r"(?:swap|replace|change)\s+(\w+)\s+(?:for|with|to)\s+(\w+)",
         feedback_lower,
@@ -625,26 +898,50 @@ async def replan_node(state: AgentState) -> dict:
         new_constraints.setdefault("swap", {})
         new_constraints["swap"][swap_pattern.group(1)] = swap_pattern.group(2)
 
-    # Remove requests
-    for item_name in re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower):
-        needs = [n for n in needs if item_name not in n.name.lower()]
+    # ── Reset needs status for re-matching ────────────────────────────────────
+    if skip_decompose:
+        if use_economical:
+            # CHEAPER path: reuse the original ingredient-name needs (e.g. "Wheat Flour")
+            # already filtered for excluded_items above. These are short, clean names
+            # that fuzzy-match fast — much better than matching catalog product names
+            # like "Flour - Wheat" or "Organic - Mustard Oil" back against 9k products.
+            for need in needs:
+                need.status = NeedStatus.PENDING
+                need.matched_product_id = None
+                need.category_hint = need.category_hint or ""
+        else:
+            # REMOVAL-only path: reconstruct from locked_items with pre-matched status
+            # so match_node's fast path skips catalog search entirely.
+            needs = [
+                Need(
+                    name=li["name"],
+                    quantity=float(li.get("quantity", 1)),
+                    unit="unit",
+                    category_hint="",
+                    status=NeedStatus.MATCHED,
+                    matched_product_id=li.get("product_id"),
+                )
+                for li in locked_items
+            ]
+    else:
+        for need in needs:
+            need.status = NeedStatus.PENDING
+            need.matched_product_id = None
 
-    # Reset needs status for re-matching
-    for need in needs:
-        need.status = NeedStatus.PENDING
-        need.matched_product_id = None
-
-    reasoning = (
-        f"Replan #{replan_count + 1}: applied feedback '{feedback[:50]}' → "
-        f"constraints={new_constraints}"
-    )
-
-    # Build updated raw_input with budget constraint hint for decompose node
+    # ── Build updated raw_input (used by decompose in REBUILD/MIXED/ADDITIVE) ─
     raw_input = state.get("raw_input", "")
     if new_constraints.get("max_price"):
         budget_cap = new_constraints["max_price"]
         if f"budget under ₹{budget_cap}" not in raw_input:
             raw_input = f"{raw_input} | budget under ₹{budget_cap}, prefer cheaper alternatives"
+    if preserve_cart and feedback:
+        raw_input = feedback
+
+    reasoning = (
+        f"Replan #{replan_count + 1}: feedback='{feedback[:60]}' | intent={intent_mode} | "
+        f"skip_decompose={skip_decompose} use_economical={use_economical} | "
+        f"excluded={excluded_items} constraints={new_constraints}"
+    )
 
     return {
         "needs": needs,
@@ -652,5 +949,11 @@ async def replan_node(state: AgentState) -> dict:
         "constraints": new_constraints,
         "feedback": None,
         "replan_count": replan_count + 1,
+        "preserve_cart": preserve_cart,
+        "locked_items": locked_items,
+        "excluded_items": excluded_items,
+        "skip_decompose": skip_decompose,
+        "use_economical": use_economical,
+        "meal_context": state.get("meal_context"),
         "reasoning_trail": trail + [reasoning],
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import type { AppContext } from '../App';
@@ -47,8 +47,10 @@ export default function ShopPage({ ctx }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [category, setCategory] = useState(searchParams.get('category') || 'All');
   const [currentPage, setCurrentPage] = useState(1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
@@ -59,6 +61,13 @@ export default function ShopPage({ ctx }: Props) {
   const cartItemCount = ctx.cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
   const cartTotal = ctx.cart?.total ?? 0;
 
+  // Debounce the search query — wait 300ms after the user stops typing
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query]);
+
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setCategory(cat);
@@ -67,7 +76,7 @@ export default function ShopPage({ ctx }: Props) {
   // Reset to page 1 when category or query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [category, query]);
+  }, [category, debouncedQuery]);
 
   // Scroll to top of product grid when page changes
   useEffect(() => {
@@ -81,7 +90,7 @@ export default function ShopPage({ ctx }: Props) {
       setLoading(true);
       try {
         const cat = category === 'All' ? undefined : category;
-        const results = await searchCatalog(query || undefined, cat, 100);
+        const results = await searchCatalog(debouncedQuery || undefined, cat, 100);
         setProducts(results);
       } catch (err) {
         console.error('Search failed:', err);
@@ -89,7 +98,7 @@ export default function ShopPage({ ctx }: Props) {
       setLoading(false);
     }
     load();
-  }, [query, category]);
+  }, [debouncedQuery, category]);
 
   const handleAddToCart = async (product: Product) => {
     try {

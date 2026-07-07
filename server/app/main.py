@@ -68,7 +68,6 @@ async def lifespan(app: FastAPI):
         try:
             await seed_dynamodb(force=False)
 
-            # Apply stock overrides to cache
             repo = get_repository()
             cache = get_cache()
             products = await repo.list_products()
@@ -76,7 +75,8 @@ async def lifespan(app: FastAPI):
                 override_ids = get_override_product_ids([p.product_id for p in products])
                 for pid in override_ids:
                     await cache.set_stock_override(pid, False)
-                logger.info("DynamoDB ready: %d products, %d stock overrides", len(products), len(override_ids))
+                logger.info("DynamoDB ready: %d products, %d stock overrides",
+                            len(products), len(override_ids))
         except Exception as exc:
             logger.error("DynamoDB seed failed: %s — app will start but catalog may be empty", exc)
 

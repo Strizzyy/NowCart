@@ -6,17 +6,16 @@ Streamlined pipeline:
     → [conditional: replan or continue] → counterfactual → END
 
 Re-planning loop:
-    If confidence_check detects user feedback AND replan_count < 2,
-    the graph routes to replan → match (max 2 iterations).
+    confidence_check → replan → [conditional on skip_decompose] →
+        decompose → match  (ADDITIVE / REBUILD — LLM call needed)
+        match              (REMOVAL / CHEAPER — no LLM, direct to match)
 
-Removed from previous pipeline:
-    - pantry_filter  (replaced by recently-ordered prompt post-assembly)
-    - optimize       (merged into match_node)
-    - preference_boost (removed)
-    - substitute     (replaced by OOS suggestion metadata on CartItem)
-
-Exports:
-    outcome_graph — compiled LangGraph runnable (invoke with AgentState dict).
+Intent modes set by replan_node:
+    REMOVAL   skip_decompose=True                → replan → match
+    CHEAPER   skip_decompose=True, use_economical=True → replan → match
+    ADDITIVE  preserve_cart=True                 → replan → decompose → match
+    REBUILD   preserve_cart=False                → replan → decompose → match
+    MIXED     falls back to REBUILD path
 """
 from __future__ import annotations
 
@@ -34,7 +33,7 @@ from app.agents.nodes import (
 
 
 # ---------------------------------------------------------------------------
-# Conditional edge: after confidence_check, decide whether to replan or finish
+# Conditional edge: after confidence_check
 # ---------------------------------------------------------------------------
 
 def _should_replan(state: AgentState) -> str:
@@ -44,6 +43,17 @@ def _should_replan(state: AgentState) -> str:
     if feedback and replan_count < 2:
         return "replan"
     return "counterfactual"
+
+
+# ---------------------------------------------------------------------------
+# Conditional edge: after replan — skip decompose for removal/cheaper
+# ---------------------------------------------------------------------------
+
+def _replan_route(state: AgentState) -> str:
+    """Skip the LLM decompose step for pure removal or cheaper intents."""
+    if state.get("skip_decompose", False):
+        return "match"
+    return "decompose"
 
 
 # ---------------------------------------------------------------------------
@@ -76,8 +86,15 @@ _builder.add_conditional_edges(
     },
 )
 
-# Re-planning loop: replan → match
-_builder.add_edge("replan", "match")
+# Conditional edge after replan: LLM path or direct-to-match path
+_builder.add_conditional_edges(
+    "replan",
+    _replan_route,
+    {
+        "decompose": "decompose",
+        "match": "match",
+    },
+)
 
 # Counterfactual → END
 _builder.add_edge("counterfactual", END)

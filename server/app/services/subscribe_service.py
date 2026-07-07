@@ -307,16 +307,13 @@ class SubscribeService:
         items: list[CartItem] = []
         notes: list[str] = ["🔮 Predicted restock — based on your purchase patterns"]
 
-        # Products to exclude from predicted restock (non-grocery, high-value appliances, etc.)
-        _EXCLUDE_KEYWORDS = {"clipper", "bravura", "trimmer", "appliance", "machine"}
-
         for pred in predictions:
-            # Skip non-grocery items
-            if any(kw in pred.product_name.lower() for kw in _EXCLUDE_KEYWORDS):
-                continue
             if await catalog.check_availability(pred.product_id):
                 product = await catalog.get_product_by_id(pred.product_id)
                 if product:
+                    # Skip very high-value items — restock cart is for everyday consumables
+                    if product.sale_price > 2000:
+                        continue
                     items.append(CartItem(
                         product_id=product.product_id,
                         name=product.name,
@@ -334,6 +331,8 @@ class SubscribeService:
                 )
                 for product, score in matches:
                     if product.product_id != pred.product_id:
+                        if product.sale_price > 2000:
+                            continue
                         if await catalog.check_availability(product.product_id):
                             items.append(CartItem(
                                 product_id=product.product_id,

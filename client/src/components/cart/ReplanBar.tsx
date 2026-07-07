@@ -89,16 +89,39 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     setLoading(true);
     try {
       const userId = resolveUserId(ctx?.user);
-      const cartItemNames = cart.items.map(i => i.name);
-      let originalText = cartItemNames.join(', ') || 'grocery cart';
+
+      // Extract the meal context — prefer the 🍽️-prefixed note stored by the engine,
+      // which holds the original user query (e.g. "pasta for 2").
+      // Fall back to other non-system notes, then to item names as last resort.
+      const mealNote = cart.notes?.find(n => n.startsWith('🍽️'));
+      const mealContext = mealNote
+        ? mealNote.replace(/^🍽️\s*/, '')
+        : cart.notes?.find(n =>
+            !n.startsWith('🔮') && !n.startsWith('📅') && !n.startsWith('🛒') &&
+            !n.toLowerCase().includes('predicted') && !n.toLowerCase().includes('subscription')
+          ) || '';
+
+      // The `text` field sent to the backend: prefer the clean meal context.
+      // If we couldn't extract one, send the feedback itself so the server still has context.
+      const mealText = mealContext || trimmed;
 
       const cartItemsForContext = cart.items.map(i => ({
+        product_id: i.product_id,
         name: i.name,
+        brand: i.brand ?? '',
         price: i.price,
         quantity: i.quantity,
+        image_url: i.image_url ?? null,
       }));
 
-      const updated = await postReplan(originalText, trimmed, userId, undefined, cartItemsForContext);
+      const updated = await postReplan(
+        mealText,
+        trimmed,
+        userId,
+        undefined,
+        cartItemsForContext,
+        mealContext,   // pass meal context explicitly so backend augment prompt uses it
+      );
       onReplan(updated);
       setInput('');
     } catch { /* keep stale cart */ }
@@ -109,8 +132,8 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     if (chip.type === 'swap') {
       void handleDirectSwap(chip);
     } else {
-      setInput(chip.value);
-      inputRef.current?.focus();
+      // Auto-submit replan chips immediately instead of just pre-filling
+      void handleSubmit(chip.value);
     }
   };
 

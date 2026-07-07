@@ -63,6 +63,22 @@ class AgentState(TypedDict, total=False):
     feedback: str | None
     replan_count: int
     constraints: dict  # {"dietary": ["vegan"], "max_price": 500, "swap": {"paneer": "tofu"}}
+    excluded_items: list[str]  # item names the user explicitly wants removed (e.g. ["onion", "garlic"])
+
+    # Cart augmentation — set by replan_node for additive feedback
+    # When True, decompose_node uses an augment prompt instead of rebuilding from scratch.
+    preserve_cart: bool
+    # Items from the existing cart that must be carried forward unchanged.
+    locked_items: list[dict]  # [{"name": str, "price": float, "quantity": float}]
+    # Original meal context (e.g. "pasta for 2") — threaded through replan for augment prompts.
+    meal_context: str | None
+
+    # Short-circuit flags set by replan_node to skip the LLM entirely for
+    # pure removal or pure "make cheaper" requests.
+    # skip_decompose=True  → replan routes directly to match (no LLM call)
+    # use_economical=True  → match_node picks cheapest candidate, not best-scoring
+    skip_decompose: bool
+    use_economical: bool
 
     # Counterfactuals
     counterfactuals: dict[str, list[dict]]

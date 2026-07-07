@@ -270,10 +270,10 @@ export async function getUserPantry(userId: string): Promise<{ items: PantryItem
 }
 
 /** Replan — conversational cart refinement */
-export async function postReplan(text: string, feedback: string, userId?: string, servings?: number, cartItems?: Array<{name: string; price: number; quantity: number}>): Promise<CartResponse> {
+export async function postReplan(text: string, feedback: string, userId?: string, servings?: number, cartItems?: Array<{name: string; price: number; quantity: number; product_id?: string}>, mealContext?: string): Promise<CartResponse> {
   return request<CartResponse>('/replan', {
     method: 'POST',
-    body: JSON.stringify({ text, feedback, user_id: userId, servings, cart_items: cartItems }),
+    body: JSON.stringify({ text, feedback, user_id: userId, servings, cart_items: cartItems, meal_context: mealContext }),
   });
 }
 

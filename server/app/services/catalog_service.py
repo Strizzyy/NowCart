@@ -8,7 +8,9 @@ Provides:
 """
 from __future__ import annotations
 
+import asyncio
 import re
+from functools import partial
 
 from rapidfuzz import fuzz, process
 
@@ -314,13 +316,16 @@ class CatalogService:
         # Strategy 4: Fuzzy matching as last resort
         if len(primary_candidates) + len(brand_matches) < 2:
             product_names = [p.name for p in all_products]
-            fuzzy_matches = process.extract(
+            loop = asyncio.get_event_loop()
+            _extract = partial(
+                process.extract,
                 query,
                 product_names,
                 scorer=fuzz.WRatio,
                 limit=top_k * 3,
                 score_cutoff=50.0,
             )
+            fuzzy_matches = await loop.run_in_executor(None, _extract)
             if fuzzy_matches:
                 matched_names = {m[0] for m in fuzzy_matches}
                 fuzzy_candidates = [
@@ -474,6 +479,33 @@ class CatalogService:
             return False
         return product.in_stock
 
+    async def bulk_check_availability(self, product_ids: list[str]) -> dict[str, bool]:
+        """Check availability for many products in one pass — no per-product async overhead.
+
+        Reads stock overrides directly from the in-memory cache store (O(1) dict lookup
+        per product, no async Redis round-trips), then falls back to product.in_stock.
+        Returns a dict mapping product_id → bool.
+        """
+        global _products_by_id
+
+        # Peek at the in-memory override store directly to avoid per-call async overhead.
+        # CacheLayer._memory._store holds keys like "stock:{product_id}" → "1"/"0".
+        override_store: dict[str, str] = self.cache._memory._store
+
+        result: dict[str, bool] = {}
+        for pid in product_ids:
+            override_key = f"stock:{pid}"
+            if override_key in override_store:
+                # Check TTL expiry inline
+                if not self.cache._memory._is_expired(override_key):
+                    result[pid] = override_store.get(override_key) == "1"
+                    continue
+            # No override — use the in-memory product catalog
+            product = _products_by_id.get(pid) if _products_by_id else None
+            result[pid] = product.in_stock if product is not None else False
+
+        return result
+
     # ------------------------------------------------------------------
     # Category filtering helpers
     # ------------------------------------------------------------------
@@ -531,19 +563,8 @@ class CatalogService:
         """Match a need name to catalog products using fuzzy string matching
         with category-aware disambiguation.
 
-        Uses a combination of:
-        - rapidfuzz scorers (WRatio for overall quality)
-        - word-presence scoring for substring matching
-        - category-aware relevance scoring to prefer primary products over
-          derived/compound products (e.g. "tomato" → actual Tomato vegetable
-          ranks above "Tomato Ketchup")
-
-        Category filtering uses an alias map to bridge LLM hints to BigBasket
-        category names.
-
-        Returns:
-            List of (Product, score) tuples sorted by score descending.
-            Score is 0-100 (rapidfuzz scale).
+        rapidfuzz.process.extract is CPU-bound and runs in a thread pool executor
+        so it doesn't block the async event loop.
         """
         all_products = await self._get_all_products()
 
@@ -559,14 +580,16 @@ class CatalogService:
         # Build choices for matching
         choices = [p.name for p in candidates]
 
-        # Use WRatio which intelligently picks the best scorer per pair.
-        # Get extra candidates for re-ranking.
-        matches = process.extract(
+        # ── Offload CPU-bound rapidfuzz call to a thread pool ──────────────
+        loop = asyncio.get_event_loop()
+        _extract = partial(
+            process.extract,
             need_name,
             choices,
             scorer=fuzz.WRatio,
             limit=min(top_k * 4, len(choices)),
         )
+        matches = await loop.run_in_executor(None, _extract)
 
         # Re-rank using word-presence scoring + category-aware relevance.
         need_words = [w.rstrip("s") for w in need_name.lower().split() if len(w) > 2]
@@ -575,22 +598,16 @@ class CatalogService:
         for _match_str, score, idx in matches:
             product = candidates[idx]
             name_lower = product.name.lower()
-            # Split product name into words for boundary-aware matching
             name_words = set(name_lower.replace("-", " ").replace("/", " ").split())
 
-            # Count how many need words (or their stems) appear as whole words
-            # or as substrings in the product name
             word_hits = 0
             for w in need_words:
-                # Check if stem appears as a standalone word or prefix of a word
                 if any(nw.startswith(w) or w.startswith(nw) for nw in name_words if len(nw) > 2):
                     word_hits += 1
                 elif w in name_lower:
-                    # Substring match but check it's not embedded in an unrelated word
                     if re.search(r'\b' + re.escape(w), name_lower):
                         word_hits += 1
 
-            # Bonus: significant boost for word presence
             if word_hits >= 2:
                 bonus = 35
             elif word_hits == 1:
@@ -598,34 +615,24 @@ class CatalogService:
             else:
                 bonus = 0
 
-            # Penalty: if NO need words appear in product name and the base
-            # score is below 70, it's likely a false positive from WRatio
             if word_hits == 0 and score < 70:
                 penalty = 15
             else:
                 penalty = 0
 
-            # --- Category-aware relevance adjustment ---
-            # If category_hint is provided, boost products that are PRIMARY
-            # matches for the need (the product IS the need) and penalize
-            # derived/compound products (need is just an ingredient/flavor).
             relevance_adjustment = 0.0
             if category_hint:
                 relevance_score = _compute_relevance_score(need_name, product)
-                # Strong bonus for primary products (relevance >= 75)
                 if relevance_score >= 75:
                     relevance_adjustment = 15.0
-                # Mild bonus for category-confirmed products
                 elif relevance_score >= 60:
                     relevance_adjustment = 8.0
-                # Penalty for clearly derived products when we have a category hint
                 elif relevance_score <= 35:
                     relevance_adjustment = -10.0
 
             final_score = min(max(score + bonus - penalty + relevance_adjustment, 0), 100.0)
             results.append((product, final_score))
 
-        # Sort by final score and return top_k
         results.sort(key=lambda x: x[1], reverse=True)
         return results[:top_k]
 

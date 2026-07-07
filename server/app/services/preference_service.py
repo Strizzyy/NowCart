@@ -92,6 +92,7 @@ class PreferenceService:
 
     async def _compute_preference(self, user_id: str, orders: list[Order]) -> UserPreference:
         """Compute preference profile from order history."""
+        import asyncio
         repo = get_repository()
 
         brand_counter: Counter = Counter()
@@ -105,30 +106,43 @@ class PreferenceService:
         non_veg_categories = {"eggs meat fish", "mutton lamb", "fish seafood"}
         organic_keywords = {"organic", "natural", "farm fresh"}
 
+        # Collect all order items first (no I/O yet)
+        all_items: list[dict] = []
         for order in orders:
             for item in order.items:
+                all_items.append(item)
                 product_id = item.get("product_id", "")
-                name = item.get("name", "")
                 price = item.get("price", 0)
                 quantity = item.get("quantity", 1)
-
                 product_counter[product_id] += quantity
                 prices.append(price)
                 total_items += quantity
 
-                # Look up product for brand/category info
-                product = await repo.get_product(product_id)
-                if product:
-                    if product.brand:
-                        brand_counter[product.brand] += quantity
-                    if product.category:
-                        category_counter[product.category] += quantity
-                    # Dietary detection
-                    cat_lower = product.category.lower()
-                    if cat_lower in non_veg_categories:
-                        category_tags.add("non-vegetarian")
-                    if any(kw in product.name.lower() for kw in organic_keywords):
-                        category_tags.add("organic-preference")
+        # Batch-fetch all products concurrently instead of serially
+        unique_pids = list({item.get("product_id", "") for item in all_items if item.get("product_id")})
+        products_list = await asyncio.gather(
+            *[repo.get_product(pid) for pid in unique_pids],
+            return_exceptions=False,
+        )
+        product_map: dict[str, object] = {
+            pid: prod for pid, prod in zip(unique_pids, products_list) if prod is not None
+        }
+
+        for item in all_items:
+            product_id = item.get("product_id", "")
+            quantity = item.get("quantity", 1)
+            product = product_map.get(product_id)
+            if product:
+                if product.brand:
+                    brand_counter[product.brand] += quantity
+                if product.category:
+                    category_counter[product.category] += quantity
+                # Dietary detection
+                cat_lower = product.category.lower()
+                if cat_lower in non_veg_categories:
+                    category_tags.add("non-vegetarian")
+                if any(kw in product.name.lower() for kw in organic_keywords):
+                    category_tags.add("organic-preference")
 
         # Determine price tier
         avg_price = sum(prices) / len(prices) if prices else 0

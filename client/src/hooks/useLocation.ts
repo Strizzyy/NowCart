@@ -7,6 +7,7 @@ export interface SavedAddress {
   id: string;
   label: AddressLabel;
   nickname: string;      // user-typed: "Mom's house", "Office", etc.
+  block?: string;        // block / street / neighbourhood (e.g. "Block B", "MG Road", "Sector 13")
   area: string;
   city: string;
   pincode?: string;
@@ -31,25 +32,31 @@ function saveAddresses(list: SavedAddress[]) {
 }
 
 /** Reverse-geocode via free OpenStreetMap Nominatim (no API key needed). */
-export async function reverseGeocode(lat: number, lng: number): Promise<Pick<SavedAddress, 'area' | 'city' | 'pincode' | 'fullAddress'>> {
+export async function reverseGeocode(lat: number, lng: number): Promise<Pick<SavedAddress, 'block' | 'area' | 'city' | 'pincode' | 'fullAddress'>> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`,
       { headers: { 'Accept-Language': 'en' } }
     );
     if (!res.ok) throw new Error('Nominatim error');
     const data = await res.json();
     const addr = data.address ?? {};
 
-    // Pick the most precise locality name available, in order of specificity
-    const area =
-      addr.road ||               // street name — most precise
+    // block: most precise sub-locality detail (street, neighbourhood, quarter)
+    const block =
+      addr.road ||
+      addr.pedestrian ||
+      addr.footway ||
       addr.neighbourhood ||
+      addr.quarter || '';
+
+    // area: broader locality (suburb, village, sector, town)
+    const area =
       addr.suburb ||
-      addr.quarter ||
       addr.village ||
       addr.town ||
-      addr.county || '';
+      addr.county ||
+      addr.state_district || '';
 
     const city =
       addr.city ||
@@ -61,7 +68,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Pick<Sav
     const pincode = addr.postcode;
     const fullAddress = data.display_name ?? '';
 
-    return { area: area || city, city, pincode, fullAddress };
+    return { block: block || undefined, area: area || city, city, pincode, fullAddress };
   } catch {
     return { area: 'Your location', city: '', fullAddress: '' };
   }
