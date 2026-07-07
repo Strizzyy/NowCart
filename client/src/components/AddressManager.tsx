@@ -31,6 +31,7 @@ export default function AddressManager({ onClose }: Props) {
   const [newLabel, setNewLabel]     = useState<AddressLabel>('Home');
   const [newNickname, setNewNickname] = useState('');
   const [newFlat, setNewFlat]       = useState('');
+  const [newBlock, setNewBlock]     = useState('');
   const [newArea, setNewArea]       = useState('');
   const [newCity, setNewCity]       = useState('');
   const [newPin, setNewPin]         = useState('');
@@ -48,6 +49,7 @@ export default function AddressManager({ onClose }: Props) {
       return;
     }
     setDetectedData(geo);
+    setNewBlock(geo.block ?? '');
     setNewArea(geo.area);
     setNewCity(geo.city);
     setNewPin(geo.pincode ?? '');
@@ -60,6 +62,7 @@ export default function AddressManager({ onClose }: Props) {
       label: newLabel,
       nickname: newNickname || newLabel,
       ...detectedData,
+      block: newBlock || detectedData.block,
       area: newArea || detectedData.area,
       city: newCity || detectedData.city,
       pincode: newPin || detectedData.pincode,
@@ -72,10 +75,11 @@ export default function AddressManager({ onClose }: Props) {
     addAddress({
       label: newLabel,
       nickname: newNickname || newLabel,
+      block: newBlock || undefined,
       area: [newFlat, newArea].filter(Boolean).join(', '),
       city: newCity,
       pincode: newPin || undefined,
-      fullAddress: [newFlat, newArea, newCity, newPin].filter(Boolean).join(', '),
+      fullAddress: [newFlat, newBlock, newArea, newCity, newPin].filter(Boolean).join(', '),
       isManual: true,
     });
     onClose();
@@ -83,7 +87,7 @@ export default function AddressManager({ onClose }: Props) {
 
   const resetAddForm = () => {
     setNewLabel('Home'); setNewNickname(''); setNewFlat('');
-    setNewArea(''); setNewCity(''); setNewPin('');
+    setNewBlock(''); setNewArea(''); setNewCity(''); setNewPin('');
     setDetectedData(null); setGpsError('');
   };
 
@@ -141,7 +145,8 @@ export default function AddressManager({ onClose }: Props) {
                           )}
                         </div>
                         <p className="text-xs text-muted truncate">
-                          {addr.area}{addr.city && addr.city !== addr.area ? `, ${addr.city}` : ''}
+                          {[addr.block, addr.area].filter(Boolean).join(', ')}
+                          {addr.city && addr.city !== addr.area ? `, ${addr.city}` : ''}
                           {addr.pincode ? ` — ${addr.pincode}` : ''}
                         </p>
                       </div>
@@ -289,6 +294,12 @@ export default function AddressManager({ onClose }: Props) {
               {/* Editable fields */}
               <div className="space-y-3">
                 <div>
+                  <label className="text-xs font-semibold text-dark block mb-1.5">Block / Street / Neighbourhood</label>
+                  <input value={newBlock} onChange={(e) => setNewBlock(e.target.value)}
+                    placeholder="e.g. Block B, MG Road, Sector 13"
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary min-h-[44px]" />
+                </div>
+                <div>
                   <label className="text-xs font-semibold text-dark block mb-1.5">Area / Locality</label>
                   <input value={newArea} onChange={(e) => setNewArea(e.target.value)}
                     className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary min-h-[44px]" />
@@ -332,6 +343,12 @@ export default function AddressManager({ onClose }: Props) {
                 <label className="text-xs font-semibold text-dark block mb-1.5">Flat / House no. / Building</label>
                 <input value={newFlat} onChange={(e) => setNewFlat(e.target.value)}
                   placeholder="e.g. B-204, Green Park Apartments"
+                  className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary min-h-[44px]" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-dark block mb-1.5">Block / Street / Neighbourhood</label>
+                <input value={newBlock} onChange={(e) => setNewBlock(e.target.value)}
+                  placeholder="e.g. Block B, MG Road, Sector 13"
                   className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary min-h-[44px]" />
               </div>
               <div>
