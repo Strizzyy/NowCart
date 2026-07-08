@@ -57,6 +57,28 @@ jobs:
       url: https://d2hj5yrm8sue4v.cloudfront.net
 
     steps:
+      - name: Write .env to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            printf '%s\n' \
+              'APP_ENV=production' \
+              'LLM_TEXT_PROVIDER=${{ secrets.LLM_TEXT_PROVIDER }}' \
+              'LLM_VISION_PROVIDER=${{ secrets.LLM_VISION_PROVIDER }}' \
+              'GROQ_API_KEYS=${{ secrets.GROQ_API_KEYS }}' \
+              'GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}' \
+              'DATA_BACKEND=${{ secrets.DATA_BACKEND }}' \
+              'AWS_REGION=${{ secrets.AWS_REGION }}' \
+              'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
+              'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
+              'CACHE_IN_MEMORY=${{ secrets.CACHE_IN_MEMORY }}' \
+              'SEMANTIC_SEARCH_ENABLED=${{ secrets.SEMANTIC_SEARCH_ENABLED }}' \
+              > /opt/nowcart/server/.env
+            chmod 600 /opt/nowcart/server/.env
+
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
