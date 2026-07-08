@@ -78,6 +78,9 @@ jobs:
               'SEMANTIC_SEARCH_ENABLED=${{ secrets.SEMANTIC_SEARCH_ENABLED }}' \
               > /opt/nowcart/server/.env
             chmod 600 /opt/nowcart/server/.env
+            # Also write to /etc/nowcart.env so systemd EnvironmentFile picks it up
+            sudo cp /opt/nowcart/server/.env /etc/nowcart.env
+            sudo chmod 600 /etc/nowcart.env
 
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -88,5 +91,10 @@ jobs:
           script: |
             cd /opt/nowcart
             git pull origin master
+            # Ensure systemd unit has EnvironmentFile pointing to our env file
+            sudo sed -i '/\[Service\]/a EnvironmentFile=-/etc/nowcart.env' /etc/systemd/system/nowcart.service 2>/dev/null || true
+            sudo grep -q 'EnvironmentFile' /etc/systemd/system/nowcart.service || \
+              sudo sed -i 's/\[Service\]/[Service]\nEnvironmentFile=-\/etc\/nowcart.env/' /etc/systemd/system/nowcart.service
+            sudo systemctl daemon-reload
             sudo systemctl restart nowcart
             echo "Backend deployed at $(date)"
