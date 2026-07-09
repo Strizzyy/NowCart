@@ -1,4 +1,4 @@
-"""Vision controller ΓÇö photo/image analysis to cart (B2 "Show It").
+"""Vision controller — photo/image analysis to cart (B2 "Show It").
 
 Routes:
     POST /api/vision/analyze  -> CartResponse
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/vision", tags=["vision"])
 
 
 # --------------- hardcoded demo data for "Show It" paneer curry image ---------------
-_DEMO_ENABLED = False  # flip to True to use hardcoded demo cart instead of Gemini
+_DEMO_ENABLED = True  # flip to False to restore normal flow for all images
 
 
 def _build_demo_vision_cart(session_id: str) -> Cart:
