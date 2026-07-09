@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NowCart — HackOn with Amazon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ── NowCart tokens ── */
+:root {
+  --primary:        #3bb77e;
+  --primary-dark:   #1f8a57;
+  --primary-ink:    #157347;
+  --primary-light:  #def9ec;
+  --secondary:      #f5a623;
+  --secondary-dark: #b9740a;
+  --accent:         #e23d6d;
+  --dark:           #1d3242;
+  --muted:          #5f6b66;
+  --faint:          #8a938e;
+  --light-bg:       #f4f6fa;
+  --surface:        #ffffff;
+  --border:         #e3e7e5;
+  --shadow-card: 0 1px 2px rgba(29,50,66,.06), 0 4px 16px rgba(29,50,66,.07);
+  --shadow-pop:  0 8px 30px rgba(29,50,66,.14);
+  --font-heading: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+  --font-body:    'Lato', 'Segoe UI', system-ui, sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--font-body);
+  background: var(--light-bg);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  background: rgba(255,255,255,.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px;
+  box-shadow: 0 1px 0 var(--border);
+}
+.nav-brand {
+  font-family: var(--font-heading);
+  font-size: 15px; font-weight: 800;
+  display: flex; align-items: center; gap: 4px;
+}
+.nav-brand .now { color: var(--primary-ink); }
+.nav-brand .cart-word { color: var(--dark); }
+.nav-brand .dot { color: var(--secondary); font-size: 18px; }
+
+.nav-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.nav-btn {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px;
+  font-family: var(--font-body); font-weight: 700;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted);
+  transition: all .15s;
+}
+.nav-btn:hover { border-color: var(--primary); color: var(--primary-ink); }
+.nav-btn.active { background: var(--primary-light); color: var(--primary-ink); border-color: var(--primary); }
+
+/* ── SLIDES ── */
+.slide { display: none; min-height: 100vh; padding: 64px 0 48px; }
+.slide.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.slide-inner { width: 100%; max-width: 1120px; padding: 0 40px; }
+
+/* ── TYPE ── */
+h1 { font-family: var(--font-heading); font-size: 52px; font-weight: 800; line-height: 1.1; color: var(--dark); }
+h2 { font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+h3 { font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+p  { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+.slide-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 8px;
+}
+.green  { color: var(--primary-ink); }
+.amber  { color: var(--secondary-dark); }
+.accent { color: var(--accent); }
+.muted  { color: var(--muted); }
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: .3px;
+  font-family: var(--font-body);
+}
+.tag-green  { background: var(--primary-light);          color: var(--primary-ink);    border: 1px solid rgba(59,183,126,.3); }
+.tag-amber  { background: rgba(245,166,35,.12);          color: var(--secondary-dark); border: 1px solid rgba(245,166,35,.3); }
+.tag-blue   { background: rgba(37,99,235,.08);           color: #1d4ed8;               border: 1px solid rgba(37,99,235,.2); }
+.tag-accent { background: rgba(226,61,109,.08);          color: var(--accent);         border: 1px solid rgba(226,61,109,.2); }
+.tag-muted  { background: rgba(95,107,102,.08);          color: var(--muted);          border: 1px solid var(--border); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-card);
+}
+.card-green  { border-left: 4px solid var(--primary); }
+.card-amber  { border-left: 4px solid var(--secondary); }
+.card-blue   { border-left: 4px solid #3b82f6; }
+.card-accent { border-left: 4px solid var(--accent); }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+
+/* ── STAT BOX ── */
+.stat-box {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 20px; text-align: center;
+  box-shadow: var(--shadow-card);
+}
+.stat-num   { font-family: var(--font-heading); font-size: 38px; font-weight: 800; }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+/* ── FLOW BOX ── */
+.flow-box {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 16px 14px; text-align: center;
+  box-shadow: var(--shadow-card);
+}
+.flow-icon  { font-size: 26px; margin-bottom: 8px; display: block; }
+.flow-title { font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: var(--primary-ink); margin-bottom: 4px; }
+.flow-sub   { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 8px; font-size: 10px; font-weight: 700;
+  font-family: var(--font-body);
+}
+.badge-verified { background: var(--primary-light); color: var(--primary-ink); border: 1px solid var(--primary); }
+.badge-econ     { background: rgba(245,166,35,.12); color: var(--secondary-dark); border: 1px solid rgba(245,166,35,.4); }
+.badge-blue     { background: rgba(37,99,235,.08); color: #1d4ed8; border: 1px solid rgba(37,99,235,.25); }
+.badge-muted    { background: rgba(95,107,102,.08); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── TABLE ── */
+table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+th {
+  background: var(--dark); color: #fff;
+  font-family: var(--font-heading); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  padding: 11px 16px; text-align: left;
+}
+td { padding: 10px 16px; font-size: 13px; color: var(--dark); border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--light-bg); }
+tr:nth-child(odd)  td { background: var(--surface); }
+
+/* ── HIGHLIGHT ROW ── */
+.highlight-row {
+  background: var(--primary-light); border: 1.5px solid rgba(59,183,126,.3);
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 13px; color: var(--dark);
+}
+
+/* ── ENGINE / OUTPUT BOX ── */
+.engine-box {
+  background: linear-gradient(135deg, #eff9f5, var(--primary-light));
+  border: 2px solid var(--primary); border-radius: 14px;
+  padding: 18px 24px; text-align: center;
+  box-shadow: var(--shadow-card);
+}
+.output-box {
+  background: linear-gradient(135deg, #f0fff8, #def9ec);
+  border: 2px solid var(--primary-dark); border-radius: 14px;
+  padding: 18px 24px; text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+/* ── CIRCLE NUMBER ── */
+.circle-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+  font-family: var(--font-heading);
+}
+.num-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.num-content h3 { font-size: 14px; margin-bottom: 2px; }
+.num-content p  { font-size: 12px; }
+
+/* ── ROADMAP ── */
+.roadmap-row { display: flex; gap: 0; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+.roadmap-item { flex: 1; padding: 16px 14px; border-top: 4px solid; background: var(--surface); }
+.r0 { border-color: var(--primary); }
+.r1 { border-color: var(--secondary); }
+.r2 { border-color: #3b82f6; }
+.roadmap-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-family: var(--font-heading); }
+.roadmap-title  { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 4px; font-family: var(--font-heading); }
+.roadmap-impact { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ── SPEAKER NOTE ── */
+.speaker-note {
+  margin-top: 20px; padding: 12px 16px; border-radius: 10px;
+  background: rgba(59,183,126,.06); border: 1px dashed rgba(59,183,126,.4);
+  font-size: 12px; color: var(--muted); font-style: italic;
+}
+.speaker-note strong { color: var(--primary-ink); font-style: normal; }
+
+/* ── UTILS ── */
+.center { text-align: center; }
+.mt-6 { margin-top: 24px; }
+.mt-4 { margin-top: 16px; }
+.mt-2 { margin-top: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.arrow { color: var(--faint); font-size: 22px; display: flex; align-items: center; padding: 0 4px; }
+
+/* ── FOOTER DOTS ── */
+.footer-dots {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 100;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); cursor: pointer; transition: background .2s;
+  border: 1px solid var(--faint);
+}
+.dot.active { background: var(--primary); border-color: var(--primary-dark); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="now">Now</span><span class="cart-word">Cart</span><span class="dot">🛒</span>
+    <span style="font-size:11px;font-weight:600;color:var(--faint);margin-left:8px;">· HackOn with Amazon</span>
+  </div>
+  <div class="nav-btns" id="navBtns"></div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 1 — COVER
+══════════════════════════════════════════ -->
+<div class="slide active" id="slide-1">
+<div class="slide-inner">
+  <div class="grid-2" style="align-items:center; gap:60px; min-height:75vh;">
+    <div>
+      <div style="margin-bottom:18px; display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="tag tag-green">48-Hour Hackathon</span>
+        <span class="tag tag-amber">Amazon Now Track</span>
+        <span class="tag tag-muted">Team Codyssey</span>
+      </div>
+
+      <h1 style="margin-bottom:8px;">
+        <span style="background:linear-gradient(135deg,#3bb77e,#157347);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Now</span><span style="color:var(--dark);">Cart</span>
+        <span style="font-size:48px;" aria-hidden="true">🛒</span>
+      </h1>
+
+      <div style="font-family:var(--font-heading);font-size:22px;font-weight:700;color:var(--muted);margin-bottom:6px;">
+        Reimagining Urgent Shopping
+      </div>
+      <div style="font-family:var(--font-heading);font-size:18px;font-weight:600;color:var(--primary-ink);font-style:italic;margin-bottom:20px;">
+        "Quick commerce solved delivery. We solve the deciding."
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;color:var(--faint);">HackOn with Amazon · Amazon Now Track · 15 / 06 / 2026</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--faint);margin-bottom:12px;">Team Codyssey</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;">👨‍💻</span>
+            <div>
+              <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--dark);">Rohan Singh</div>
+              <div style="font-size:11px;color:var(--muted);">RGIPT, Bangalore · Backend + Deployment</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;">👨‍💻</span>
+            <div>
+              <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--dark);">Anuj Kumar Yadav</div>
+              <div style="font-size:11px;color:var(--muted);">NSUT, Delhi · Frontend + Backend</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;">👨‍🔬</span>
+            <div>
+              <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--dark);">Baibhav Kundu</div>
+              <div style="font-size:11px;color:var(--muted);">NSUT, Delhi · Machine Learning</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="output-box">
+        <div style="font-size:32px;margin-bottom:8px;">🛒</div>
+        <div style="font-family:var(--font-heading);font-size:18px;font-weight:800;color:var(--primary-ink);">Need → Ready Cart</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">5 front doors · 1 reasoning engine · 0 dead ends</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "We're Team Codyssey, and we built NowCart — quick commerce solved delivery, but nobody solved the 5 minutes before that. We do."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 2 — SOLUTION OVERVIEW
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-2">
+<div class="slide-inner">
+  <div class="slide-num">Slide 2 · Solution Overview · 0:20 – 1:00</div>
+  <h2>NowCart: <span class="green">The Requirement-First Commerce Layer</span></h2>
+  <p class="mt-2" style="font-size:14px;">The world's first shopping engine that starts with your need — not a search box.</p>
+
+  <div class="grid-2 mt-6" style="gap:32px;align-items:stretch;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card card-blue">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:8px;">Every platform today</div>
+        <div style="font-family:var(--font-heading);font-size:17px;font-weight:700;color:var(--muted);text-decoration:line-through;margin-bottom:4px;">
+          Product → Search → Browse → Add → Repeat
+        </div>
+        <div style="font-size:12px;color:var(--faint);">5–7 minutes. Every. Single. Order.</div>
+      </div>
+
+      <div class="card" style="border:2px solid var(--primary);background:var(--primary-light);">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-ink);margin-bottom:8px;">NowCart</div>
+        <div style="font-family:var(--font-heading);font-size:24px;font-weight:800;color:var(--dark);margin-bottom:6px;">
+          Requirement → <span class="green">Ready Cart</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);">"Penne pasta for 2" → full ingredient cart in seconds. No search. No dead ends.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card card-green">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:22px;">🎯</span>
+          <h3 style="margin:0;">What is NowCart?</h3>
+        </div>
+        <p>A universal reasoning layer on top of any quick commerce catalog. Turns a high-level need into a complete, checkout-ready cart — automatically.</p>
+      </div>
+
+      <div class="card card-amber">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:22px;">🔄</span>
+          <h3 style="margin:0;">The Core Reversal</h3>
+        </div>
+        <p>We don't solve delivery times. We solve decision fatigue. Intent is the input. Cart is the output. The user expresses a need — we assemble what to buy.</p>
+      </div>
+
+      <div class="card card-accent">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:22px;">✅</span>
+          <h3 style="margin:0;">Informed Choice, Not Forced Choice</h3>
+        </div>
+        <p>Transparent ranking. <span class="badge badge-verified">✓ NowCart Verified</span> badge = most ordered + highest rated. Plus <span class="badge badge-econ">💰 Economical Alt</span> with exact saving shown. No brand bias. No hidden AI.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "NowCart is a universal reasoning layer. You express a need — a meal name, a recipe URL, a photo — and get a checkout-ready cart. We reverse the entire flow from product-first to requirement-first. No platform has done this."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 3 — PROBLEM
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-3">
+<div class="slide-inner">
+  <div class="slide-num">Slide 3 · The Bottleneck · 1:00 – 1:50</div>
+  <h2>The Last Unsolved Problem in <span class="green">Quick Commerce</span></h2>
+
+  <div class="grid-3 mt-6">
+    <div class="stat-box">
+      <div class="stat-num green">5–7 min</div>
+      <div class="stat-label">wasted per order building a cart<br/>across 300M+ Indian shoppers<br/><span style="color:var(--faint);font-size:10px;">RedSeer, 2025</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent);">~70%</div>
+      <div class="stat-label">of online carts abandoned before checkout<br/>7 of 10 carts never reach payment<br/><span style="color:var(--faint);font-size:10px;">Dynamic Yield, 2025</span></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:#1d4ed8;">$7B+</div>
+      <div class="stat-label">quick-commerce market in India<br/>Delivery: perfected. Cart-building:<br/><span style="color:var(--faint);font-size:10px;">Completely unsolved · Mordor Intel, 2025</span></div>
+    </div>
+  </div>
+
+  <!-- Customer pain point scenario strip -->
+  <div style="background:rgba(226,61,109,.05);border:1.5px solid rgba(226,61,109,.2);border-radius:12px;padding:14px 20px;margin:16px 0;display:flex;align-items:flex-start;gap:14px;">
+    <span style="font-size:28px;flex-shrink:0;">😤</span>
+    <div>
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:14px;color:var(--accent);margin-bottom:5px;">A Real User's Thursday Evening</div>
+      <div style="font-size:13px;color:var(--dark);line-height:1.7;">
+        Priya wants to cook <strong>Paneer Butter Masala</strong> tonight. She opens Blinkit, searches "paneer" — 12 results, 4 pack sizes, 3 brands. Picks one. Searches "tomato puree" — out of stock in her preferred brand. Searches again. Then butter, then cream, then spices — <strong>one by one</strong>. 7 minutes later, she's still building the cart. The food arrives in 10 minutes. <span style="color:var(--accent);font-weight:700;">The deciding took just as long as the delivery.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-4">
+    <div>
+      <div class="num-row">
+        <span class="circle-num">1</span>
+        <div class="num-content">
+          <h3>Cart-building is the hidden bottleneck</h3>
+          <p>Every app makes users search item by item, compare 4–6 variants per product, and manually hunt substitutes when something is OOS. The 10-min delivery window is irrelevant if the cart takes just as long to build.</p>
+        </div>
+      </div>
+      <div class="num-row">
+        <span class="circle-num">2</span>
+        <div class="num-content">
+          <h3>OOS dead-ends drive permanent churn</h3>
+          <p>A user hits an out-of-stock item mid-cart. The app shows nothing. They close the app and open a competitor's. Every dead-end is a permanent trust loss — not a temporary inconvenience.</p>
+        </div>
+      </div>
+      <div class="num-row">
+        <span class="circle-num">3</span>
+        <div class="num-content">
+          <h3>Paradox of choice — no decision layer</h3>
+          <p>6 variants of tomato puree: different brands, weights, and prices. No platform tells you which one fits your recipe or budget. Users freeze, compare, and abandon rather than decide.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border:2px solid var(--primary);display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-size:11px;color:var(--primary-ink);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">The Gap Nobody Fills</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+        <span style="font-size:26px;">🚀</span>
+        <div>
+          <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--primary-ink);">10-min delivery ✅ Solved</div>
+          <div style="font-size:12px;color:var(--muted);">Blinkit, Zepto, Amazon Fresh, Instamart</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+        <span style="font-size:26px;">🧠</span>
+        <div>
+          <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--accent);">10-min cart-building ❌ Unsolved</div>
+          <div style="font-size:12px;color:var(--muted);">No platform has built this. Until NowCart.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:20px;flex-shrink:0;">💬</span>
+        <div style="font-size:12px;color:var(--muted);font-style:italic;line-height:1.6;">
+          "I know what I want to cook. I just don't want to spend 7 minutes searching for every single ingredient."
+          <div style="margin-top:4px;font-style:normal;color:var(--faint);font-size:11px;">— every household shopper, every time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "Imagine Priya — she knows exactly what she wants to cook, but she's spending 7 minutes building the cart item by item. Delivery takes 10 minutes. Deciding takes just as long. This is 300 million users, every day. NowCart closes that gap — tell us what to make, we assemble what to buy."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 4 — CUSTOMER + NOVELTY
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-4">
+<div class="slide-inner">
+  <div class="slide-num">Slide 4 · Customer Fit & Novelty · 1:50 – 3:00</div>
+  <h2>Built for Real People. <span class="green">Designed Around Intent.</span></h2>
+
+  <div class="mt-6">
+    <table>
+      <thead>
+        <tr>
+          <th>User Group</th>
+          <th>Real Pain Point</th>
+          <th>What Happens Today</th>
+          <th>NowCart's Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div style="font-family:var(--font-heading);font-weight:700;">🧑‍🍳 Kitchen Novices</div>
+            <div style="font-size:11px;color:var(--faint);">Saw a dish online</div>
+          </td>
+          <td style="font-size:12px;color:var(--dark);">Wants to cook a dish they saw on Instagram. Has no idea what ingredients to buy, in what quantity, or which brand.</td>
+          <td style="font-size:12px;color:var(--accent);">Googles the recipe, manually searches each ingredient, gives up halfway.</td>
+          <td><span class="tag tag-green">Show + Share</span><br/><span style="font-size:12px;">Snap the dish or paste the YouTube link → full ready cart in seconds</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-family:var(--font-heading);font-weight:700;">👴 Elderly / Voice-First</div>
+            <div style="font-size:11px;color:var(--faint);">Non-tech users</div>
+          </td>
+          <td style="font-size:12px;color:var(--dark);">Wants basic groceries but can't navigate text-heavy apps. Small buttons, typing, and search boxes are genuine barriers.</td>
+          <td style="font-size:12px;color:var(--accent);">Asks a family member to order for them. Dependent, slow, not independent.</td>
+          <td><span class="tag tag-amber">Speak</span><br/><span style="font-size:12px;">Say "dal chawal for 2" → cart appears. Zero typing, zero dependency.</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div style="font-family:var(--font-heading);font-weight:700;">🏠 Daily Household Shopper</div>
+            <div style="font-size:11px;color:var(--faint);">Weekly planner</div>
+          </td>
+          <td style="font-size:12px;color:var(--dark);">Knows exactly what to cook but wastes 5–7 min per order searching each item, hitting OOS dead-ends, and comparing 6 variants of the same product.</td>
+          <td style="font-size:12px;color:var(--accent);">Cart abandoned 70% of the time. Session ends in frustration, not checkout.</td>
+          <td><span class="tag tag-blue">Constrain + Subscribe</span><br/><span style="font-size:12px;">Budget-fit cart or auto-predicted restock — ready before they even ask.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-row mt-4" style="text-align:center;">
+    <span style="font-family:var(--font-heading);font-weight:700;color:var(--primary-ink);">What they all need:</span>&nbsp;
+    <span style="color:var(--dark);">Not a better search box — an interface that takes a raw need and hands back a ready cart. One missing item never breaks the flow. It's swapped with the next best match, transparently.</span>
+  </div>
+
+  <div class="grid-3 mt-6">
+    <div class="card card-green">
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;margin-bottom:8px;color:var(--primary-ink);">① Unique Angle</div>
+      <div style="font-family:var(--font-heading);font-size:22px;font-weight:800;color:var(--dark);margin-bottom:6px;">Intent → Cart</div>
+      <p>Every other platform: product → you figure it out. NowCart reverses it. "Penne pasta for 2" builds the cart. No search index — a reasoning framework.</p>
+    </div>
+    <div class="card card-amber">
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;margin-bottom:8px;color:var(--secondary-dark);">② Informed Choice</div>
+      <div style="margin-bottom:8px;">
+        <span class="badge badge-verified">✓ NowCart Verified</span>&nbsp;
+        <span class="badge badge-econ">💰 Economical Alt</span>
+      </div>
+      <p>No hidden AI bias. No brand pushing. Transparent ranking by relevance + most ordered + highest rated. User still decides — with clarity, not chaos.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #3b82f6;">
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;margin-bottom:8px;color:#1d4ed8;">③ No Single Point of Failure</div>
+      <div style="font-family:var(--font-heading);font-size:20px;font-weight:800;color:var(--dark);margin-bottom:6px;">5 inputs → 1 engine</div>
+      <p>Photo, link, voice, budget, subscription all converge into one framework. One step fails? Pipeline skips it. OOS item? Swapped transparently, never a dead end.</p>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "Three very different users, one identical problem. The kitchen novice gives up mid-search. The elderly user calls their kid to order for them. The daily shopper abandons the cart after hitting the third OOS dead-end. None of them need a better search box — they need an interface that understands the need and hands back a ready cart."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 5 — FIVE FRONT DOORS
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-5">
+<div class="slide-inner">
+  <div class="slide-num">Slide 5 · Five Front Doors · 3:00 – 3:50</div>
+  <h2>Five Ways In. <span class="green">One Confident Cart Out.</span></h2>
+
+  <div class="grid-5 mt-6">
+    <div class="flow-box" style="border-top:3px solid var(--primary);">
+      <span class="flow-icon">📸</span>
+      <div class="flow-title">SHOW</div>
+      <div class="flow-sub">Snap a dish photo → Gemini Vision extracts ingredients → cart</div>
+    </div>
+    <div class="flow-box" style="border-top:3px solid #3b82f6;">
+      <span class="flow-icon">🔗</span>
+      <div class="flow-title">SHARE</div>
+      <div class="flow-sub">Paste any recipe or YouTube URL → LLM extracts ingredient list → cart</div>
+    </div>
+    <div class="flow-box" style="border-top:3px solid var(--secondary);">
+      <span class="flow-icon">🎤</span>
+      <div class="flow-title">SPEAK</div>
+      <div class="flow-sub">Say "biryani for 4" → semantic intent match → confidence-scored cart</div>
+    </div>
+    <div class="flow-box" style="border-top:3px solid var(--accent);">
+      <span class="flow-icon">💰</span>
+      <div class="flow-title">CONSTRAIN</div>
+      <div class="flow-sub">Set ₹500 budget → greedy knapsack trims by confidence until total fits</div>
+    </div>
+    <div class="flow-box" style="border-top:3px solid #7c3aed;">
+      <span class="flow-icon">🔁</span>
+      <div class="flow-title">SUBSCRIBE</div>
+      <div class="flow-sub">Order history → interval analysis → restock cart pre-built before you ask</div>
+    </div>
+  </div>
+
+  <!-- Convergence arrow -->
+  <div style="display:flex;align-items:center;margin:18px 0 6px;gap:0;">
+    <div style="flex:1;height:1.5px;background:linear-gradient(to right,transparent,var(--border));"></div>
+    <div style="padding:0 16px;font-size:12px;color:var(--faint);">all five feed the same engine</div>
+    <div style="flex:1;height:1.5px;background:linear-gradient(to left,transparent,var(--border));"></div>
+  </div>
+  <div style="text-align:center;font-size:18px;color:var(--faint);margin-bottom:10px;">▼</div>
+
+  <div class="engine-box" style="max-width:580px;margin:0 auto 10px;">
+    <div style="font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Outcome Engine (LangGraph Brain)</div>
+    <div style="font-family:var(--font-heading);font-size:16px;font-weight:800;color:var(--primary-ink);">decompose → match → semantic re-rank → score → resolve OOS</div>
+  </div>
+
+  <div style="text-align:center;font-size:18px;color:var(--faint);margin-bottom:10px;">▼</div>
+
+  <div class="output-box" style="max-width:580px;margin:0 auto;">
+    <div style="font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">One Confident Cart</div>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+      <span class="badge badge-verified">✓ Recommended Pick</span>
+      <span class="badge badge-econ">💰 Economical Alternative</span>
+      <span class="badge badge-blue">📊 Confidence %</span>
+      <span class="badge badge-muted">💬 One-line reason</span>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "Five ways to express a need — photo, voice, link, budget, or predictive restock. All five feed the same engine. The output is always one confident cart with a verified pick and an economical alternative. Let me walk you through the 3-step user flow."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 6 — WORKFLOW
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-6">
+<div class="slide-inner">
+  <div class="slide-num">Slide 6 · User Workflow · 3:50 – 4:20 · Then → Demo</div>
+  <h2>Express · Engine · <span class="green">Confirm</span></h2>
+  <p class="mt-2" style="font-size:14px;">Three steps from need to checkout. No search. No dead ends. No wasted minutes.</p>
+
+  <div style="display:flex;align-items:stretch;gap:0;margin-top:24px;">
+    <div class="card" style="flex:1;border-radius:14px 0 0 14px;border-right:none;border-top:4px solid var(--primary);text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">✏️</div>
+      <div style="font-family:var(--font-heading);font-size:18px;font-weight:800;color:var(--primary-ink);margin-bottom:10px;">1. EXPRESS</div>
+      <div style="font-size:12px;color:var(--muted);line-height:2;">
+        📸 Snap a dish<br/>🔗 Paste a recipe link<br/>🎤 Speak a meal<br/>💰 Set a budget<br/>🔁 Let it predict
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--border);padding:0 4px;">▶</div>
+
+    <div style="flex:1;border:1.5px solid var(--border);border-top:4px solid var(--secondary);background:rgba(245,166,35,.04);padding:20px 22px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">⚙️</div>
+      <div style="font-family:var(--font-heading);font-size:18px;font-weight:800;color:var(--secondary-dark);margin-bottom:10px;">2. ENGINE</div>
+      <div style="font-size:12px;color:var(--muted);line-height:2;">
+        Decomposes your intent<br/>Matches 9,534 products<br/>Bi + Cross + Fuzzy retrieval<br/>Resolves out-of-stock<br/>Scores confidence per item
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--border);padding:0 4px;">▶</div>
+
+    <div class="output-box" style="flex:1;border-radius:0 14px 14px 0;border-top:4px solid var(--primary-dark);text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">✅</div>
+      <div style="font-family:var(--font-heading);font-size:18px;font-weight:800;color:var(--primary-ink);margin-bottom:10px;">3. CONFIRM</div>
+      <div style="font-size:12px;color:var(--muted);line-height:2;">
+        One cart with confidence scores<br/>Transparent substitutions shown<br/>Refine conversationally<br/>"make it vegan" / "remove onion"<br/>Checkout in 2 taps
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-row mt-6" style="text-align:center;">
+    <span style="font-family:var(--font-heading);font-weight:700;color:var(--primary-ink);">Conversational refinement after cart is built:</span>&nbsp;&nbsp;
+    <span style="color:var(--dark);">"make it cheaper" &nbsp;·&nbsp; "I'm vegetarian" &nbsp;·&nbsp; "remove onion" &nbsp;·&nbsp; "reduce to ₹300"</span>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "Express your need. Engine decomposes it, matches the catalog, resolves OOS, scores each pick. One confident cart. Refine conversationally — 'make it vegan', 'remove garlic' — and checkout in two taps. Let's see this live now."
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 7 — DEMO
+══════════════════════════════════════════ -->
+<div class="slide" id="slide-7">
+<div class="slide-inner" style="text-align:center;">
+  <div class="slide-num">Slide 7 · Live Prototype · 4:20 – 7:50</div>
+  <h2>Live Prototype <span class="green">Demonstration</span></h2>
+
+  <div style="margin:20px auto;max-width:800px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-pop);">
+    <!-- browser chrome mockup -->
+    <div style="background:var(--light-bg);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
+      <div style="width:10px;height:10px;border-radius:50%;background:#f87171;"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--secondary);"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--primary);"></div>
+      <div style="margin-left:10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 14px;font-size:11px;color:var(--faint);">nowcart.live</div>
+    </div>
+    <div style="padding:50px 40px;display:flex;flex-direction:column;align-items:center;gap:16px;min-height:320px;justify-content:center;">
+      <div style="font-size:56px;">🎬</div>
+      <div style="font-family:var(--font-heading);font-size:20px;font-weight:800;color:var(--muted);">EMBED DEMO VIDEO HERE</div>
+      <div style="font-size:13px;color:var(--faint);">3:30 – 3:40 min walkthrough</div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <span class="tag tag-green">📸 Show: Dish Photo</span>
+        <span class="tag tag-blue">🔗 Share: YouTube Link</span>
+        <span class="tag tag-amber">🎤 Speak: Biryani for 4</span>
+        <span class="tag tag-accent">💰 Constrain: ₹500 Budget</span>
+        <span class="tag tag-muted">🔁 Subscribe: Restock</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="display:inline-block;margin-top:12px;padding:10px 24px;">
+    <span style="font-size:13px;color:var(--muted);">📊 Live on AWS &nbsp;·&nbsp; </span>
+    <span style="font-size:13px;color:var(--primary-ink);font-weight:700;">rahul@gmail.com</span>
+    <span style="font-size:13px;color:var(--muted);"> (any password) &nbsp;·&nbsp; Full pantry + prediction experience</span>
+  </div>
+
+  <div class="speaker-note" style="max-width:800px;margin:16px auto 0;text-align:left;">
+    <strong>Narrate during video:</strong> "Snap a photo of Paneer Butter Masala — ingredients extracted instantly. Paste a YouTube recipe link — parsed in real-time. Voice command with ₹500 budget — knapsack selects highest-confidence essentials. OOS items are swapped, never dead-ends."
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 8 — TECH ARCHITECTURE + STACK + ALGORITHMS -->
+<div class="slide" id="slide-8">
+<div class="slide-inner">
+  <div class="slide-num">Slide 8 · Architecture + Stack + Algorithms · 8:00 – 9:00</div>
+  <h2>How It Actually Works: <span class="green">End-to-End</span></h2>
+
+  <!-- Pipeline flow -->
+  <div style="display:flex;align-items:stretch;gap:0;margin:20px 0 14px;overflow-x:auto;">
+    <div class="flow-box" style="flex:1;border-top:3px solid var(--primary);min-width:110px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-ink);margin-bottom:5px;">① Input</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">5 front doors<br/>Photo / Voice<br/>Link / Budget<br/>Predict</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="flex:1;border-top:3px solid var(--secondary);min-width:110px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--secondary-dark);margin-bottom:5px;">② Security</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">SSRF guard<br/>Rate limiting<br/>Input sanitize<br/>Speech→Text</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="flex:1;border-top:3px solid #3b82f6;min-width:110px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;margin-bottom:5px;">③ Decision</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">Assembly needed?<br/>YES → engine<br/>NO → exact<br/>product match</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="flex:1.4;border-top:3px solid #7c3aed;min-width:130px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6d28d9;margin-bottom:5px;">④ Engine (LangGraph)</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">Bi-encoder search<br/>Cross-encoder rank<br/>RapidFuzz typos<br/>OOS auto-swap</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-box" style="flex:1;border-top:3px solid var(--primary-dark);min-width:100px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-ink);margin-bottom:5px;">⑤ Output</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">Verified pick<br/>Econ alt<br/>Score +<br/>Reason</div>
+    </div>
+  </div>
+
+  <!-- Stack table -->
+  <table>
+    <thead>
+      <tr><th>Layer</th><th>Technology</th><th>Key Algorithm</th><th>What It Enables</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-blue">Frontend</span></td>
+        <td>React 19 + Vite + TailwindCSS</td>
+        <td>—</td>
+        <td>Instant panels, works on mid-range phones with patchy networks</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-green">Backend</span></td>
+        <td>FastAPI + Pydantic 2 (fully async)</td>
+        <td>—</td>
+        <td>Thousands of simultaneous carts, validated end-to-end</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-muted">AI / ML</span></td>
+        <td>LangGraph + Groq / Gemini / Claude + TF-IDF</td>
+        <td>Bi-encoder → Cross-encoder → RapidFuzz</td>
+        <td>Semantic search + re-rank + catches "malai", "tomatoe", "paneer"</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-amber">Database</span></td>
+        <td>DynamoDB (pay-per-request)</td>
+        <td>Coeff. of variation restock scoring</td>
+        <td>Auto-scales; order history powers Subscribe. No cold start.</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-accent">Infra</span></td>
+        <td>EC2 + Nginx + S3 + CloudFront + Redis + Lambda + SQS</td>
+        <td>LLM hash caching (1-hr Redis TTL)</td>
+        <td>100 queries = 1 model call + 99 cache hits. Saves ~800ms/repeat.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2 mt-4" style="gap:12px;">
+    <div class="highlight-row">
+      <span style="font-family:var(--font-heading);font-weight:700;color:var(--primary-ink);">LLM Caching:</span>&nbsp;
+      100 identical queries = 1 model call + 99 sub-ms hits. Cuts LLM cost by ~99%.
+    </div>
+    <div class="card card-green" style="padding:12px 18px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary-ink);margin-bottom:6px;">Scales Without Rearchitecting</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+        100× → Auto Scaling Group behind load balancer<br/>
+        1000× → Multi-region + DynamoDB Global Tables<br/>
+        AI calls → Lambda + SQS (1,000 parallel executions)
+      </div>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "Input hits security, decision layer routes it to the LangGraph engine which decomposes intent, matches 9,534 products with three retrieval methods, resolves OOS, and scores confidence. DynamoDB auto-scales, CloudFront is already global, LLM caching cuts 99% of redundant model calls."
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 9 — THEME ALIGNMENT + FUTURE VISION -->
+<div class="slide" id="slide-9">
+<div class="slide-inner">
+  <div class="slide-num">Slide 9 · Theme Alignment + Future Vision · 9:00 – 10:00</div>
+  <h2>All 3 Amazon Now Areas. <span class="green">One Engine to Rule Them All.</span></h2>
+
+  <div class="grid-3 mt-6">
+    <div class="card card-green" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">🛍️</div>
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;color:var(--primary-ink);margin-bottom:6px;">FRICTIONLESS SHOPPING ✅</div>
+      <p style="font-size:12px;">OOS items swap automatically. No dead ends. No variant chaos. User never hits a wall.</p>
+    </div>
+    <div class="card card-amber" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">🧠</div>
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;color:var(--secondary-dark);margin-bottom:6px;">SHOPPING BY INTENT ✅</div>
+      <p style="font-size:12px;">Photo → cart. YouTube link → cart. Voice → cart. New users get predictions from age + gender at signup.</p>
+    </div>
+    <div class="card card-blue" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">📊</div>
+      <div style="font-family:var(--font-heading);font-weight:800;font-size:13px;color:#1d4ed8;margin-bottom:6px;">PREDICTIVE & CONFIDENT ✅</div>
+      <p style="font-size:12px;">Restock cart pre-built before user asks. Every pick shows confidence % + one-line reason. No guessing.</p>
+    </div>
+  </div>
+
+  <div class="highlight-row mt-4" style="text-align:center;">
+    <span class="tag tag-muted">Integration-Ready</span>&nbsp;&nbsp;
+    <span style="font-size:13px;color:var(--dark);">Alexa voice · Amazon Photos · Engine as API · Plugs into existing Amazon ecosystem</span>
+  </div>
+
+  <div class="grid-2 mt-4" style="gap:20px;">
+    <div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:10px;">Expected Impact</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="card" style="padding:10px 16px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;flex-shrink:0;">⏱</span>
+          <div><div style="font-family:var(--font-heading);font-weight:700;font-size:13px;">26 hrs/user/year saved</div><div style="font-size:11px;color:var(--faint);">10 min × 3/week. At 1M users = 26M hours returned annually.</div></div>
+        </div>
+        <div class="card" style="padding:10px 16px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;flex-shrink:0;">📉</span>
+          <div><div style="font-family:var(--font-heading);font-weight:700;font-size:13px;">70% → &lt;15% abandonment</div><div style="font-size:11px;color:var(--faint);">Confident carts + pre-resolved OOS attack abandonment directly.</div></div>
+        </div>
+        <div class="card" style="padding:10px 16px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;flex-shrink:0;">👥</span>
+          <div><div style="font-family:var(--font-heading);font-weight:700;font-size:13px;">+100M newly reachable users</div><div style="font-size:11px;color:var(--faint);">Voice + photo-first unlocks users excluded by text-only interfaces.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:10px;">Expansion Roadmap</div>
+      <div class="roadmap-row" style="margin-bottom:12px;">
+        <div class="roadmap-item r0" style="border-radius:10px 0 0 10px;">
+          <div class="roadmap-label" style="color:var(--primary-ink);">0–3 months</div>
+          <div class="roadmap-title">Grocery · 1K users</div>
+          <div class="roadmap-impact">3× faster cart · &lt;15% abandonment</div>
+        </div>
+        <div class="roadmap-item r1">
+          <div class="roadmap-label" style="color:var(--secondary-dark);">3–6 months</div>
+          <div class="roadmap-title">Pharmacy OTC · Multi-lang</div>
+          <div class="roadmap-impact">10K users · Hindi/Tamil/Bengali</div>
+        </div>
+        <div class="roadmap-item r2" style="border-radius:0 10px 10px 0;">
+          <div class="roadmap-label" style="color:#1d4ed8;">6–12 months</div>
+          <div class="roadmap-title">B2B + White-label API</div>
+          <div class="roadmap-impact">20K+ users · licensing/cart</div>
+        </div>
+      </div>
+      <div class="card" style="padding:12px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:7px;">Category-Agnostic Engine</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);flex-wrap:wrap;">
+          <span>🛒 Grocery</span><span style="color:var(--border);">→</span>
+          <span>💊 Pharmacy</span><span style="color:var(--border);">→</span>
+          <span>🎥 Creator</span><span style="color:var(--border);">→</span>
+          <span>🏢 B2B</span><span style="color:var(--border);">→</span>
+          <span>🎪 Events</span>
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:6px;">Each step = catalog swap + prompt tweak. Zero architecture rebuild.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="speaker-note">
+    <strong>Say:</strong> "We hit all three Amazon Now opportunity areas. The engine is category-agnostic — pharmacy or creator commerce is a catalog update, not a rebuild. 1,000 grocery users in 3 months. White-label API by year-end. Thank you — open for questions."
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 10 — CLOSING -->
+<div class="slide" id="slide-10">
+<div class="slide-inner" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;">
+  <div class="slide-num">Slide 10 · Closing</div>
+
+  <h1 style="font-size:64px;margin-bottom:8px;">
+    <span style="background:linear-gradient(135deg,#3bb77e,#157347);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Now</span><span style="color:var(--dark);">Cart</span>
+    <span style="font-size:52px;" aria-hidden="true">🛒</span>
+  </h1>
+  <p style="font-family:var(--font-heading);font-size:18px;font-weight:600;color:var(--muted);margin-bottom:24px;font-style:italic;">
+    "Quick commerce solved delivery. We solve the deciding."
+  </p>
+
+  <div class="grid-3" style="max-width:640px;margin:0 auto 28px;">
+    <div class="stat-box">
+      <div class="stat-num green">5</div>
+      <div class="stat-label">Front Doors</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num amber">1</div>
+      <div class="stat-label">Reasoning Engine</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--accent);">0</div>
+      <div class="stat-label">Dead Ends</div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:560px;margin:0 auto 20px;text-align:center;border:2px solid var(--primary);background:var(--primary-light);">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Deployed on AWS · Fully Functional Today</div>
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+      <span style="font-size:14px;color:var(--primary-ink);font-weight:700;">🌐 Live App</span>
+      <span style="font-size:14px;color:var(--secondary-dark);font-weight:700;">🎥 Demo Video</span>
+      <span style="font-size:14px;color:#1d4ed8;font-weight:700;">💻 Source Code</span>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--faint);">
+      Sign in as <strong style="color:var(--primary-ink);">rahul@gmail.com</strong> (any password) for full pantry + prediction experience
+    </div>
+  </div>
+
+  <div style="font-family:var(--font-heading);font-size:15px;color:var(--faint);font-style:italic;">
+    Tell us what to make. We assemble what to buy.
+  </div>
+</div>
+</div>
+
+<!-- FOOTER DOTS -->
+<div class="footer-dots" id="footerDots"></div>
+
+<script>
+  const TOTAL = 10;
+  const LABELS = ['Cover','Solution','Problem','Customer','5 Doors','Workflow','Demo','Tech','Vision','Closing'];
+  let cur = 1;
+
+  const navBtns = document.getElementById('navBtns');
+  const footerDots = document.getElementById('footerDots');
+
+  LABELS.forEach((lbl, i) => {
+    const b = document.createElement('button');
+    b.className = 'nav-btn' + (i === 0 ? ' active' : '');
+    b.textContent = (i + 1) + '. ' + lbl;
+    b.onclick = () => goTo(i + 1);
+    navBtns.appendChild(b);
+  });
+
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    footerDots.appendChild(d);
+  }
+
+  function goTo(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.getElementById('slide-' + cur).classList.remove('active');
+    navBtns.children[cur - 1].classList.remove('active');
+    footerDots.children[cur - 1].classList.remove('active');
+    cur = n;
+    document.getElementById('slide-' + cur).classList.add('active');
+    navBtns.children[cur - 1].classList.add('active');
+    footerDots.children[cur - 1].classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(cur - 1);
+  });
+</script>
+</body>
+</html>

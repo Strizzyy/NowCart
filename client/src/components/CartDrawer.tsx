@@ -217,11 +217,11 @@ export default function CartDrawer({ ctx }: Props) {
               )}
 
               {/* Section header */}
-              {cart.economical_items && cart.economical_items.length > 0 && (
+              {/* {cart.economical_items && cart.economical_items.length > 0 && (
                 <p className="text-xs font-semibold text-muted uppercase tracking-wide pt-1">
                   {activeTab === 'recommended' ? '⭐ Best quality picks' : '💰 Budget-friendly picks'}
                 </p>
-              )}
+              )} */}
 
               {/* Items */}
               {[...(activeTab === 'recommended' ? cart.items : (cart.economical_items || []))].reverse().map((item) => {

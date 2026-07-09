@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import uuid
 
-from app.models.domain.cart import Cart, CartItem
+from app.models.domain.cart import Cart
 from app.models.domain.enums import IntentMode
 from app.services.outcome_service import get_outcome_service
 
@@ -35,9 +35,21 @@ class BudgetService:
         Returns:
             Cart with total ≤ budget (or degraded if impossible).
         """
+        # Build a rich prompt so the LLM knows the budget and headcount
+        if text and text.lower() not in ("groceries", ""):
+            llm_text = (
+                f"{text} for {servings} {'person' if servings == 1 else 'people'} "
+                f"within a budget of ₹{int(budget)}"
+            )
+        else:
+            llm_text = (
+                f"a complete Indian meal for {servings} {'person' if servings == 1 else 'people'} "
+                f"within a budget of ₹{int(budget)}"
+            )
+
         service = get_outcome_service()
         cart = await service.process_outcome(
-            text=text,
+            text=llm_text,
             servings=servings,
             mode=IntentMode.BUDGET,
         )
@@ -48,17 +60,19 @@ class BudgetService:
         return cart
 
     def _trim_to_budget(self, cart: Cart, budget: float) -> Cart:
-        """Remove lowest-confidence items until total ≤ budget.
-        Also trims the corresponding economical_items to keep them in sync.
+        """Remove items until total ≤ budget using a greedy lowest-price-first strategy.
+
+        Keeps as many items as possible within the budget by processing cheapest items
+        first. This avoids the problem of keeping one expensive high-confidence item
+        at the expense of many relevant cheap staples.
         """
         if cart.total <= budget:
             cart.remaining_budget = round(budget - cart.total, 2)
             return cart
 
-        # Sort items by confidence descending — keep high-confidence items
-        # Track original indices to keep economical_items in sync
+        # Sort items by unit cost ascending — fill the cart with cheapest items first
         indexed_items = list(enumerate(cart.items))
-        indexed_items.sort(key=lambda x: x[1].confidence, reverse=True)
+        indexed_items.sort(key=lambda x: x[1].price * x[1].quantity)
 
         kept_indices: list[int] = []
         running_total = 0.0
@@ -71,7 +85,7 @@ class BudgetService:
             else:
                 cart.notes.append(f"Dropped (over budget): {item.name}")
 
-        # Rebuild items and economical_items preserving order
+        # Rebuild items and economical_items preserving original order
         kept_indices.sort()
         cart.items = [cart.items[i] for i in kept_indices]
         if cart.economical_items:
