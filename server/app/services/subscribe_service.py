@@ -305,7 +305,7 @@ class SubscribeService:
         """
         catalog = get_catalog_service()
         items: list[CartItem] = []
-        notes: list[str] = ["🔮 Predicted restock — based on your purchase patterns"]
+        notes: list[str] = ["Predicted restock — based on your purchase patterns"]
 
         for pred in predictions:
             if await catalog.check_availability(pred.product_id):

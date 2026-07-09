@@ -43,6 +43,7 @@ const webSpeechSupported = !!getWebRecognition();
 // Speech is supported if we're on native (Capacitor plugin) or web Speech API is available
 const speechSupported = isNative || webSpeechSupported;
 
+
 function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
   const t = text.trim().toLowerCase();
   const add = t.match(/^(?:add|include|put in)\s+(?:(\d+)\s+)?(?:more\s+)?(.+)$/);
@@ -172,16 +173,19 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     recRef.current = rec;
     setMicStatus('ok');
     setTranscript('');
+    setMicStatus('ok');
     setPhase('listening');
 
     rec.onresult = (e) => {
       const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
       setTranscript(text);
     };
+
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicStatus('denied');
       setPhase('idle');
     };
+
     rec.onend = () => {
       setTranscript((current) => {
         if (current.trim()) void submit(current);
@@ -189,6 +193,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         return current;
       });
     };
+
     rec.start();
   };
 
@@ -284,6 +289,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   // ----- idle / listening -----
   return (
     <div className="space-y-4">
+      {/* Only shown when SpeechRecognition explicitly fires not-allowed */}
       {micStatus === 'denied' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
           <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>

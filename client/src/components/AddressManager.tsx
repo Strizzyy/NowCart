@@ -14,7 +14,7 @@ interface Props {
 type Sheet = 'list' | 'add-choose' | 'add-gps' | 'add-manual';
 
 const LABEL_META: Record<AddressLabel, { icon: React.ReactNode; color: string }> = {
-  Home:  { icon: <Home size={14} />,          color: 'bg-blue-100 text-blue-700' },
+  Home:  { icon: <Home size={14} />,          color: 'bg-primary-light text-primary-ink' },
   Work:  { icon: <Briefcase size={14} />,      color: 'bg-purple-100 text-purple-700' },
   Other: { icon: <MoreHorizontal size={14} />, color: 'bg-amber-100 text-amber-700' },
 };

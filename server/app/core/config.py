@@ -3,13 +3,22 @@
 Type-safe settings via pydantic-settings. One source of truth for the whole app.
 """
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve .env relative to this file so it works regardless of the process
+# working directory (e.g. when launched via systemd from a different cwd).
+_ENV_FILE = Path(__file__).parent.parent / ".env"
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # --- App ---
     app_env: str = "dev"

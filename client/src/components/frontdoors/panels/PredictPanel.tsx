@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Clock, Package, TrendingUp, ShoppingCart, Sparkles, Bell,
+  Clock, Package, TrendingUp, ShoppingCart, Bell,
   Plus, Trash2, CheckCircle, Search, X, ChevronDown, ExternalLink,
 } from 'lucide-react';
 import {
@@ -330,24 +330,6 @@ export default function PredictPanel({ ctx }: Props) {
         />
       )}
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center shrink-0">
-            <Sparkles size={16} className="text-violet-700" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-violet-900">Subscribe — Predicted Restock</p>
-            <p className="text-xs text-violet-600">We know what you need before you ask</p>
-          </div>
-        </div>
-        <p className="text-xs text-violet-700 mt-2">
-          {insights.length > 0
-            ? 'Based on your order history, we predict your restock needs and let you set recurring schedules.'
-            : 'New here? Get a starter cart based on your profile, or set up recurring items below.'}
-        </p>
-      </div>
-
       {/* Due today alert */}
       {dueCart && dueCart.items.length > 0 && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex items-center justify-between gap-3">
@@ -366,11 +348,48 @@ export default function PredictPanel({ ctx }: Props) {
         </div>
       )}
 
-      {/* Predicted restock button */}
-      <Button variant="primary" size="md" onClick={handlePredict} loading={loading}
-        leftIcon={<TrendingUp size={16} />} className="w-full">
-        {loading ? 'Analyzing your patterns…' : 'Show my predicted restock'}
-      </Button>
+      {/* Predicted restock — compact preview card */}
+      {!result ? (
+        <div className="border border-border rounded-xl overflow-hidden">
+          {/* Preview row — items we expect to suggest */}
+          <div className="px-4 pt-4 pb-3">
+            <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2.5">Predicted restock</p>
+            {insightsLoading ? (
+              <div className="flex gap-2 flex-wrap">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="h-6 w-16 bg-border rounded-full animate-pulse" />
+                ))}
+              </div>
+            ) : insights.length > 0 ? (
+              <div className="flex gap-2 flex-wrap">
+                {insights.slice(0, 6).map(ins => (
+                  <span key={ins.product_id}
+                    className="inline-flex items-center gap-1 bg-green-50 border border-green-200 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                    <Package size={10} className="shrink-0" />
+                    {ins.product_name}
+                  </span>
+                ))}
+                {insights.length > 6 && (
+                  <span className="inline-flex items-center text-xs text-muted px-1">
+                    +{insights.length - 6} more
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted">
+                {loading ? 'Analyzing your order history…' : 'We\'ll predict items based on your order history.'}
+              </p>
+            )}
+          </div>
+          {/* CTA */}
+          <div className="px-4 pb-4">
+            <Button variant="primary" size="md" onClick={handlePredict} loading={loading}
+              leftIcon={<TrendingUp size={16} />} className="w-full">
+              {loading ? 'Analyzing your patterns…' : 'Show my predicted restock'}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">{error}</div>
@@ -382,35 +401,50 @@ export default function PredictPanel({ ctx }: Props) {
           <p className="text-sm font-medium text-amber-800">{result.message}</p>
           <p className="text-xs text-amber-600 mt-1">
             {insights.length === 0
-              ? 'No order history yet — but we built a starter cart from your profile above. Set up recurring items below to get started!'
+              ? 'No order history yet. Set up recurring items below to get started!'
               : "Order a few more times and we'll learn your patterns."}
           </p>
+          <button
+            onClick={() => setResult(null)}
+            className="mt-3 text-xs text-muted underline underline-offset-2 hover:text-dark transition"
+          >
+            Try again
+          </button>
         </div>
       )}
 
       {result?.cart && (() => {
         const isStarter = result.cart!.notes?.some(n => n.includes('Starter essentials'));
         return (
-          <div className={`border rounded-xl p-4 ${isStarter ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+          <div className={`border rounded-xl p-4 ${isStarter ? 'bg-green-50 border-green-300' : 'bg-green-50 border-green-200'}`}>
             {isStarter && (
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full mb-2 inline-block">
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-800 px-2 py-0.5 rounded-full mb-2 inline-block">
                 Starter cart · based on your profile
               </span>
             )}
-            <div className="flex items-center gap-2 mb-2">
-              <ShoppingCart size={16} className={isStarter ? 'text-blue-700' : 'text-green-700'} />
-              <p className={`text-sm font-bold ${isStarter ? 'text-blue-800' : 'text-green-800'}`}>{result.message}</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ShoppingCart size={16} className="text-green-700" />
+                <p className="text-sm font-bold text-green-800">{result.message}</p>
+              </div>
+              <button
+                onClick={() => setResult(null)}
+                className="p-1 rounded-full hover:bg-black/5 transition"
+                aria-label="Dismiss"
+              >
+                <X size={14} className="text-muted" />
+              </button>
             </div>
             {isStarter && (
-              <p className="text-xs text-blue-700 mb-2">
+              <p className="text-xs text-green-700 mb-2">
                 Personalised from your age, gender &amp; region. Order a few times and we'll switch to pattern-based predictions.
               </p>
             )}
             <div className="space-y-1.5">
               {result.cart!.items.slice(0, 5).map(item => (
-                <div key={item.product_id} className={`flex items-center justify-between rounded-lg p-2 ${isStarter ? 'bg-blue-100/60' : 'bg-white/70'}`}>
+                <div key={item.product_id} className={`flex items-center justify-between rounded-lg p-2 ${isStarter ? 'bg-green-100/60' : 'bg-white/70'}`}>
                   <div className="flex items-center gap-2 min-w-0">
-                    <Clock size={11} className={isStarter ? 'text-blue-500' : 'text-green-500'} />
+                    <Clock size={11} className="text-green-500" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-dark truncate">{item.name}</p>
                       <p className="text-[10px] text-muted">{item.brand}</p>
@@ -422,7 +456,7 @@ export default function PredictPanel({ ctx }: Props) {
                 </div>
               ))}
               {result.cart!.items.length > 5 && (
-                <p className={`text-xs text-center pt-1 ${isStarter ? 'text-blue-600' : 'text-green-600'}`}>
+                <p className="text-xs text-center pt-1 text-green-600">
                   +{result.cart!.items.length - 5} more items in your cart
                 </p>
               )}
@@ -438,7 +472,7 @@ export default function PredictPanel({ ctx }: Props) {
             onClick={() => navigate('/subscriptions')}
             className="text-sm font-bold text-dark flex items-center gap-1.5 hover:text-primary-ink transition"
           >
-            <Bell size={14} className="text-violet-500" /> My Subscriptions
+            <Bell size={14} className="text-primary-ink" /> My Subscriptions
             <ExternalLink size={11} className="text-muted ml-0.5" />
           </button>
           <button
@@ -454,11 +488,11 @@ export default function PredictPanel({ ctx }: Props) {
           <div className="divide-y divide-border">
             {subscriptions.map(sub => (
               <div key={sub.product_id} className="flex items-center gap-3 px-4 py-3">
-                <CheckCircle size={14} className="text-violet-500 shrink-0" />
+                <CheckCircle size={14} className="text-primary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-dark truncate">{sub.product_name}</p>
                   <p className="text-[11px] text-muted">
-                    Auto-added <span className="font-medium text-violet-600">{freqLabel(sub.frequency)}</span>
+                    Auto-added <span className="font-medium text-primary-ink">{freqLabel(sub.frequency)}</span>
                     {' · '}next: {sub.next_due_date}
                   </p>
                 </div>
@@ -491,7 +525,7 @@ export default function PredictPanel({ ctx }: Props) {
         </div>
       ) : insights.length > 0 ? (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-dark px-1">💡 Based on your order history:</p>
+          <p className="text-xs font-semibold text-dark px-1"> Based on your order history:</p>
           {insights.filter(ins => !isSubscribed(ins.product_id)).map(ins => {
             const freq = ins.avg_interval_days <= 3 ? 'daily'
                        : ins.avg_interval_days <= 10 ? 'weekly'
@@ -542,7 +576,7 @@ export default function PredictPanel({ ctx }: Props) {
           className="w-full flex items-center justify-between px-4 py-3 bg-light-bg hover:bg-primary-light/30 transition"
         >
           <p className="text-sm font-bold text-dark flex items-center gap-1.5">
-            <Clock size={14} className="text-blue-500" /> Recently Ordered
+            <Clock size={14} className="text-primary-ink" /> Recently Ordered
           </p>
           <div className="flex items-center gap-2">
             {pantryLoading && <span className="text-xs text-muted">Loading…</span>}
@@ -555,7 +589,7 @@ export default function PredictPanel({ ctx }: Props) {
             {pantry.length > 0 ? (
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {pantry.map(item => (
-                  <div key={item.product_id} className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
+                  <div key={item.product_id} className="flex items-center justify-between bg-primary-light rounded-lg px-3 py-2">
                     <span className="text-xs font-medium text-dark truncate">{item.name}</span>
                     <Chip tone={item.days_ago <= 7 ? 'warning' : 'info'} size="xs">{item.days_ago}d ago</Chip>
                   </div>

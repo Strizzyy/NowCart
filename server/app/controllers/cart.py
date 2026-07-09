@@ -1,7 +1,7 @@
 """Cart controller — cart operations (add/remove/update/get).
 
 Routes:
-    POST /api/cart/op          -> CartResponse
+    POST /api/cart/op           -> CartResponse
     GET  /api/cart/{session_id} -> CartResponse
 """
 from fastapi import APIRouter, HTTPException
@@ -17,7 +17,6 @@ router = APIRouter(prefix="/api/cart", tags=["cart"])
 async def cart_operation(req: CartOpRequest) -> CartResponse:
     """Execute a cart operation (add, remove, update, total)."""
     service = get_cart_ops_service()
-
     match req.op.lower():
         case "add":
             cart = await service.add_item(
@@ -42,7 +41,6 @@ async def cart_operation(req: CartOpRequest) -> CartResponse:
             total = await service.get_total(req.session_id)
             if total is None:
                 raise HTTPException(status_code=404, detail="Cart not found")
-            # Return minimal cart response with just the total
             cart = await service.get_cart(req.session_id)
             if cart is None:
                 raise HTTPException(status_code=404, detail="Cart not found")
@@ -51,7 +49,6 @@ async def cart_operation(req: CartOpRequest) -> CartResponse:
 
     if cart is None:
         raise HTTPException(status_code=404, detail="Cart not found")
-
     return CartResponse.from_domain(cart)
 
 

@@ -57,6 +57,7 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   /** Direct swap: remove the matching item, then add the replacement. */
@@ -79,7 +80,10 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
       // Add the replacement item
       updated = await postCartOp(updated.session_id, 'add', chip.add, 1);
       onReplan(updated);
-    } catch { /* keep stale cart */ }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Swap failed. Please try again.';
+      setError(msg);
+    }
     finally { setLoading(false); }
   };
 
@@ -90,19 +94,37 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     try {
       const userId = resolveUserId(ctx?.user);
 
-      // Extract the meal context — prefer the 🍽️-prefixed note stored by the engine,
-      // which holds the original user query (e.g. "pasta for 2").
-      // Fall back to other non-system notes, then to item names as last resort.
-      const mealNote = cart.notes?.find(n => n.startsWith('🍽️'));
-      const mealContext = mealNote
-        ? mealNote.replace(/^🍽️\s*/, '')
-        : cart.notes?.find(n =>
-            !n.startsWith('🔮') && !n.startsWith('📅') && !n.startsWith('🛒') &&
-            !n.toLowerCase().includes('predicted') && !n.toLowerCase().includes('subscription')
-          ) || '';
+      // Strip any leading emoji + whitespace from a note string.
+      const stripEmoji = (s: string) =>
+        s.replace(/^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier_Base}\p{Emoji_Component}\s]+/u, '').trim();
 
-      // The `text` field sent to the backend: prefer the clean meal context.
-      // If we couldn't extract one, send the feedback itself so the server still has context.
+      // System-generated notes we want to skip when hunting for the meal context.
+      const isSystemNote = (n: string) => {
+        const lower = n.toLowerCase();
+        return (
+          lower.includes('predicted') ||
+          lower.includes('subscription') ||
+          lower.includes('restock') ||
+          lower.includes('starter cart') ||
+          lower.includes('recurring') ||
+          // Common emoji-prefix patterns used by the backend engines
+          /^[\p{Emoji}\p{Emoji_Presentation}]/u.test(n)
+        );
+      };
+
+      // Extract the meal context:
+      //   1. Prefer a note that starts with the meal-dish emoji (🍽) — strip the emoji.
+      //   2. Fall back to the first non-system note.
+      //   3. Last resort: join the first 3 item names so the backend has some context.
+      const notes = Array.isArray(cart.notes) ? cart.notes : [];
+      const mealNote = notes.find(n => /^🍽/u.test(n));
+      const mealContext = mealNote
+        ? stripEmoji(mealNote)
+        : notes.find(n => n.trim() !== '' && !isSystemNote(n)) ??
+          cart.items.slice(0, 3).map(i => i.name).join(', ');
+
+      // The `text` field sent to the backend: use the meal context (always non-empty
+      // after the extraction above); fall back to the feedback itself if somehow empty.
       const mealText = mealContext || trimmed;
 
       const cartItemsForContext = cart.items.map(i => ({
@@ -124,7 +146,11 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
       );
       onReplan(updated);
       setInput('');
-    } catch { /* keep stale cart */ }
+      setError('');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Replan failed. Please try again.';
+      setError(msg);
+    }
     finally { setLoading(false); }
   };
 
@@ -166,7 +192,7 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => { setInput(e.target.value); if (error) setError(''); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Refine: cheaper, vegan, swap…"
@@ -184,6 +210,10 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
             : <Send size={11} />}
         </button>
       </form>
+
+      {error && (
+        <p className="text-[11px] text-red-600 px-1">{error}</p>
+      )}
     </div>
   );
 }

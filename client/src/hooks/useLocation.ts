@@ -42,15 +42,22 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Pick<Sav
     const data = await res.json();
     const addr = data.address ?? {};
 
-    // block: most precise sub-locality detail (street, neighbourhood, quarter)
-    const block =
-      addr.road ||
-      addr.pedestrian ||
-      addr.footway ||
-      addr.neighbourhood ||
-      addr.quarter || '';
+    // block: most precise sub-locality detail
+    // Nominatim uses different tags for Indian addresses — check all relevant ones
+    // and combine them (e.g. "Block B, Industrial Area")
+    const blockParts = [
+      addr.quarter,        // "Block B"
+      addr.industrial,     // "Industrial Area"
+      addr.residential,    // residential colony name
+      addr.allotments,     // plotted colony
+      addr.road,           // street name
+      addr.pedestrian,
+      addr.footway,
+      addr.neighbourhood,
+    ].filter(Boolean);
+    const block = blockParts.length > 0 ? blockParts.join(', ') : '';
 
-    // area: broader locality (suburb, village, sector, town)
+    // area: broader locality (sector, suburb, village)
     const area =
       addr.suburb ||
       addr.village ||
