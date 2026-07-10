@@ -3,8 +3,9 @@ import { Mic, Square, Send } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
-import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
+import { postVoiceIntent, postCartOp, searchCatalog, type CartResponse, type CartItem } from '../../../api/client';
 import PanelResult from '../PanelResult';
+import ReplanBar from '../../cart/ReplanBar';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEMO MODE — set to true for the demo video, false to use real mic/API
@@ -123,6 +124,24 @@ const DEMO_CART_NO_ONIONS: CartResponse = {
   total: 219,
   notes: ['Removed onions from the cart'],
 };
+
+// After "swap poha with oats" — poha removed, oats quantity bumped to 2
+const DEMO_CART_SWAPPED: CartResponse = {
+  ...DEMO_CART_NO_ONIONS,
+  session_id: 'demo-session-breakfast-003',
+  items: [
+    ...DEMO_CART_NO_ONIONS.items.filter((i) => i.product_id !== 'demo-002'),
+    {
+      ...DEMO_CART_INITIAL.items[0], // Quaker Oats, now qty 2
+      product_id: 'demo-001b',
+      quantity: 2,
+      line_total: 198,
+      reason: 'Swapped poha with extra oats for higher fibre',
+    },
+  ],
+  total: 372,
+  notes: ['Swapped Poha with Quaker Oats'],
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -183,6 +202,39 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   // tracks which demo step we're on: 0 = first mic press, 1 = follow-up mic press
   const demoStepRef = useRef(0);
   const demoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // patched demo carts with real image_urls fetched from catalog
+  const demoCarts = useRef({ initial: DEMO_CART_INITIAL, noOnions: DEMO_CART_NO_ONIONS, swapped: DEMO_CART_SWAPPED });
+
+  // In demo mode, fetch real image_urls from catalog for each item name
+  useEffect(() => {
+    if (!DEMO_MODE) return;
+
+    const itemNames = DEMO_CART_INITIAL.items.map((i) => i.name);
+
+    Promise.allSettled(
+      itemNames.map((name) => searchCatalog(name, undefined, 1))
+    ).then((results) => {
+      // Build a name → image_url map from the first catalog hit per item
+      const imageMap: Record<string, string | null> = {};
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled' && result.value.length > 0) {
+          imageMap[itemNames[idx]] = result.value[0].image_url ?? null;
+        }
+      });
+
+      const patchItems = (items: CartItem[]): CartItem[] =>
+        items.map((item) => ({
+          ...item,
+          image_url: imageMap[item.name] ?? item.image_url,
+        }));
+
+      demoCarts.current = {
+        initial: { ...DEMO_CART_INITIAL, items: patchItems(DEMO_CART_INITIAL.items) },
+        noOnions: { ...DEMO_CART_NO_ONIONS, items: patchItems(DEMO_CART_NO_ONIONS.items) },
+        swapped: { ...DEMO_CART_SWAPPED, items: patchItems(DEMO_CART_SWAPPED.items) },
+      };
+    }).catch(() => { /* silently fall back to null image_urls */ });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -352,8 +404,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             setPhase('processing');
             // Simulate brief API delay then show hardcoded cart
             demoTimerRef.current = setTimeout(() => {
-              setCart(DEMO_CART_INITIAL);
-              ctx.setCart(DEMO_CART_INITIAL);
+              setCart(demoCarts.current.initial);
+              ctx.setCart(demoCarts.current.initial);
               setPhase('confirming');
             }, 1200);
           },
@@ -366,8 +418,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             demoStepRef.current = 2;
             setPhase('processing');
             demoTimerRef.current = setTimeout(() => {
-              setCart(DEMO_CART_NO_ONIONS);
-              ctx.setCart(DEMO_CART_NO_ONIONS);
+              setCart(demoCarts.current.noOnions);
+              ctx.setCart(demoCarts.current.noOnions);
               setPhase('confirming');
             }, 1000);
           },
@@ -408,6 +460,21 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
+  const handleReplan = (updated: CartResponse) => {
+    // In demo mode, intercept the "swap poha" chip → show hardcoded swapped cart
+    if (DEMO_MODE) {
+      const isSwap = !updated.items.find((i) => i.name.toLowerCase().includes('poha')) &&
+        updated.items.find((i) => i.name.toLowerCase().includes('oat'));
+      if (isSwap) {
+        setCart(demoCarts.current.swapped);
+        ctx.setCart(demoCarts.current.swapped);
+        return;
+      }
+    }
+    setCart(updated);
+    ctx.setCart(updated);
+  };
+
   // ----- error -----
   if (phase === 'error') {
     return (
@@ -436,12 +503,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       <div className="space-y-4">
         <PanelResult
           cart={cart}
-          onViewCart={() => {
-            ctx.setCartOpen(true);
-            onClose();
-          }}
+          onViewCart={() => { ctx.setCartOpen(true); onClose(); }}
           caption={transcript ? <>Heard: "{transcript}"</> : undefined}
         />
+
+        {/* ReplanBar — refine / swap poha / cheaper etc. */}
+        <ReplanBar cart={cart} onReplan={handleReplan} ctx={ctx} />
+
+        {/* Follow-up mic / text bar */}
         <div className="border-t border-border pt-3">
           <label htmlFor="speak-followup" className="text-xs font-semibold text-dark">
             Follow up (e.g. "remove onions", "add more protein")
@@ -455,7 +524,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {/* Mic button for follow-up — in demo mode always shown */}
             {(speechSupported && micStatus === 'ok') && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
