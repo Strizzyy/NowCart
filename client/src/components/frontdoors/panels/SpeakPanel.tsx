@@ -6,6 +6,125 @@ import type { AppContext } from '../../../App';
 import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
 import PanelResult from '../PanelResult';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMO MODE — set to true for the demo video, false to use real mic/API
+// ─────────────────────────────────────────────────────────────────────────────
+const DEMO_MODE = true;
+
+// Hardcoded cart for "healthy breakfast for two people"
+const DEMO_CART_INITIAL: CartResponse = {
+  session_id: 'demo-session-breakfast-001',
+  items: [
+    {
+      product_id: 'demo-001',
+      name: 'Quaker Oats',
+      brand: 'Quaker',
+      quantity: 1,
+      unit: '500g',
+      price: 99,
+      line_total: 99,
+      reason: 'High-fibre, low-calorie breakfast grain',
+      confidence: 0.97,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+    {
+      product_id: 'demo-002',
+      name: 'Poha (Flattened Rice)',
+      brand: 'Top',
+      quantity: 1,
+      unit: '500g',
+      price: 45,
+      line_total: 45,
+      reason: 'Light and nutritious breakfast option',
+      confidence: 0.93,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+    {
+      product_id: 'demo-003',
+      name: 'Onion',
+      brand: 'Fresh',
+      quantity: 2,
+      unit: 'pcs',
+      price: 12,
+      line_total: 24,
+      reason: 'Used in poha and breakfast dishes',
+      confidence: 0.9,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+    {
+      product_id: 'demo-004',
+      name: 'Banana',
+      brand: 'Fresh',
+      quantity: 4,
+      unit: 'pcs',
+      price: 8,
+      line_total: 32,
+      reason: 'Healthy breakfast fruit, natural energy',
+      confidence: 0.95,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+    {
+      product_id: 'demo-005',
+      name: 'Low Fat Milk',
+      brand: 'Amul',
+      quantity: 1,
+      unit: '500ml',
+      price: 28,
+      line_total: 28,
+      reason: 'Protein source for oats or cereal',
+      confidence: 0.96,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+    {
+      product_id: 'demo-006',
+      name: 'Green Chilli',
+      brand: 'Fresh',
+      quantity: 1,
+      unit: '100g',
+      price: 15,
+      line_total: 15,
+      reason: 'For tempering in poha',
+      confidence: 0.88,
+      image_url: null,
+      substituted_for: null,
+      reasoning_trail: [],
+    },
+  ],
+  economical_items: [],
+  substitutions: [],
+  notes: ['Cart built for a healthy breakfast for 2 people'],
+  reasoning_trail: ['Parsed intent: healthy breakfast for two people', 'Selected high-protein, low-calorie items'],
+  total: 243,
+  economical_total: 0,
+  currency: 'INR',
+  mode: 'voice',
+  confidence: 0.95,
+  degraded: false,
+  remaining_budget: null,
+  shortfall: null,
+  clarification: null,
+};
+
+// After "remove onions from the cart"
+const DEMO_CART_NO_ONIONS: CartResponse = {
+  ...DEMO_CART_INITIAL,
+  session_id: 'demo-session-breakfast-002',
+  items: DEMO_CART_INITIAL.items.filter((i) => i.product_id !== 'demo-003'),
+  total: 219,
+  notes: ['Removed onions from the cart'],
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface Props {
   ctx: AppContext;
   onClose: () => void;
@@ -40,8 +159,7 @@ function getWebRecognition(): SpeechRecognitionLike | null {
 
 const isNative = Capacitor.isNativePlatform();
 const webSpeechSupported = !!getWebRecognition();
-// Speech is supported if we're on native (Capacitor plugin) or web Speech API is available
-const speechSupported = isNative || webSpeechSupported;
+const speechSupported = isNative || webSpeechSupported || DEMO_MODE;
 
 
 function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
@@ -62,11 +180,15 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
+  // tracks which demo step we're on: 0 = first mic press, 1 = follow-up mic press
+  const demoStepRef = useRef(0);
+  const demoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       recRef.current?.stop();
       recRef.current = null;
+      if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
       if (isNative) {
         import('@capacitor-community/speech-recognition').then(({ SpeechRecognition }) => {
           SpeechRecognition.removeAllListeners();
@@ -74,6 +196,28 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       }
     };
   }, []);
+
+  // ── Demo: animate words one-by-one then resolve ──────────────────────────
+  const runDemoMic = (words: string[], onDone: (fullText: string) => void) => {
+    setPhase('listening');
+    setTranscript('');
+    let built = '';
+    let idx = 0;
+
+    const next = () => {
+      if (idx >= words.length) {
+        // Brief pause after last word before "processing"
+        demoTimerRef.current = setTimeout(() => onDone(built), 600);
+        return;
+      }
+      built = idx === 0 ? words[idx] : built + ' ' + words[idx];
+      idx++;
+      setTranscript(built);
+      demoTimerRef.current = setTimeout(next, 350);
+    };
+
+    demoTimerRef.current = setTimeout(next, 400);
+  };
 
   const submit = async (text: string) => {
     if (!text.trim()) return;
@@ -135,7 +279,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         partialResults: true,
       });
 
-      // Some devices return final result directly from start()
       if (result?.matches?.length) {
         await SpeechRecognition.removeAllListeners();
         const text = result.matches[0];
@@ -198,11 +341,51 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   };
 
   const startListening = () => {
+    if (DEMO_MODE) {
+      const step = demoStepRef.current;
+      if (step === 0) {
+        // First press: "healthy breakfast for two people"
+        runDemoMic(
+          ['healthy', 'breakfast', 'for', 'two', 'people'],
+          (_text) => {
+            demoStepRef.current = 1;
+            setPhase('processing');
+            // Simulate brief API delay then show hardcoded cart
+            demoTimerRef.current = setTimeout(() => {
+              setCart(DEMO_CART_INITIAL);
+              ctx.setCart(DEMO_CART_INITIAL);
+              setPhase('confirming');
+            }, 1200);
+          },
+        );
+      } else {
+        // Second press (follow-up): "remove onions from the cart"
+        runDemoMic(
+          ['remove', 'onions', 'from', 'the', 'cart'],
+          (_text) => {
+            demoStepRef.current = 2;
+            setPhase('processing');
+            demoTimerRef.current = setTimeout(() => {
+              setCart(DEMO_CART_NO_ONIONS);
+              ctx.setCart(DEMO_CART_NO_ONIONS);
+              setPhase('confirming');
+            }, 1000);
+          },
+        );
+      }
+      return;
+    }
     if (isNative) { void startListeningNative(); return; }
     startListeningWeb();
   };
 
   const stopListening = () => {
+    if (DEMO_MODE) {
+      // In demo mode, stop just finishes the animation immediately
+      if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
+      setPhase('idle');
+      return;
+    }
     if (isNative) { void stopListeningNative(); return; }
     recRef.current?.stop();
   };
@@ -272,7 +455,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {speechSupported && micStatus === 'ok' && (
+            {/* Mic button for follow-up — in demo mode always shown */}
+            {(speechSupported && micStatus === 'ok') && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
               </Button>
@@ -290,7 +474,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   return (
     <div className="space-y-4">
       {/* Only shown when SpeechRecognition explicitly fires not-allowed */}
-      {micStatus === 'denied' && (
+      {!DEMO_MODE && micStatus === 'denied' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
           <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>
           <p className="text-xs text-amber-700 leading-snug">
@@ -304,14 +488,14 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         </div>
       )}
 
-      {micStatus === 'unsupported' && (
+      {!DEMO_MODE && micStatus === 'unsupported' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
           Voice isn't supported on this device. Type your request below.
         </div>
       )}
 
       {/* Mic button */}
-      {speechSupported && micStatus !== 'unsupported' && (
+      {(DEMO_MODE || (speechSupported && micStatus !== 'unsupported')) && (
         <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
@@ -346,7 +530,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
           placeholder="e.g. healthy breakfast for two people"
-          autoFocus={micStatus === 'unsupported'}
+          autoFocus={!DEMO_MODE && micStatus === 'unsupported'}
           className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
         />
         <Button variant="primary" size="md" onClick={() => submit(typed)} rightIcon={<Send size={15} />}>
