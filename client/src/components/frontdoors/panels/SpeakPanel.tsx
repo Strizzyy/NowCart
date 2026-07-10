@@ -1,147 +1,98 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Send } from 'lucide-react';
+import { Mic, Square, Send, ShoppingCart, ArrowRight, BadgeDollarSign } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
-import { Button, Spinner, ErrorState } from '../../../ui';
+import { Button, Spinner, ErrorState, Chip } from '../../../ui';
 import type { AppContext } from '../../../App';
-import { postVoiceIntent, postCartOp, searchCatalog, type CartResponse, type CartItem } from '../../../api/client';
-import PanelResult from '../PanelResult';
-import ReplanBar from '../../cart/ReplanBar';
+import type { CartResponse, CartItem } from '../../../api/client';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DEMO MODE — set to true for the demo video, false to use real mic/API
+// DEMO MODE — hardcoded for demo video. Set false to restore real mic + API.
 // ─────────────────────────────────────────────────────────────────────────────
 const DEMO_MODE = true;
 
-// Hardcoded cart for "healthy breakfast for two people"
-const DEMO_CART_INITIAL: CartResponse = {
-  session_id: 'demo-session-breakfast-001',
-  items: [
-    {
-      product_id: 'demo-001',
-      name: 'Quaker Oats',
-      brand: 'Quaker',
-      quantity: 1,
-      unit: '500g',
-      price: 99,
-      line_total: 99,
-      reason: 'High-fibre, low-calorie breakfast grain',
-      confidence: 0.97,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-    {
-      product_id: 'demo-002',
-      name: 'Poha (Flattened Rice)',
-      brand: 'Top',
-      quantity: 1,
-      unit: '500g',
-      price: 45,
-      line_total: 45,
-      reason: 'Light and nutritious breakfast option',
-      confidence: 0.93,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-    {
-      product_id: 'demo-003',
-      name: 'Onion',
-      brand: 'Fresh',
-      quantity: 2,
-      unit: 'pcs',
-      price: 12,
-      line_total: 24,
-      reason: 'Used in poha and breakfast dishes',
-      confidence: 0.9,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-    {
-      product_id: 'demo-004',
-      name: 'Banana',
-      brand: 'Fresh',
-      quantity: 4,
-      unit: 'pcs',
-      price: 8,
-      line_total: 32,
-      reason: 'Healthy breakfast fruit, natural energy',
-      confidence: 0.95,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-    {
-      product_id: 'demo-005',
-      name: 'Low Fat Milk',
-      brand: 'Amul',
-      quantity: 1,
-      unit: '500ml',
-      price: 28,
-      line_total: 28,
-      reason: 'Protein source for oats or cereal',
-      confidence: 0.96,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-    {
-      product_id: 'demo-006',
-      name: 'Green Chilli',
-      brand: 'Fresh',
-      quantity: 1,
-      unit: '100g',
-      price: 15,
-      line_total: 15,
-      reason: 'For tempering in poha',
-      confidence: 0.88,
-      image_url: null,
-      substituted_for: null,
-      reasoning_trail: [],
-    },
-  ],
-  economical_items: [],
-  substitutions: [],
-  notes: ['Cart built for a healthy breakfast for 2 people'],
-  reasoning_trail: ['Parsed intent: healthy breakfast for two people', 'Selected high-protein, low-calorie items'],
-  total: 243,
-  economical_total: 0,
-  currency: 'INR',
-  mode: 'voice',
-  confidence: 0.95,
-  degraded: false,
-  remaining_budget: null,
-  shortfall: null,
-  clarification: null,
+// Real BigBasket image URLs pulled from the catalog CSV
+const IMG = {
+  oats:    'https://www.bigbasket.com/media/uploads/p/s/1201429_2-bb-combo-quaker-oats-15-kg-pouch-aashirvaad-atta-whole-wheat-5-kg-pouch.jpg',
+  poha:    'https://www.bigbasket.com/media/uploads/p/s/10000431_18-bb-royal-pohaavalakkiavalchivda-thick.jpg',
+  onion:   'https://www.bigbasket.com/media/uploads/p/s/10000025_27-fresho-banana-robusta.jpg',
+  banana:  'https://www.bigbasket.com/media/uploads/p/s/10000025_27-fresho-banana-robusta.jpg',
+  milk:    'https://www.bigbasket.com/media/uploads/p/s/40004532_8-mother-dairy-dahi-made-from-toned-milk.jpg',
+  chilli:  'https://www.bigbasket.com/media/uploads/p/s/40206993_1-navya-food-art-green-chilli-sauce.jpg',
 };
 
-// After "remove onions from the cart"
+function item(
+  id: string, name: string, brand: string,
+  qty: number, unit: string, price: number, total: number,
+  reason: string, conf: number, img: string,
+): CartItem {
+  return {
+    product_id: id, name, brand, quantity: qty, unit,
+    price, line_total: total, reason, confidence: conf,
+    image_url: img, substituted_for: null, reasoning_trail: [],
+  };
+}
+
+// ── Cart 1: initial "healthy breakfast for two people" ─────────────────────
+const ITEMS_INITIAL: CartItem[] = [
+  item('d-001', 'Quaker Oats',          'Quaker', 1, '500g',  99,  99,  'High-fibre breakfast grain',       0.97, IMG.oats),
+  item('d-002', 'Poha (Flattened Rice)','Top',    1, '500g',  45,  45,  'Light nutritious breakfast',       0.93, IMG.poha),
+  item('d-003', 'Onion',                'Fresh',  2, 'pcs',   12,  24,  'Used in poha tempering',           0.90, IMG.onion),
+  item('d-004', 'Banana',               'Fresh',  4, 'pcs',    8,  32,  'Natural energy, healthy fruit',    0.95, IMG.banana),
+  item('d-005', 'Low Fat Milk',         'Amul',   1, '500ml', 28,  28,  'Protein source for oats',          0.96, IMG.milk),
+  item('d-006', 'Green Chilli',         'Fresh',  1, '100g',  15,  15,  'For tempering in poha',            0.88, IMG.chilli),
+];
+
+// Economical alternatives for cart 1
+const ECO_ITEMS_INITIAL: CartItem[] = [
+  item('e-001', 'BB Royal Oats',        'BB Royal',1,'500g',  72,  72,  'Budget oats alternative',         0.90, IMG.oats),
+  item('e-002', 'Poha - Thick',         'BB Royal',1,'500g',  32,  32,  'Budget poha',                     0.88, IMG.poha),
+  item('e-003', 'Onion',                'Fresh',   2,'pcs',   10,  20,  'Fresh onion',                     0.90, IMG.onion),
+  item('e-004', 'Banana',               'Fresh',   4,'pcs',    7,  28,  'Fresh banana',                    0.92, IMG.banana),
+  item('e-005', 'Toned Milk',           'Nandini', 1,'500ml', 22,  22,  'Budget milk alternative',         0.91, IMG.milk),
+  item('e-006', 'Green Chilli',         'Fresh',   1,'100g',  12,  12,  'Fresh chilli',                    0.88, IMG.chilli),
+];
+
+const DEMO_CART_INITIAL: CartResponse = {
+  session_id: 'demo-001',
+  items: ITEMS_INITIAL,
+  economical_items: ECO_ITEMS_INITIAL,
+  substitutions: [],
+  notes: ['Healthy breakfast for 2 people'],
+  reasoning_trail: ['Parsed: healthy breakfast for two people'],
+  total: 243,
+  economical_total: 186,
+  currency: 'INR', mode: 'voice', confidence: 0.95, degraded: false,
+  remaining_budget: null, shortfall: null, clarification: null,
+};
+
+// ── Cart 2: after "remove onions from the cart" ────────────────────────────
 const DEMO_CART_NO_ONIONS: CartResponse = {
   ...DEMO_CART_INITIAL,
-  session_id: 'demo-session-breakfast-002',
-  items: DEMO_CART_INITIAL.items.filter((i) => i.product_id !== 'demo-003'),
+  session_id: 'demo-002',
+  items: ITEMS_INITIAL.filter(i => i.product_id !== 'd-003'),
+  economical_items: ECO_ITEMS_INITIAL.filter(i => i.product_id !== 'e-003'),
   total: 219,
+  economical_total: 166,
   notes: ['Removed onions from the cart'],
 };
 
-// After "swap poha with oats" — poha removed, oats quantity bumped to 2
+// ── Cart 3: after "swap poha with oats" ────────────────────────────────────
 const DEMO_CART_SWAPPED: CartResponse = {
   ...DEMO_CART_NO_ONIONS,
-  session_id: 'demo-session-breakfast-003',
+  session_id: 'demo-003',
   items: [
-    ...DEMO_CART_NO_ONIONS.items.filter((i) => i.product_id !== 'demo-002'),
-    {
-      ...DEMO_CART_INITIAL.items[0], // Quaker Oats, now qty 2
-      product_id: 'demo-001b',
-      quantity: 2,
-      line_total: 198,
-      reason: 'Swapped poha with extra oats for higher fibre',
-    },
+    ...DEMO_CART_NO_ONIONS.items.filter(i => i.product_id !== 'd-002'),
+    item('d-001b', 'Quaker Oats', 'Quaker', 2, '500g', 99, 198, 'Swapped poha → extra oats for fibre', 0.97, IMG.oats),
+  ],
+  economical_items: [
+    ...DEMO_CART_NO_ONIONS.economical_items!.filter(i => i.product_id !== 'e-002'),
+    item('e-001b', 'BB Royal Oats', 'BB Royal', 2, '500g', 72, 144, 'Budget oats replacement', 0.90, IMG.oats),
   ],
   total: 372,
+  economical_total: 278,
   notes: ['Swapped Poha with Quaker Oats'],
 };
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -152,11 +103,8 @@ interface Props {
 type Phase = 'idle' | 'listening' | 'processing' | 'confirming' | 'error';
 
 interface SpeechRecognitionLike {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  start: () => void;
-  stop: () => void;
+  lang: string; continuous: boolean; interimResults: boolean;
+  start: () => void; stop: () => void;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
   onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
@@ -170,25 +118,13 @@ function getWebRecognition(): SpeechRecognitionLike | null {
   const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
   if (!Ctor) return null;
   const rec = new Ctor();
-  rec.lang = 'en-IN';
-  rec.continuous = false;
-  rec.interimResults = true;
+  rec.lang = 'en-IN'; rec.continuous = false; rec.interimResults = true;
   return rec;
 }
 
 const isNative = Capacitor.isNativePlatform();
 const webSpeechSupported = !!getWebRecognition();
 const speechSupported = isNative || webSpeechSupported || DEMO_MODE;
-
-
-function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
-  const t = text.trim().toLowerCase();
-  const add = t.match(/^(?:add|include|put in)\s+(?:(\d+)\s+)?(?:more\s+)?(.+)$/);
-  if (add) return { op: 'add', entity: add[2].trim(), quantity: add[1] ? Number(add[1]) : 1 };
-  const remove = t.match(/^(?:remove|delete|drop|take out)\s+(?:the\s+)?(.+)$/);
-  if (remove) return { op: 'remove', entity: remove[1].trim() };
-  return null;
-}
 
 export default function SpeakPanel({ ctx, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>('idle');
@@ -198,43 +134,10 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
+  const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  // tracks which demo step we're on: 0 = first mic press, 1 = follow-up mic press
   const demoStepRef = useRef(0);
   const demoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // patched demo carts with real image_urls fetched from catalog
-  const demoCarts = useRef({ initial: DEMO_CART_INITIAL, noOnions: DEMO_CART_NO_ONIONS, swapped: DEMO_CART_SWAPPED });
-
-  // In demo mode, fetch real image_urls from catalog for each item name
-  useEffect(() => {
-    if (!DEMO_MODE) return;
-
-    const itemNames = DEMO_CART_INITIAL.items.map((i) => i.name);
-
-    Promise.allSettled(
-      itemNames.map((name) => searchCatalog(name, undefined, 1))
-    ).then((results) => {
-      // Build a name → image_url map from the first catalog hit per item
-      const imageMap: Record<string, string | null> = {};
-      results.forEach((result, idx) => {
-        if (result.status === 'fulfilled' && result.value.length > 0) {
-          imageMap[itemNames[idx]] = result.value[0].image_url ?? null;
-        }
-      });
-
-      const patchItems = (items: CartItem[]): CartItem[] =>
-        items.map((item) => ({
-          ...item,
-          image_url: imageMap[item.name] ?? item.image_url,
-        }));
-
-      demoCarts.current = {
-        initial: { ...DEMO_CART_INITIAL, items: patchItems(DEMO_CART_INITIAL.items) },
-        noOnions: { ...DEMO_CART_NO_ONIONS, items: patchItems(DEMO_CART_NO_ONIONS.items) },
-        swapped: { ...DEMO_CART_SWAPPED, items: patchItems(DEMO_CART_SWAPPED.items) },
-      };
-    }).catch(() => { /* silently fall back to null image_urls */ });
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -242,24 +145,25 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       recRef.current = null;
       if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
       if (isNative) {
-        import('@capacitor-community/speech-recognition').then(({ SpeechRecognition }) => {
-          SpeechRecognition.removeAllListeners();
-        }).catch(() => {});
+        import('@capacitor-community/speech-recognition')
+          .then(({ SpeechRecognition }) => SpeechRecognition.removeAllListeners())
+          .catch(() => {});
       }
     };
   }, []);
 
-  // ── Demo: animate words one-by-one then resolve ──────────────────────────
-  const runDemoMic = (words: string[], onDone: (fullText: string) => void) => {
+  // Reset tab when cart changes
+  useEffect(() => { setActiveTab('recommended'); }, [cart?.session_id]);
+
+  // ── Demo: animate words one-by-one ────────────────────────────────────────
+  const runDemoMic = (words: string[], onDone: () => void) => {
     setPhase('listening');
     setTranscript('');
     let built = '';
     let idx = 0;
-
     const next = () => {
       if (idx >= words.length) {
-        // Brief pause after last word before "processing"
-        demoTimerRef.current = setTimeout(() => onDone(built), 600);
+        demoTimerRef.current = setTimeout(onDone, 600);
         return;
       }
       built = idx === 0 ? words[idx] : built + ' ' + words[idx];
@@ -267,75 +171,59 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       setTranscript(built);
       demoTimerRef.current = setTimeout(next, 350);
     };
-
     demoTimerRef.current = setTimeout(next, 400);
   };
 
-  const submit = async (text: string) => {
+  const applyCart = (c: CartResponse) => { setCart(c); ctx.setCart(c); setPhase('confirming'); };
+
+  // ── Real submit (only used when DEMO_MODE = false) ─────────────────────────
+  const submitReal = async (text: string) => {
     if (!text.trim()) return;
-    setPhase('processing');
-    setError(null);
+    setPhase('processing'); setError(null);
     try {
+      const { postVoiceIntent } = await import('../../../api/client');
       const result = await postVoiceIntent(text.trim(), cart?.session_id ?? ctx.cart?.session_id);
-      setCart(result);
-      ctx.setCart(result);
-      setPhase('confirming');
+      applyCart(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Voice request failed');
       setPhase('error');
     }
   };
 
-  // ── Native Android: Capacitor SpeechRecognition plugin ──────────────────
+  const submit = (text: string) => {
+    if (DEMO_MODE) {
+      // Text input in demo — just show the initial cart directly
+      setPhase('processing');
+      demoTimerRef.current = setTimeout(() => applyCart(DEMO_CART_INITIAL), 1200);
+    } else {
+      void submitReal(text);
+    }
+  };
+
+  // ── Native Capacitor mic ───────────────────────────────────────────────────
   const startListeningNative = async () => {
     try {
       const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
-
-      const permStatus = await SpeechRecognition.requestPermissions();
-      if (permStatus.speechRecognition !== 'granted') {
-        setMicStatus('denied');
-        return;
-      }
-
+      const perm = await SpeechRecognition.requestPermissions();
+      if (perm.speechRecognition !== 'granted') { setMicStatus('denied'); return; }
       const { available } = await SpeechRecognition.available();
-      if (!available) {
-        setMicStatus('unsupported');
-        return;
-      }
-
-      setMicStatus('ok');
-      setTranscript('');
-      setPhase('listening');
-
+      if (!available) { setMicStatus('unsupported'); return; }
+      setMicStatus('ok'); setTranscript(''); setPhase('listening');
       await SpeechRecognition.removeAllListeners();
-
       await SpeechRecognition.addListener('partialResults', (data: { matches: string[] }) => {
         if (data.matches?.length) setTranscript(data.matches[0]);
       });
-
       await SpeechRecognition.addListener('listeningState', async (state: { status: string }) => {
         if (state.status === 'stopped') {
           await SpeechRecognition.removeAllListeners();
-          setTranscript((current) => {
-            if (current.trim()) void submit(current);
-            else setPhase('idle');
-            return current;
-          });
+          setTranscript(cur => { if (cur.trim()) void submitReal(cur); else setPhase('idle'); return cur; });
         }
       });
-
-      const result = await SpeechRecognition.start({
-        language: 'en-IN',
-        maxResults: 1,
-        popup: false,
-        partialResults: true,
-      });
-
+      const result = await SpeechRecognition.start({ language: 'en-IN', maxResults: 1, popup: false, partialResults: true });
       if (result?.matches?.length) {
         await SpeechRecognition.removeAllListeners();
         const text = result.matches[0];
-        setTranscript(text);
-        void submit(text);
+        setTranscript(text); void submitReal(text);
       }
     } catch (e: any) {
       const msg = (e?.message ?? '').toLowerCase();
@@ -345,85 +233,46 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     }
   };
 
-  const stopListeningNative = async () => {
-    try {
-      const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
-      await SpeechRecognition.stop();
-    } catch { /* ignore */ }
-  };
-
-  // ── Web: standard SpeechRecognition API ─────────────────────────────────
+  // ── Web SpeechRecognition ──────────────────────────────────────────────────
   const startListeningWeb = () => {
     if (recRef.current) {
-      recRef.current.onend = null;
-      recRef.current.onerror = null;
-      recRef.current.onresult = null;
-      recRef.current.stop();
-      recRef.current = null;
+      recRef.current.onend = null; recRef.current.onerror = null;
+      recRef.current.onresult = null; recRef.current.stop(); recRef.current = null;
     }
-
     const rec = getWebRecognition();
     if (!rec) { setMicStatus('unsupported'); return; }
-
     recRef.current = rec;
-    setMicStatus('ok');
-    setTranscript('');
-    setMicStatus('ok');
-    setPhase('listening');
-
+    setMicStatus('ok'); setTranscript(''); setPhase('listening');
     rec.onresult = (e) => {
-      const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
+      const text = Array.from(e.results).map(r => r[0].transcript).join(' ');
       setTranscript(text);
     };
-
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicStatus('denied');
       setPhase('idle');
     };
-
     rec.onend = () => {
-      setTranscript((current) => {
-        if (current.trim()) void submit(current);
-        else setPhase('idle');
-        return current;
-      });
+      setTranscript(cur => { if (cur.trim()) void submitReal(cur); else setPhase('idle'); return cur; });
     };
-
     rec.start();
   };
 
+  // ── startListening: demo or real ──────────────────────────────────────────
   const startListening = () => {
     if (DEMO_MODE) {
       const step = demoStepRef.current;
       if (step === 0) {
-        // First press: "healthy breakfast for two people"
-        runDemoMic(
-          ['healthy', 'breakfast', 'for', 'two', 'people'],
-          (_text) => {
-            demoStepRef.current = 1;
-            setPhase('processing');
-            // Simulate brief API delay then show hardcoded cart
-            demoTimerRef.current = setTimeout(() => {
-              setCart(demoCarts.current.initial);
-              ctx.setCart(demoCarts.current.initial);
-              setPhase('confirming');
-            }, 1200);
-          },
-        );
+        runDemoMic(['healthy', 'breakfast', 'for', 'two', 'people'], () => {
+          demoStepRef.current = 1;
+          setPhase('processing');
+          demoTimerRef.current = setTimeout(() => applyCart(DEMO_CART_INITIAL), 1200);
+        });
       } else {
-        // Second press (follow-up): "remove onions from the cart"
-        runDemoMic(
-          ['remove', 'onions', 'from', 'the', 'cart'],
-          (_text) => {
-            demoStepRef.current = 2;
-            setPhase('processing');
-            demoTimerRef.current = setTimeout(() => {
-              setCart(demoCarts.current.noOnions);
-              ctx.setCart(demoCarts.current.noOnions);
-              setPhase('confirming');
-            }, 1000);
-          },
-        );
+        runDemoMic(['remove', 'onions', 'from', 'the', 'cart'], () => {
+          demoStepRef.current = 2;
+          setPhase('processing');
+          demoTimerRef.current = setTimeout(() => applyCart(DEMO_CART_NO_ONIONS), 1000);
+        });
       }
       return;
     }
@@ -432,50 +281,31 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   };
 
   const stopListening = () => {
-    if (DEMO_MODE) {
-      // In demo mode, stop just finishes the animation immediately
-      if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
-      setPhase('idle');
+    if (DEMO_MODE) { if (demoTimerRef.current) clearTimeout(demoTimerRef.current); setPhase('idle'); return; }
+    if (isNative) {
+      import('@capacitor-community/speech-recognition')
+        .then(({ SpeechRecognition }) => SpeechRecognition.stop()).catch(() => {});
       return;
     }
-    if (isNative) { void stopListeningNative(); return; }
     recRef.current?.stop();
   };
 
+  // ── Follow-up: demo = noop, real = API ────────────────────────────────────
   const sendFollowUp = async (text: string) => {
     if (!text.trim() || !cart) return;
-    const parsed = parseFollowUp(text);
-    setPhase('processing');
-    setFollowUp('');
+    if (DEMO_MODE) { setFollowUp(''); return; } // demo: follow-up handled via mic
+    setPhase('processing'); setFollowUp('');
     try {
-      const result = parsed
-        ? await postCartOp(cart.session_id, parsed.op, parsed.entity, parsed.quantity)
-        : await postVoiceIntent(text.trim(), cart.session_id);
-      setCart(result);
-      ctx.setCart(result);
-      setPhase('confirming');
+      const { postVoiceIntent } = await import('../../../api/client');
+      const result = await postVoiceIntent(text.trim(), cart.session_id);
+      applyCart(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Follow-up failed');
       setPhase('error');
     }
   };
 
-  const handleReplan = (updated: CartResponse) => {
-    // In demo mode, intercept the "swap poha" chip → show hardcoded swapped cart
-    if (DEMO_MODE) {
-      const isSwap = !updated.items.find((i) => i.name.toLowerCase().includes('poha')) &&
-        updated.items.find((i) => i.name.toLowerCase().includes('oat'));
-      if (isSwap) {
-        setCart(demoCarts.current.swapped);
-        ctx.setCart(demoCarts.current.swapped);
-        return;
-      }
-    }
-    setCart(updated);
-    ctx.setCart(updated);
-  };
-
-  // ----- error -----
+  // ── Render: error ─────────────────────────────────────────────────────────
   if (phase === 'error') {
     return (
       <ErrorState
@@ -486,7 +316,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- processing -----
+  // ── Render: processing ────────────────────────────────────────────────────
   if (phase === 'processing') {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
@@ -497,20 +327,123 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- confirming (result) -----
+  // ── Render: confirming ────────────────────────────────────────────────────
   if (phase === 'confirming' && cart) {
+    const hasEco = !!(cart.economical_items && cart.economical_items.length > 0);
+    const displayItems = activeTab === 'economical' && hasEco ? cart.economical_items! : cart.items;
+    const displayTotal = activeTab === 'economical' && hasEco ? cart.economical_total : cart.total;
+
     return (
-      <div className="space-y-4">
-        <PanelResult
-          cart={cart}
-          onViewCart={() => { ctx.setCartOpen(true); onClose(); }}
-          caption={transcript ? <>Heard: "{transcript}"</> : undefined}
-        />
+      <div className="space-y-3">
+        {/* Caption */}
+        {transcript && (
+          <div className="flex items-start gap-2 text-sm text-muted bg-light-bg rounded-lg px-3 py-2">
+            <Mic size={14} className="mt-0.5 shrink-0 text-primary-ink" />
+            <span>Heard: "{transcript}"</span>
+          </div>
+        )}
 
-        {/* ReplanBar — refine / swap poha / cheaper etc. */}
-        <ReplanBar cart={cart} onReplan={handleReplan} ctx={ctx} />
+        {/* Recommended / Economical tabs */}
+        {hasEco && (
+          <div className="flex rounded-xl bg-light-bg border border-border p-1 gap-1">
+            <button
+              onClick={() => setActiveTab('recommended')}
+              className={['flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition',
+                activeTab === 'recommended' ? 'bg-surface shadow-sm text-primary-ink' : 'text-muted hover:text-dark'].join(' ')}
+            >
+              <ShoppingCart size={12} />
+              Recommended
+              <span className="text-[10px] ml-0.5">₹{cart.total.toFixed(0)}</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('economical')}
+              className={['flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition',
+                activeTab === 'economical' ? 'bg-surface shadow-sm text-emerald-700' : 'text-muted hover:text-dark'].join(' ')}
+            >
+              <BadgeDollarSign size={12} />
+              Economical
+              <span className="text-[10px] ml-0.5">₹{cart.economical_total.toFixed(0)}</span>
+            </button>
+          </div>
+        )}
 
-        {/* Follow-up mic / text bar */}
+        {/* Savings badge on economical tab */}
+        {activeTab === 'economical' && hasEco && cart.total > cart.economical_total && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
+            <BadgeDollarSign size={16} className="text-emerald-700 shrink-0" />
+            <div>
+              <p className="text-xs font-semibold text-emerald-800">
+                Save ₹{(cart.total - cart.economical_total).toFixed(0)} with economical picks
+              </p>
+              <p className="text-[11px] text-emerald-700">Same products, lower-priced alternatives.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Item count */}
+        <p className="text-sm font-semibold text-dark">
+          {displayItems.length} item{displayItems.length === 1 ? '' : 's'} in your cart
+        </p>
+
+        {/* Items list with images */}
+        <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+          {displayItems.map((item) => (
+            <li key={item.product_id} className="flex items-center gap-3 px-3 py-2 bg-surface">
+              <div className="w-10 h-10 bg-light-bg rounded-lg border border-border flex items-center justify-center shrink-0 overflow-hidden">
+                {item.image_url
+                  ? <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1"
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  : <span className="text-lg">🛒</span>}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-dark truncate">
+                  {item.name}
+                  {item.substituted_for && <Chip tone="info" size="xs" className="ml-2 align-middle">sub</Chip>}
+                </p>
+                <p className="text-xs text-muted truncate">{item.quantity} {item.unit} · {item.brand || 'NowCart'}</p>
+              </div>
+              <span className="text-sm font-semibold text-primary-ink shrink-0">₹{item.line_total.toFixed(0)}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Total + view cart */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <p className="text-xs text-muted">Total</p>
+            <p className="text-lg font-bold text-dark">₹{displayTotal.toFixed(0)}</p>
+            {activeTab === 'economical' && hasEco && cart.total > cart.economical_total && (
+              <p className="text-xs text-emerald-600 font-medium">
+                You save ₹{(cart.total - cart.economical_total).toFixed(0)}
+              </p>
+            )}
+          </div>
+          <Button variant="primary" size="md"
+            onClick={() => { ctx.setCartOpen(true); onClose(); }}
+            leftIcon={<ShoppingCart size={16} />} rightIcon={<ArrowRight size={15} />}>
+            View full cart
+          </Button>
+        </div>
+
+        {/* Refine strip — demo: only "Swap poha" chip, no API calls */}
+        <div className="space-y-1.5">
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+            {DEMO_MODE ? (
+              <button
+                onClick={() => applyCart(DEMO_CART_SWAPPED)}
+                className="shrink-0 px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-full text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 active:scale-95 transition"
+              >
+                Swap poha → oats
+              </button>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2">
+            <span className="text-indigo-400 text-xs">✦</span>
+            <span className="text-xs text-indigo-400 italic">Refine: cheaper, vegan, swap…</span>
+          </div>
+        </div>
+
+        {/* Follow-up mic + text bar */}
         <div className="border-t border-border pt-3">
           <label htmlFor="speak-followup" className="text-xs font-semibold text-dark">
             Follow up (e.g. "remove onions", "add more protein")
@@ -519,8 +452,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             <input
               id="speak-followup"
               value={followUp}
-              onChange={(e) => setFollowUp(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendFollowUp(followUp)}
+              onChange={e => setFollowUp(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendFollowUp(followUp)}
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
@@ -538,17 +471,16 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- idle / listening -----
+  // ── Render: idle / listening ──────────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* Only shown when SpeechRecognition explicitly fires not-allowed */}
       {!DEMO_MODE && micStatus === 'denied' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
           <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>
           <p className="text-xs text-amber-700 leading-snug">
             {isNative
-              ? 'Allow microphone access in your phone\'s app settings, then try again.'
-              : 'Tap the lock icon in Chrome\'s address bar → Permissions → enable Microphone.'}
+              ? "Allow microphone access in your phone's app settings, then try again."
+              : "Tap the lock icon in Chrome's address bar → Permissions → enable Microphone."}
           </p>
           <button onClick={() => setMicStatus('ok')} className="text-xs font-semibold text-amber-800 underline">
             Try again
@@ -590,13 +522,13 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         </div>
       )}
 
-      {/* Text input — always available */}
+      {/* Text input */}
       <div className="flex gap-2">
         <input
           id="speak-typed"
           value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
+          onChange={e => setTyped(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit(typed)}
           placeholder="e.g. healthy breakfast for two people"
           autoFocus={!DEMO_MODE && micStatus === 'unsupported'}
           className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"
