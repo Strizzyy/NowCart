@@ -60,9 +60,46 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [swapDone, setSwapDone] = useState(false);
+
   /** Direct swap: remove the matching item, then add the replacement. */
   const handleDirectSwap = async (chip: DirectSwapChip) => {
     if (loading) return;
+
+    // Demo sessions have no real backend — perform the swap locally using hardcoded data
+    if (cart.session_id.startsWith('demo-')) {
+      setLoading(true);
+      // Brief visual delay so the button shows a loading state
+      await new Promise(res => setTimeout(res, 600));
+      const filtered = cart.items.filter(i =>
+        !i.name.toLowerCase().includes(chip.remove.toLowerCase())
+      );
+      const existingOats = filtered.find(i =>
+        i.name.toLowerCase().includes(chip.add.toLowerCase())
+      );
+      const swappedItems = existingOats
+        ? filtered.map(i => i === existingOats
+            ? { ...i, quantity: i.quantity + 1, line_total: i.line_total + i.price }
+            : i)
+        : [...filtered, {
+            product_id: `demo-swap-${chip.add}`,
+            name: 'Quaker Oats',
+            brand: 'Quaker', quantity: 2, unit: '500g',
+            price: 99, line_total: 198,
+            reason: `Swapped ${chip.remove} with ${chip.add}`,
+            confidence: 0.97,
+            image_url: 'https://www.bigbasket.com/media/uploads/p/s/1201429_2-bb-combo-quaker-oats-15-kg-pouch-aashirvaad-atta-whole-wheat-5-kg-pouch.jpg',
+            substituted_for: chip.remove,
+            reasoning_trail: [],
+          }];
+      const newTotal = swappedItems.reduce((s, i) => s + i.line_total, 0);
+      onReplan({ ...cart, items: swappedItems, total: newTotal, notes: [`Swapped ${chip.remove} with ${chip.add}`] });
+      setLoading(false);
+      setSwapDone(true);
+      setTimeout(() => setSwapDone(false), 2500);
+      return;
+    }
+
     setLoading(true);
     try {
       // Find the poha item in the current cart (case-insensitive partial match)
@@ -90,6 +127,8 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
   const handleSubmit = async (feedback: string) => {
     const trimmed = feedback.trim();
     if (!trimmed || loading) return;
+    // Demo sessions have no real backend — silently ignore text replan
+    if (cart.session_id.startsWith('demo-')) return;
     setLoading(true);
     try {
       const userId = resolveUserId(ctx?.user);
@@ -175,9 +214,15 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => handleChipClick(c)}
               disabled={loading}
-              className="shrink-0 px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-full text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 active:scale-95 transition whitespace-nowrap disabled:opacity-50"
+              className={[
+                'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition whitespace-nowrap active:scale-95',
+                c.type === 'swap' && swapDone
+                  ? 'bg-emerald-100 border border-emerald-300 text-emerald-700'
+                  : 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100',
+                loading ? 'opacity-50 cursor-not-allowed' : '',
+              ].join(' ')}
             >
-              {c.label}
+              {c.type === 'swap' && loading ? '⏳ Swapping…' : c.type === 'swap' && swapDone ? '✓ Swapped!' : c.label}
             </button>
           ))}
         </div>

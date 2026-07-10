@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Square, Send, ShoppingCart, ArrowRight, BadgeDollarSign } from 'lucide-react';
+import { Mic, Square, Send } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
-import { Button, Spinner, ErrorState, Chip } from '../../../ui';
+import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
 import type { CartResponse, CartItem } from '../../../api/client';
+import PanelResult from '../PanelResult';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEMO MODE — hardcoded for demo video. Set false to restore real mic + API.
@@ -34,7 +35,6 @@ function item(
 
 // ── Cart 1: initial "healthy breakfast for two people" ─────────────────────
 const ITEMS_INITIAL: CartItem[] = [
-  item('d-001', 'Quaker Oats',          'Quaker', 1, '500g',  99,  99,  'High-fibre breakfast grain',       0.97, IMG.oats),
   item('d-002', 'Poha (Flattened Rice)','Top',    1, '500g',  45,  45,  'Light nutritious breakfast',       0.93, IMG.poha),
   item('d-003', 'Onion',                'Fresh',  2, 'pcs',   12,  24,  'Used in poha tempering',           0.90, IMG.onion),
   item('d-004', 'Banana',               'Fresh',  4, 'pcs',    8,  32,  'Natural energy, healthy fruit',    0.95, IMG.banana),
@@ -44,7 +44,6 @@ const ITEMS_INITIAL: CartItem[] = [
 
 // Economical alternatives for cart 1
 const ECO_ITEMS_INITIAL: CartItem[] = [
-  item('e-001', 'BB Royal Oats',        'BB Royal',1,'500g',  72,  72,  'Budget oats alternative',         0.90, IMG.oats),
   item('e-002', 'Poha - Thick',         'BB Royal',1,'500g',  32,  32,  'Budget poha',                     0.88, IMG.poha),
   item('e-003', 'Onion',                'Fresh',   2,'pcs',   10,  20,  'Fresh onion',                     0.90, IMG.onion),
   item('e-004', 'Banana',               'Fresh',   4,'pcs',    7,  28,  'Fresh banana',                    0.92, IMG.banana),
@@ -59,8 +58,8 @@ const DEMO_CART_INITIAL: CartResponse = {
   substitutions: [],
   notes: ['Healthy breakfast for 2 people'],
   reasoning_trail: ['Parsed: healthy breakfast for two people'],
-  total: 243,
-  economical_total: 186,
+  total: 144,
+  economical_total: 114,
   currency: 'INR', mode: 'voice', confidence: 0.95, degraded: false,
   remaining_budget: null, shortfall: null, clarification: null,
 };
@@ -71,26 +70,9 @@ const DEMO_CART_NO_ONIONS: CartResponse = {
   session_id: 'demo-002',
   items: ITEMS_INITIAL.filter(i => i.product_id !== 'd-003'),
   economical_items: ECO_ITEMS_INITIAL.filter(i => i.product_id !== 'e-003'),
-  total: 219,
-  economical_total: 166,
+  total: 120,
+  economical_total: 94,
   notes: ['Removed onions from the cart'],
-};
-
-// ── Cart 3: after "swap poha with oats" ────────────────────────────────────
-const DEMO_CART_SWAPPED: CartResponse = {
-  ...DEMO_CART_NO_ONIONS,
-  session_id: 'demo-003',
-  items: [
-    ...DEMO_CART_NO_ONIONS.items.filter(i => i.product_id !== 'd-002'),
-    item('d-001b', 'Quaker Oats', 'Quaker', 2, '500g', 99, 198, 'Swapped poha → extra oats for fibre', 0.97, IMG.oats),
-  ],
-  economical_items: [
-    ...DEMO_CART_NO_ONIONS.economical_items!.filter(i => i.product_id !== 'e-002'),
-    item('e-001b', 'BB Royal Oats', 'BB Royal', 2, '500g', 72, 144, 'Budget oats replacement', 0.90, IMG.oats),
-  ],
-  total: 372,
-  economical_total: 278,
-  notes: ['Swapped Poha with Quaker Oats'],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,7 +116,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
-  const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const demoStepRef = useRef(0);
   const demoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -151,9 +132,6 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
       }
     };
   }, []);
-
-  // Reset tab when cart changes
-  useEffect(() => { setActiveTab('recommended'); }, [cart?.session_id]);
 
   // ── Demo: animate words one-by-one ────────────────────────────────────────
   const runDemoMic = (words: string[], onDone: () => void) => {
@@ -174,7 +152,13 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     demoTimerRef.current = setTimeout(next, 400);
   };
 
-  const applyCart = (c: CartResponse) => { setCart(c); ctx.setCart(c); setPhase('confirming'); };
+  const applyCart = (c: CartResponse) => {
+    setCart(c);
+    // In demo mode keep fake cart data local — never push it into global ctx
+    // so other features (Budget, Show, Share, Subscribe) and order history stay clean
+    if (!DEMO_MODE) ctx.setCart(c);
+    setPhase('confirming');
+  };
 
   // ── Real submit (only used when DEMO_MODE = false) ─────────────────────────
   const submitReal = async (text: string) => {
@@ -329,119 +313,21 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
 
   // ── Render: confirming ────────────────────────────────────────────────────
   if (phase === 'confirming' && cart) {
-    const hasEco = !!(cart.economical_items && cart.economical_items.length > 0);
-    const displayItems = activeTab === 'economical' && hasEco ? cart.economical_items! : cart.items;
-    const displayTotal = activeTab === 'economical' && hasEco ? cart.economical_total : cart.total;
-
     return (
-      <div className="space-y-3">
-        {/* Caption */}
-        {transcript && (
-          <div className="flex items-start gap-2 text-sm text-muted bg-light-bg rounded-lg px-3 py-2">
-            <Mic size={14} className="mt-0.5 shrink-0 text-primary-ink" />
-            <span>Heard: "{transcript}"</span>
-          </div>
-        )}
-
-        {/* Recommended / Economical tabs */}
-        {hasEco && (
-          <div className="flex rounded-xl bg-light-bg border border-border p-1 gap-1">
-            <button
-              onClick={() => setActiveTab('recommended')}
-              className={['flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition',
-                activeTab === 'recommended' ? 'bg-surface shadow-sm text-primary-ink' : 'text-muted hover:text-dark'].join(' ')}
-            >
-              <ShoppingCart size={12} />
-              Recommended
-              <span className="text-[10px] ml-0.5">₹{cart.total.toFixed(0)}</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('economical')}
-              className={['flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition',
-                activeTab === 'economical' ? 'bg-surface shadow-sm text-emerald-700' : 'text-muted hover:text-dark'].join(' ')}
-            >
-              <BadgeDollarSign size={12} />
-              Economical
-              <span className="text-[10px] ml-0.5">₹{cart.economical_total.toFixed(0)}</span>
-            </button>
-          </div>
-        )}
-
-        {/* Savings badge on economical tab */}
-        {activeTab === 'economical' && hasEco && cart.total > cart.economical_total && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
-            <BadgeDollarSign size={16} className="text-emerald-700 shrink-0" />
-            <div>
-              <p className="text-xs font-semibold text-emerald-800">
-                Save ₹{(cart.total - cart.economical_total).toFixed(0)} with economical picks
-              </p>
-              <p className="text-[11px] text-emerald-700">Same products, lower-priced alternatives.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Item count */}
-        <p className="text-sm font-semibold text-dark">
-          {displayItems.length} item{displayItems.length === 1 ? '' : 's'} in your cart
-        </p>
-
-        {/* Items list with images */}
-        <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
-          {displayItems.map((item) => (
-            <li key={item.product_id} className="flex items-center gap-3 px-3 py-2 bg-surface">
-              <div className="w-10 h-10 bg-light-bg rounded-lg border border-border flex items-center justify-center shrink-0 overflow-hidden">
-                {item.image_url
-                  ? <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1"
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  : <span className="text-lg">🛒</span>}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-dark truncate">
-                  {item.name}
-                  {item.substituted_for && <Chip tone="info" size="xs" className="ml-2 align-middle">sub</Chip>}
-                </p>
-                <p className="text-xs text-muted truncate">{item.quantity} {item.unit} · {item.brand || 'NowCart'}</p>
-              </div>
-              <span className="text-sm font-semibold text-primary-ink shrink-0">₹{item.line_total.toFixed(0)}</span>
-            </li>
-          ))}
-        </ul>
-
-        {/* Total + view cart */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <p className="text-xs text-muted">Total</p>
-            <p className="text-lg font-bold text-dark">₹{displayTotal.toFixed(0)}</p>
-            {activeTab === 'economical' && hasEco && cart.total > cart.economical_total && (
-              <p className="text-xs text-emerald-600 font-medium">
-                You save ₹{(cart.total - cart.economical_total).toFixed(0)}
-              </p>
-            )}
-          </div>
-          <Button variant="primary" size="md"
-            onClick={() => { ctx.setCartOpen(true); onClose(); }}
-            leftIcon={<ShoppingCart size={16} />} rightIcon={<ArrowRight size={15} />}>
-            View full cart
-          </Button>
-        </div>
-
-        {/* Refine strip — demo: only "Swap poha" chip, no API calls */}
-        <div className="space-y-1.5">
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-            {DEMO_MODE ? (
-              <button
-                onClick={() => applyCart(DEMO_CART_SWAPPED)}
-                className="shrink-0 px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-full text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 active:scale-95 transition"
-              >
-                Swap poha → oats
-              </button>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2">
-            <span className="text-indigo-400 text-xs">✦</span>
-            <span className="text-xs text-indigo-400 italic">Refine: cheaper, vegan, swap…</span>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <PanelResult
+          cart={cart}
+          onViewCart={() => {
+            if (DEMO_MODE) {
+              // In demo mode, push the demo cart into ctx only at this point
+              // (when user explicitly taps "View full cart") so CartDrawer shows it
+              ctx.setCart(cart);
+            }
+            ctx.setCartOpen(true);
+            onClose();
+          }}
+          caption={transcript ? <>Heard: "{transcript}"</> : undefined}
+        />
 
         {/* Follow-up mic + text bar */}
         <div className="border-t border-border pt-3">
