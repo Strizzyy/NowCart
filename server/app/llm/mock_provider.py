@@ -34,7 +34,65 @@ _RECIPE_BOOK: dict[str, list[dict]] = {
         {"name": "eggs", "quantity": 6, "unit": "unit", "category_hint": "eggs"},
         {"name": "butter", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
     ],
+    "dal": [
+        {"name": "toor dal", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+        {"name": "rice", "quantity": 1, "unit": "pack", "category_hint": "rice"},
+        {"name": "onion", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "tomato", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "turmeric", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "cumin", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "ghee", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    ],
+    "rajma": [
+        {"name": "rajma", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+        {"name": "rice", "quantity": 1, "unit": "pack", "category_hint": "rice"},
+        {"name": "onion", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "tomato", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "rajma masala", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "ginger garlic paste", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    ],
+    "chole": [
+        {"name": "chickpeas", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+        {"name": "onion", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "tomato", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "chole masala", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "ginger", "quantity": 1, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    ],
+    "sabzi": [
+        {"name": "potato", "quantity": 4, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "onion", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "tomato", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "turmeric", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "coriander powder", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    ],
+    "poha": [
+        {"name": "poha", "quantity": 1, "unit": "pack", "category_hint": "breakfast cereals"},
+        {"name": "onion", "quantity": 1, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "potato", "quantity": 1, "unit": "piece", "category_hint": "vegetables"},
+        {"name": "mustard seeds", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+        {"name": "curry leaves", "quantity": 1, "unit": "pack", "category_hint": "herbs"},
+        {"name": "oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    ],
 }
+
+# Generic Indian meal used as budget/dinner/lunch/breakfast fallback
+_GENERIC_INDIAN_MEAL: list[dict] = [
+    {"name": "basmati rice", "quantity": 1, "unit": "pack", "category_hint": "rice"},
+    {"name": "toor dal", "quantity": 1, "unit": "pack", "category_hint": "dals & pulses"},
+    {"name": "onion", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+    {"name": "tomato", "quantity": 2, "unit": "piece", "category_hint": "vegetables"},
+    {"name": "potato", "quantity": 3, "unit": "piece", "category_hint": "vegetables"},
+    {"name": "turmeric", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+    {"name": "cumin seeds", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+    {"name": "coriander powder", "quantity": 1, "unit": "pack", "category_hint": "spices"},
+    {"name": "ginger", "quantity": 1, "unit": "piece", "category_hint": "vegetables"},
+    {"name": "oil", "quantity": 1, "unit": "pack", "category_hint": "edible oil"},
+    {"name": "chapati flour", "quantity": 1, "unit": "pack", "category_hint": "atta & flours"},
+    {"name": "yogurt", "quantity": 1, "unit": "pack", "category_hint": "dairy"},
+]
 
 # Goal-based shopping knowledge base — maps wellness/lifestyle goals to curated product needs.
 # This enables the "Goal → Buy" flow where users express an intent like "I want to lose weight"
@@ -127,6 +185,12 @@ class MockProvider:
             if dish in text:
                 return {"dish": dish, "needs": [dict(i) for i in ingredients]}
 
+        # Budget/meal fallback — "dinner", "lunch", "breakfast", "groceries", "meal",
+        # or any BUDGET-mode call that didn't match a specific dish above.
+        _meal_words = {"dinner", "lunch", "breakfast", "groceries", "meal", "food", "khana", "thali"}
+        if any(w in text for w in _meal_words) or "budget" in system.lower():
+            return {"dish": "Indian meal", "needs": [dict(i) for i in _GENERIC_INDIAN_MEAL]}
+
         # Generic fallback: pull noun-ish tokens as single-unit needs so the
         # pipeline still produces a non-empty, deterministic result.
         tokens = [t for t in re.findall(r"[a-z]+", text) if len(t) > 3]
@@ -134,6 +198,11 @@ class MockProvider:
         for t in tokens:
             if t not in seen and t not in _STOPWORDS:
                 seen.append(t)
+
+        # If we still have nothing, return the generic Indian meal
+        if not seen:
+            return {"dish": "Indian meal", "needs": [dict(i) for i in _GENERIC_INDIAN_MEAL]}
+
         needs = [
             {"name": t, "quantity": 1, "unit": "unit", "category_hint": ""}
             for t in seen[:6]
@@ -162,5 +231,5 @@ class MockVisionProvider:
 _STOPWORDS = {
     "make", "making", "want", "need", "please", "would", "like", "some",
     "with", "from", "into", "have", "this", "that", "give", "buy", "order",
-    "dinner", "lunch", "breakfast", "tonight", "today", "people", "person",
+    "tonight", "today", "people", "person",
 }

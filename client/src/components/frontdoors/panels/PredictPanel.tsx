@@ -25,24 +25,35 @@ interface Props {
   ctx: AppContext;
 }
 
-/** Map logged-in user to backend user_id */
+/** Map logged-in user to backend user_id. For guests, use a stable localStorage ID. */
 function resolveUserId(user: { email?: string; userId?: string } | null | undefined): string {
-  if (!user) return 'user-001';
-  if (user.userId) return user.userId;
-  const email = user.email;
-  if (!email) return 'user-001';
-  const map: Record<string, string> = {
-    'rahul@gmail.com': 'rahul',
-    'priya@example.com': 'user-001',
-    'rahul@example.com': 'user-002',
-    'anita@example.com': 'user-003',
-    'vikram@example.com': 'user-004',
-    'demo@example.com': 'user-005',
-    'demo@nowcart.app': 'user-005',
-    'admin@nowcart.app': 'user-001',
-    'guest@nowcart.app': 'user-005',
-  };
-  return map[email.toLowerCase()] || email.split('@')[0];
+  if (user?.userId) return user.userId;
+  if (user?.email) {
+    const email = user.email.toLowerCase();
+    const map: Record<string, string> = {
+      'rahul@gmail.com': 'rahul',
+      'priya@example.com': 'user-001',
+      'rahul@example.com': 'user-002',
+      'anita@example.com': 'user-003',
+      'vikram@example.com': 'user-004',
+      'demo@example.com': 'user-005',
+      'demo@nowcart.app': 'user-005',
+      'admin@nowcart.app': 'user-001',
+      'guest@nowcart.app': 'user-005',
+    };
+    return map[email] || email.split('@')[0];
+  }
+  // Guest — use a stable ID persisted in localStorage so subscriptions survive page reloads
+  try {
+    let guestId = localStorage.getItem('nc_guest_user_id');
+    if (!guestId) {
+      guestId = 'guest-' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem('nc_guest_user_id', guestId);
+    }
+    return guestId;
+  } catch {
+    return 'guest-anonymous';
+  }
 }
 
 function freqLabel(freq: string) {
@@ -552,7 +563,7 @@ export default function PredictPanel({ ctx }: Props) {
       ) : (
         /* ── Quick-start for new users (no history) ── */
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-dark px-1">✨ Quick-start — pick a brand:</p>
+          <p className="text-xs font-semibold text-dark px-1">Quick-start — pick a brand:</p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {quickSuggestions.map(sug => (
               <button

@@ -1,4 +1,4 @@
-import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, PackageX, XCircle, BadgeDollarSign, Star, Truck, Clock, ShoppingBag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, AlertTriangle, Sparkles, PackageX, XCircle, BadgeDollarSign, Star, Truck, Clock, ShoppingBag, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { postCartOp } from '../api/client';
@@ -20,7 +20,26 @@ export default function CartDrawer({ ctx }: Props) {
   const [proceeded, setProceeded] = useState(false);
   const [highlightLow, setHighlightLow] = useState(false);
   const [activeTab, setActiveTab] = useState<'recommended' | 'economical'>('recommended');
+  const [toastDismissed, setToastDismissed] = useState<string | null>(null); // tracks dismissed toast by key
+  const [notesExpanded, setNotesExpanded] = useState(false);
   const navigate = useNavigate();
+
+  // Compute which toast (if any) should show based on current tab + cart
+  const budgetSavings = (cart?.remaining_budget ?? 0) > 0 ? cart!.remaining_budget! : null;
+  const economicalSavings = (cart && cart.total > cart.economical_total && activeTab === 'economical')
+    ? cart.total - cart.economical_total
+    : null;
+
+  // Each toast has a unique key so dismissing one doesn't affect the other
+  const toastKey = activeTab === 'economical' && economicalSavings
+    ? `eco-${cart?.session_id}`
+    : budgetSavings && activeTab === 'recommended'
+    ? `budget-${cart?.session_id}`
+    : null;
+
+  const toastAmount = activeTab === 'economical' ? economicalSavings : budgetSavings;
+  const toastLabel = activeTab === 'economical' ? 'vs recommended picks' : 'under budget';
+  const showSavingsToast = !!(toastKey && toastAmount && toastDismissed !== toastKey);
 
   // Lock background scroll when cart is open (iOS-safe)
   useEffect(() => {
@@ -44,6 +63,8 @@ export default function CartDrawer({ ctx }: Props) {
     setProceeded(false);
     setHighlightLow(false);
     setActiveTab('recommended');
+    setNotesExpanded(false);
+    setToastDismissed(null);
   }, [cart?.session_id, cart?.clarification]);
 
   if (!cartOpen) return null;
@@ -122,9 +143,33 @@ export default function CartDrawer({ ctx }: Props) {
           </div>
         </div>
 
+        {/* Savings toast — context-aware: budget tab shows budget savings, economical tab shows economical savings */}
+        {showSavingsToast && toastAmount != null && (
+          <div
+            className="relative mx-5 mt-3 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-lg overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #16a34a 0%, #166534 100%)' }}
+          >
+            <div className="absolute -right-3 -top-3 w-16 h-16 rounded-full bg-white/10" />
+            <div className="absolute right-6 -bottom-4 w-10 h-10 rounded-full bg-white/10" />
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+              <Tag size={15} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-extrabold text-white">₹{toastAmount.toFixed(0)} saved </span>
+              <span className="text-xs text-white/70">{toastLabel}</span>
+            </div>
+            <button
+              onClick={() => toastKey && setToastDismissed(toastKey)}
+              className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/35 flex items-center justify-center transition shrink-0"
+              aria-label="Dismiss"
+            >
+              <X size={11} className="text-white" />
+            </button>
+          </div>
+        )}
+
         {/* Cart content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-4">
-          {!cart || cart.items.length === 0 ? (
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5 py-4">          {!cart || cart.items.length === 0 ? (
             <EmptyState
               icon={<Sparkles size={28} />}
               title="Your cart is empty"
@@ -159,15 +204,26 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Unmatched / couldn't-add notes */}
+              {/* Unmatched / couldn't-add notes — collapsible, collapsed by default */}
               {cart.notes.length > 0 && (
-                <div className="bg-light-bg border border-border rounded-xl p-3">
-                  <p className="text-xs font-semibold text-dark mb-1 flex items-center gap-1">
-                    <PackageX size={12} aria-hidden="true" /> Heads up
-                  </p>
-                  {cart.notes.map((note, i) => (
-                    <p key={i} className="text-xs text-muted">{note}</p>
-                  ))}
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setNotesExpanded(v => !v)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 bg-light-bg hover:bg-border/40 transition text-left"
+                  >
+                    <p className="text-xs font-semibold text-muted flex items-center gap-1.5">
+                      <PackageX size={12} aria-hidden="true" />
+                      {cart.notes.length} item{cart.notes.length === 1 ? '' : 's'} couldn't fit
+                    </p>
+                    <span className="text-[10px] text-muted">{notesExpanded ? 'Hide ▲' : 'Show ▼'}</span>
+                  </button>
+                  {notesExpanded && (
+                    <div className="px-3 pb-3 pt-1 space-y-0.5">
+                      {cart.notes.map((note, i) => (
+                        <p key={i} className="text-xs text-muted">{note}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

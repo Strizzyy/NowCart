@@ -1,5 +1,6 @@
-import { ShoppingCart, ArrowRight, Info } from 'lucide-react';
-import { Button, Chip, type ChipTone } from '../../ui';
+import { ShoppingCart, ArrowRight, Info, Tag, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Button, Chip } from '../../ui';
 import type { CartResponse } from '../../api/client';
 
 interface Props {
@@ -10,20 +11,56 @@ interface Props {
   caption?: React.ReactNode;
 }
 
-function confidenceTone(c: number): ChipTone {
-  if (c >= 0.8) return 'success';
-  if (c >= 0.5) return 'warning';
-  return 'danger';
-}
-
 /**
- * Minimal in-panel cart summary shared by all four front doors (sub-task 8.2).
- * The richer confident-cart presentation (reasoning trail, HITL, per-item
- * substitution detail) is layered on in sub-task 8.3.
+ * Minimal in-panel cart summary shared by all four front doors.
+ * Shows a savings toast (Blinkit-style) when remaining_budget > 0.
  */
 export default function PanelResult({ cart, onViewCart, caption }: Props) {
+  const [showSavings, setShowSavings] = useState(false);
+
+  // Show savings toast briefly when budget was saved
+  useEffect(() => {
+    if (cart.remaining_budget != null && cart.remaining_budget > 0) {
+      setShowSavings(true);
+      const t = setTimeout(() => setShowSavings(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [cart.session_id]);
+
   return (
     <div className="space-y-3">
+      {/* Savings toast — Blinkit/Swiggy style */}
+      {showSavings && cart.remaining_budget != null && cart.remaining_budget > 0 && (
+        <div
+          className="relative flex items-center gap-3 rounded-2xl px-4 py-3.5 shadow-lg overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #16a34a 0%, #15803d 60%, #166534 100%)' }}
+        >
+          {/* Decorative circle */}
+          <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 bg-white" />
+          <div className="absolute -right-1 -bottom-5 w-14 h-14 rounded-full opacity-10 bg-white" />
+
+          {/* Icon pill */}
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <Tag size={18} className="text-white" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-extrabold text-white leading-tight">
+              ₹{cart.remaining_budget.toFixed(0)} saved!
+            </p>
+            <p className="text-xs text-white/75 mt-0.5">Cart built within your budget</p>
+          </div>
+
+          <button
+            onClick={() => setShowSavings(false)}
+            className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition shrink-0"
+            aria-label="Dismiss"
+          >
+            <X size={13} className="text-white" />
+          </button>
+        </div>
+      )}
+
       {caption && (
         <div className="flex items-start gap-2 text-sm text-muted bg-light-bg rounded-lg px-3 py-2">
           <Info size={14} className="mt-0.5 shrink-0 text-primary-ink" aria-hidden="true" />
@@ -41,9 +78,6 @@ export default function PanelResult({ cart, onViewCart, caption }: Props) {
         <p className="text-sm font-semibold text-dark">
           {cart.items.length} item{cart.items.length === 1 ? '' : 's'} in your cart
         </p>
-        <Chip tone={confidenceTone(cart.confidence)} size="xs">
-          {Math.round(cart.confidence * 100)}% confident
-        </Chip>
       </div>
 
       <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
@@ -76,7 +110,7 @@ export default function PanelResult({ cart, onViewCart, caption }: Props) {
         <div>
           <p className="text-xs text-muted">Total</p>
           <p className="text-lg font-bold text-dark">₹{cart.total.toFixed(0)}</p>
-          {cart.remaining_budget != null && (
+          {cart.remaining_budget != null && cart.remaining_budget > 0 && (
             <p className="text-xs text-primary-ink">₹{cart.remaining_budget.toFixed(0)} under budget</p>
           )}
           {cart.shortfall != null && cart.shortfall > 0 && (

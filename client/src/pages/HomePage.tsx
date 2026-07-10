@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, ShoppingCart, ArrowRight, Sparkles, DoorOpen } from 'lucide-react';
+import { Brain, ShoppingCart, ArrowRight, DoorOpen } from 'lucide-react';
 import type { AppContext } from '../App';
 import { searchCatalog, postCartOp } from '../api/client';
 import type { Product } from '../api/client';

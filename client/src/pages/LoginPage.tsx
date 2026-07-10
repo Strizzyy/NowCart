@@ -250,7 +250,6 @@ export default function LoginPage({ onLogin }: Props) {
               onClick={() => { onLogin({ name: 'Guest', email: 'guest@nowcart.app', role: 'user', isNewUser: false }); navigate('/'); }}
               className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-border rounded-xl text-sm font-medium hover:bg-light-bg transition"
             >
-              <span className="text-xl">👤</span>
               <span className="text-dark">Continue as Guest</span>
             </button>
           </div>

@@ -144,7 +144,6 @@ export default function SearchResultsPage({ ctx }: Props) {
   if (!query) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <span className="text-5xl block mb-4">🔍</span>
         <h2 className="font-heading font-bold text-2xl text-dark mb-2">Search for a product</h2>
         <p className="text-muted">Use the search bar above to find products</p>
       </div>
@@ -173,7 +172,6 @@ export default function SearchResultsPage({ ctx }: Props) {
         </div>
       ) : !best && alternatives.length === 0 ? (
         <div className="text-center py-16">
-          <span className="text-5xl block mb-4">😕</span>
           <h3 className="font-heading font-bold text-xl text-dark mb-2">No products found</h3>
           <p className="text-muted text-sm mb-4">We couldn't find any products matching "{query}"</p>
           <Link to="/shop"><Button variant="primary">Browse all products</Button></Link>
