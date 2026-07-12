@@ -15,6 +15,7 @@ import uuid
 
 from app.core.config import settings
 from app.llm.factory import get_text_provider
+from app.llm.schemas import DecomposeResult, ReplanClassification
 from app.models.domain.enums import IntentMode, NeedStatus
 from app.models.domain.need import Need
 from app.models.domain.cart import Cart, CartItem
@@ -36,11 +37,13 @@ _SPOON_UNITS = {"tablespoon", "tablespoons", "tbsp", "teaspoon", "teaspoons", "t
 
 
 def _safe_quantity(value, default: float = 1.0) -> float:
-    """Coerce an LLM/cart-supplied quantity to a float, defaulting on null/garbage.
+    """Coerce a cart-supplied (frontend locked_items) quantity to a float.
 
-    dict.get(key, default) only substitutes when the key is absent — real LLM
-    output can (and does) return {"quantity": null} for an ambiguous item like
-    "salt to taste", which previously crashed float(None) mid-pipeline.
+    dict.get(key, default) only substitutes when the key is absent, not when
+    it's explicitly null — the same gap app/llm/schemas.py closes for raw LLM
+    output. locked_items comes from the frontend's cart state rather than an
+    LLM response, so it isn't covered by that schema validation and still
+    needs this guard.
     """
     if value is None:
         return default
@@ -48,17 +51,6 @@ def _safe_quantity(value, default: float = 1.0) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
-
-
-def _safe_str(value, default: str) -> str:
-    """Coerce an LLM/cart-supplied string field to non-empty, defaulting on null.
-
-    Same footgun as _safe_quantity: dict.get(key, default) doesn't substitute
-    when the LLM explicitly returns e.g. {"category_hint": null}, and Need's
-    fields are non-optional strings — that null reaches Need(...) unguarded
-    and fails Pydantic validation mid-pipeline.
-    """
-    return value.strip() if isinstance(value, str) and value.strip() else default
 
 
 def _normalize_quantity_to_packs(quantity: float, unit: str) -> float:
@@ -325,25 +317,24 @@ async def decompose_node(state: AgentState) -> dict:
         preserve_cart, system_prompt, llm_input,
     )
 
-    result = await llm.complete_json(system_prompt, llm_input, schema_hint)
+    raw_result = await llm.complete_json(system_prompt, llm_input, schema_hint)
 
     _decompose_log.info(
         "\n=== DECOMPOSE RESULT ===\n%s\n========================",
-        result,
+        raw_result,
     )
 
-    raw_needs = result.get("needs", [])
-    new_needs: list[Need] = []
-    for item in raw_needs:
-        quantity = _safe_quantity(item.get("quantity"))
-        unit = _safe_str(item.get("unit"), "unit")
-        new_needs.append(Need(
-            name=_safe_str(item.get("name"), "unknown"),
-            quantity=quantity,
-            unit=unit,
-            category_hint=_safe_str(item.get("category_hint"), ""),
+    result = DecomposeResult.model_validate(raw_result)
+    new_needs: list[Need] = [
+        Need(
+            name=item.name,
+            quantity=item.quantity,
+            unit=item.unit,
+            category_hint=item.category_hint,
             status=NeedStatus.PENDING,
-        ))
+        )
+        for item in result.needs
+    ]
 
     # In augment mode, prepend locked items as pre-matched needs
     if preserve_cart and locked_items:
@@ -362,7 +353,7 @@ async def decompose_node(state: AgentState) -> dict:
     else:
         all_needs = new_needs
 
-    label = result.get("goal") or result.get("dish") or "unknown"
+    label = result.goal or result.dish or "unknown"
     region_note = f", region={user_region}" if user_region else ""
     augment_note = f", +{len(new_needs)} new items (kept {len(locked_items)} existing)" if preserve_cart else ""
     reasoning = (
@@ -942,24 +933,23 @@ async def replan_node(state: AgentState) -> dict:
     classified_by = "llm"
     try:
         llm = get_text_provider()
-        classification = await llm.complete_json(_REPLAN_SYSTEM_PROMPT, feedback, _REPLAN_SCHEMA_HINT)
-        if not classification:
+        raw_classification = await llm.complete_json(_REPLAN_SYSTEM_PROMPT, feedback, _REPLAN_SCHEMA_HINT)
+        if not raw_classification:
             raise ValueError("empty classification result")
     except Exception as exc:
         _replan_log.warning(
             "Replan classification LLM call failed (%s) — falling back to keyword match", exc
         )
-        classification = _classify_feedback_by_keywords(feedback_lower)
+        raw_classification = _classify_feedback_by_keywords(feedback_lower)
         classified_by = "keyword_fallback"
 
-    has_cheaper = bool(classification.get("wants_cheaper"))
-    has_removal = bool(classification.get("wants_removal"))
-    has_additive = bool(classification.get("wants_additive"))
-    has_rebuild = bool(classification.get("wants_rebuild"))
-    excluded_from_classification = [
-        _safe_str(x, "").lower().strip() for x in (classification.get("excluded_items") or [])
-    ]
-    excluded_from_classification = [x for x in excluded_from_classification if x]
+    classification = ReplanClassification.model_validate(raw_classification)
+
+    has_cheaper = classification.wants_cheaper
+    has_removal = classification.wants_removal
+    has_additive = classification.wants_additive
+    has_rebuild = classification.wants_rebuild
+    excluded_from_classification = classification.excluded_items
 
     # ── Explicit remove requests ──────────────────────────────────────────────
     excluded_items: list[str] = list(state.get("excluded_items") or [])
@@ -1011,23 +1001,15 @@ async def replan_node(state: AgentState) -> dict:
         new_constraints["prefer_budget_brands"] = True
 
     # ── Dietary constraints (for REBUILD/MIXED paths) ─────────────────────────
-    for tag in (classification.get("dietary_tags") or []):
-        tag = _safe_str(tag, "").lower().strip()
-        if not tag:
-            continue
+    for tag in classification.dietary_tags:
         new_constraints.setdefault("dietary", [])
         if tag not in new_constraints["dietary"]:
             new_constraints["dietary"].append(tag)
 
     # ── Swap requests ─────────────────────────────────────────────────────────
-    swap_map = classification.get("swap") or {}
-    if swap_map:
+    if classification.swap:
         new_constraints.setdefault("swap", {})
-        for from_item, to_item in swap_map.items():
-            from_item = _safe_str(from_item, "").lower().strip()
-            to_item = _safe_str(to_item, "").lower().strip()
-            if from_item and to_item:
-                new_constraints["swap"][from_item] = to_item
+        new_constraints["swap"].update(classification.swap)
 
     # ── Reset needs status for re-matching ────────────────────────────────────
     if skip_decompose:

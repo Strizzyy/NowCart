@@ -12,6 +12,7 @@ import logging
 from PIL import Image
 
 from app.llm.factory import get_vision_provider, get_text_provider
+from app.llm.schemas import VisionResult
 from app.models.domain.cart import Cart
 from app.models.domain.enums import IntentMode
 from app.services.outcome_service import get_outcome_service
@@ -92,10 +93,10 @@ class VisionService:
 
         # Call vision provider — resize first, the biggest lever on end-to-end latency
         resized_bytes = _resize_for_vision(image_bytes)
-        vision_result = await vision.describe_image(resized_bytes, prompt)
+        raw_vision_result = await vision.describe_image(resized_bytes, prompt)
+        vision_result = VisionResult.model_validate(raw_vision_result)
 
-        # Check if vision degraded
-        if vision_result.get("degraded", False):
+        if vision_result.degraded:
             logger.warning("Vision provider degraded — falling back to text hint")
             # Fall back to text hint or generic
             fallback_text = text_hint or "identify dish from photo"
@@ -110,14 +111,10 @@ class VisionService:
                 cart.session_id = session_id
             return cart
 
-        # Extract info from vision result. Gemini can return an explicit null for
-        # a field it's unsure about (e.g. "cuisine": null) — .get(key, default)
-        # only substitutes for a missing key, not an explicit null, so that would
-        # otherwise render as the literal text "None" in the outcome sentence below.
-        dish = vision_result.get("dish") or "unknown dish"
-        ingredients = vision_result.get("ingredients") or []
-        servings = vision_result.get("servings_estimate") or 2
-        cuisine = vision_result.get("cuisine") or ""
+        dish = vision_result.dish
+        ingredients = vision_result.ingredients
+        servings = vision_result.servings_estimate
+        cuisine = vision_result.cuisine
 
         # Build a natural-language outcome from the vision analysis
         if ingredients:
