@@ -75,6 +75,7 @@ jobs:
               'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
               'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
               'CACHE_IN_MEMORY=${{ secrets.CACHE_IN_MEMORY }}' \
+              'REDIS_URL=redis://localhost:6379/0' \
               'SEMANTIC_SEARCH_ENABLED=${{ secrets.SEMANTIC_SEARCH_ENABLED }}' \
               > /opt/nowcart/server/.env
             chmod 600 /opt/nowcart/server/.env
@@ -89,6 +90,15 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Self-hosted Redis on this same EC2 box (no ElastiCache — stays on
+            # the free tier). Install once, idempotent on every deploy after that.
+            if ! command -v redis-server >/dev/null 2>&1; then
+              sudo apt-get update -y
+              sudo apt-get install -y redis-server
+            fi
+            sudo systemctl enable redis-server
+            sudo systemctl start redis-server
+
             cd /opt/nowcart
             git pull origin master
             # Ensure systemd unit has EnvironmentFile pointing to our env file

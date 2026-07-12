@@ -91,7 +91,7 @@ flowchart TB
 | Backend | FastAPI + Pydantic 2 · Python 3.12 · fully async |
 | AI / ML | LangGraph · Groq Llama 3.3 70B · Gemini 2.0 Flash · Bedrock Claude 3 Haiku · rapidfuzz |
 | Database | DynamoDB (on-demand) |
-| Cache | Redis — cart state, sessions, LLM response cache (1-hr TTL) |
+| Cache | In-memory by default, self-hosted Redis in production — cart state, sessions, LLM response cache (1-hr TTL). Toggle via `CACHE_IN_MEMORY` |
 | Infra | EC2 + Nginx · S3 + CloudFront · AWS ap-south-1 |
 | CI/CD | GitHub Actions — push to `master` auto-deploys frontend to S3/CloudFront and backend to EC2 |
 
@@ -103,10 +103,10 @@ flowchart TB
 
 ```bash
 cd server
-pip install -r requirements.txt
+uv sync
 
 # No API keys needed — runs fully in-memory with mock LLM
-uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
 To use real AI, set these in `server/.env`:
@@ -117,6 +117,14 @@ LLM_VISION_PROVIDER=gemini
 GROQ_API_KEY=...
 GEMINI_API_KEY=...
 DATA_BACKEND=memory        # or dynamodb
+```
+
+Caching defaults to an in-memory dict (`CACHE_IN_MEMORY=true`) so local dev needs
+nothing extra. To run against real Redis locally instead, start one
+(`docker run -p 6379:6379 redis:7-alpine`) and set:
+
+```env
+CACHE_IN_MEMORY=false
 REDIS_URL=redis://localhost:6379/0
 ```
 
@@ -132,12 +140,19 @@ npm run dev    # http://localhost:5173 — proxies /api → :8000
 
 ## Deployment
 
-Push to `master` triggers the GitHub Actions pipeline:
+Push to `master` triggers the GitHub Actions pipeline (`.github/workflows/deploy.yml`):
 
 1. Build frontend (`tsc + vite`) → sync to S3 → invalidate CloudFront
-2. SSH into EC2 → `git pull` → `systemctl restart nowcart`
+2. SSH into EC2 → install/start `redis-server` if not already running (self-hosted
+   on the same box — no ElastiCache, stays on the free tier) → write `.env` from
+   secrets → `git pull` → `systemctl restart nowcart`
 
-Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`.
+Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `EC2_HOST`, `EC2_USER`,
+`EC2_SSH_KEY`, `LLM_TEXT_PROVIDER`, `LLM_VISION_PROVIDER`, `GROQ_API_KEYS`,
+`GEMINI_API_KEY`, `DATA_BACKEND`, `AWS_REGION`, `CACHE_IN_MEMORY`,
+`SEMANTIC_SEARCH_ENABLED`. Set `CACHE_IN_MEMORY=false` to actually use the
+Redis instance the pipeline installs — it defaults to whatever that secret is
+set to, same in-memory-first behavior as local dev.
 
 ---
 
