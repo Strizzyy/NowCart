@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Sparkles, Send, Loader2 } from 'lucide-react';
-import { postReplan, postCartOp, type CartResponse } from '../../api/client';
+import { postReplan, type CartResponse } from '../../api/client';
 import type { AppContext } from '../../App';
 
 interface Props {
@@ -27,30 +27,19 @@ function resolveUserId(user: { email?: string; userId?: string } | null | undefi
   return map[email.toLowerCase()] || email.split('@')[0];
 }
 
-// Chips that do a direct cart op (remove + add) instead of a full AI replan.
-// This keeps the rest of the cart intact — only the swapped item changes.
-type DirectSwapChip = {
+type Chip = {
   label: string;
-  type: 'swap';
-  remove: string;   // item name fragment to find in cart and remove
-  add: string;      // item name to add
-};
-
-type ReplanChip = {
-  label: string;
-  type: 'replan';
   value: string;
 };
 
-type Chip = DirectSwapChip | ReplanChip;
-
 const CHIPS: Chip[] = [
-  { label: 'Cheaper',   type: 'replan', value: 'make it cheaper' },
-  { label: 'Vegan',     type: 'replan', value: "I'm vegan, remove dairy and eggs" },
-  { label: 'No onion',  type: 'replan', value: 'no onion no garlic, jain' },
-  { label: 'Protein',   type: 'replan', value: 'add more high-protein items' },
-  // Direct swap: remove poha, add oats — no full cart rebuild
-  { label: 'Swap poha', type: 'swap', remove: 'poha', add: 'oats' },
+  { label: 'Cheaper',    value: 'make it cheaper' },
+  { label: 'Vegan',      value: "I'm vegan, remove dairy and eggs" },
+  { label: 'No onion',   value: 'no onion no garlic, jain' },
+  { label: 'Protein',    value: 'add more high-protein items' },
+  // Routed through the real replan pipeline (semantic swap extraction +
+  // catalog-matched replacement), not a hardcoded item-name swap.
+  { label: 'Swap poha',  value: 'swap poha for idli' },
 ];
 
 export default function ReplanBar({ cart, onReplan, ctx }: Props) {
@@ -58,37 +47,7 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
   const [error, setError] = useState('');
-  const [swapDone, setSwapDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  /** Direct swap: remove the matching item, then add the replacement. */
-  const handleDirectSwap = async (chip: DirectSwapChip) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      // Find the poha item in the current cart (case-insensitive partial match)
-      const target = cart.items.find(i =>
-        i.name.toLowerCase().includes(chip.remove.toLowerCase())
-      );
-
-      let updated: CartResponse = cart;
-
-      if (target) {
-        // Remove the matched item by exact name
-        updated = await postCartOp(cart.session_id, 'remove', target.name);
-      }
-
-      // Add the replacement item
-      updated = await postCartOp(updated.session_id, 'add', chip.add, 1);
-      onReplan(updated);
-      setSwapDone(true);
-      setTimeout(() => setSwapDone(false), 2500);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Swap failed. Please try again.';
-      setError(msg);
-    }
-    finally { setLoading(false); }
-  };
 
   const handleSubmit = async (feedback: string) => {
     const trimmed = feedback.trim();
@@ -157,14 +116,8 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
     finally { setLoading(false); }
   };
 
-  const handleChipClick = (chip: Chip) => {
-    if (chip.type === 'swap') {
-      void handleDirectSwap(chip);
-    } else {
-      // Auto-submit replan chips immediately instead of just pre-filling
-      void handleSubmit(chip.value);
-    }
-  };
+  // Auto-submit chips immediately instead of just pre-filling the input
+  const handleChipClick = (chip: Chip) => void handleSubmit(chip.value);
 
   const showChips = focused || input.length > 0;
 
@@ -180,13 +133,11 @@ export default function ReplanBar({ cart, onReplan, ctx }: Props) {
               disabled={loading}
               className={[
                 'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition whitespace-nowrap active:scale-95',
-                c.type === 'swap' && swapDone
-                  ? 'bg-emerald-100 border border-emerald-300 text-emerald-700'
-                  : 'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100',
+                'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100',
                 loading ? 'opacity-50 cursor-not-allowed' : '',
               ].join(' ')}
             >
-              {c.type === 'swap' && loading ? '⏳ Swapping…' : c.type === 'swap' && swapDone ? '✓ Swapped!' : c.label}
+              {c.label}
             </button>
           ))}
         </div>

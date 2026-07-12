@@ -825,18 +825,89 @@ async def counterfactual_node(state: AgentState) -> dict:
 # Replan node — applies user feedback and re-enters the pipeline
 # ---------------------------------------------------------------------------
 
+_REPLAN_SCHEMA_HINT = (
+    '{"wants_removal": bool, "wants_cheaper": bool, "wants_additive": bool, '
+    '"wants_rebuild": bool, "excluded_items": ["str"], "dietary_tags": ["str"], '
+    '"swap": {"item_to_replace": "replacement_item"}}'
+)
+
+_REPLAN_SYSTEM_PROMPT = (
+    "You are classifying a shopper's free-text feedback on their grocery cart. Read "
+    "the feedback, however it's phrased, and extract:\n"
+    "- wants_removal: true if they want any item taken out of the cart.\n"
+    "- wants_cheaper: true if they're asking for a lower price / cheaper alternatives.\n"
+    "- wants_additive: true if they want something added or boosted (e.g. more protein) "
+    "without changing anything already there.\n"
+    "- wants_rebuild: true if this needs the cart re-planned from scratch — a dietary "
+    "change (vegan, jain, keto, etc.) or an ingredient swap.\n"
+    "- excluded_items: literal ingredient/product names to remove, in whatever form the "
+    "shopper used (e.g. 'I don't want onions anymore' -> [\"onion\"]; 'remove the onions "
+    "and garlic' -> [\"onion\", \"garlic\"]). Empty list if none.\n"
+    "- dietary_tags: any of vegan, vegetarian, dairy-free, egg-free, gluten-free, jain, "
+    "keto, low-carb implied by the feedback. Empty list if none.\n"
+    "- swap: a mapping of {item they want replaced: item they want instead}, however "
+    "phrased (e.g. 'swap the poha for idli' -> {\"poha\": \"idli\"}). Empty object if none.\n"
+    "Return ONLY the JSON, no explanation."
+)
+
+
+def _classify_feedback_by_keywords(feedback_lower: str) -> dict:
+    """Deterministic keyword/regex fallback — used only if the LLM classification
+    call itself fails (network/provider error), so refine-cart degrades gracefully
+    instead of hard-failing. Not the primary classification path; see replan_node.
+    """
+    cheaper_keywords = ("cheaper", "budget", "less expensive", "reduce cost", "save money")
+    removal_keywords = ("remove", "drop", "without", "exclude")
+    additive_keywords = (
+        "add", "more", "extra", "include", "protein", "fibre", "fiber",
+        "vitamins", "calcium", "iron", "healthy", "nutritious", "boost",
+    )
+    rebuild_keywords = (
+        "vegan", "vegetarian", "no dairy", "no meat", "no egg", "no gluten",
+        "jain", "no onion", "keto", "low carb", "swap", "replace", "change",
+        "less fat", "low fat", "no fat", "less oil", "less sugar", "low sugar",
+    )
+    dietary_keyword_map = {
+        "vegan": "vegan", "vegetarian": "vegetarian", "veg": "vegetarian",
+        "no dairy": "dairy-free", "no meat": "vegetarian",
+        "no egg": "egg-free", "no gluten": "gluten-free",
+        "jain": "jain", "no onion": "jain",
+        "keto": "keto", "low carb": "low-carb",
+    }
+    swap: dict[str, str] = {}
+    swap_match = re.search(
+        r"(?:swap|replace|change)\s+(\w+)\s+(?:for|with|to)\s+(\w+)", feedback_lower
+    )
+    if swap_match:
+        swap[swap_match.group(1)] = swap_match.group(2)
+
+    return {
+        "wants_removal": any(k in feedback_lower for k in removal_keywords),
+        "wants_cheaper": any(k in feedback_lower for k in cheaper_keywords),
+        "wants_additive": any(k in feedback_lower for k in additive_keywords),
+        "wants_rebuild": any(k in feedback_lower for k in rebuild_keywords),
+        "excluded_items": list(dict.fromkeys(re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower))),
+        "dietary_tags": [tag for kw, tag in dietary_keyword_map.items() if kw in feedback_lower],
+        "swap": swap,
+    }
+
 
 async def replan_node(state: AgentState) -> dict:
     """Process user feedback and prepare state for re-planning.
 
+    Feedback is classified semantically by an LLM call (_REPLAN_SYSTEM_PROMPT) into
+    wants_removal/wants_cheaper/wants_additive/wants_rebuild/excluded_items/
+    dietary_tags/swap — _classify_feedback_by_keywords only runs as a degraded-mode
+    fallback if that call itself fails (network/provider error), not as primary logic.
+
     Intent classification (determines graph routing after this node):
 
-    PURE REMOVAL  ("remove onion", "no garlic", "drop salt")
-        → skip_decompose=True, no LLM call.
+    PURE REMOVAL  ("remove onion", "I don't want onion anymore")
+        → skip_decompose=True, no further LLM call.
           Just filters locked_items and routes straight to match.
 
     PURE CHEAPER  ("make it cheaper", "budget", "less expensive")
-        → skip_decompose=True, use_economical=True, no LLM call.
+        → skip_decompose=True, use_economical=True, no further LLM call.
           Keeps existing locked_items, match picks cheapest candidate per need.
 
     REMOVAL + CHEAPER  ("remove onion and make it cheaper")
@@ -851,6 +922,9 @@ async def replan_node(state: AgentState) -> dict:
         → skip_decompose=False, preserve_cart=False.
           Full decompose with constraints applied.
     """
+    import logging as _logging
+    _replan_log = _logging.getLogger("app.agents.replan")
+
     feedback = state.get("feedback", "")
     trail: list[str] = state.get("reasoning_trail", [])
     constraints = state.get("constraints", {})
@@ -864,35 +938,40 @@ async def replan_node(state: AgentState) -> dict:
     feedback_lower = feedback.lower()
     new_constraints = dict(constraints)
 
-    # ── Keyword sets ─────────────────────────────────────────────────────────
-    cheaper_keywords = ("cheaper", "budget", "less expensive", "reduce cost", "save money")
-    removal_keywords = ("remove", "drop", "without", "exclude")
-    additive_keywords = (
-        "add", "more", "extra", "include", "protein", "fibre", "fiber",
-        "vitamins", "calcium", "iron", "healthy", "nutritious", "boost",
-    )
-    rebuild_keywords = (
-        "vegan", "vegetarian", "no dairy", "no meat", "no egg", "no gluten",
-        "jain", "no onion", "keto", "low carb", "swap", "replace", "change",
-        "less fat", "low fat", "no fat", "less oil", "less sugar", "low sugar",
-    )
+    # ── Semantic classification (LLM primary, keyword fallback on failure) ────
+    classified_by = "llm"
+    try:
+        llm = get_text_provider()
+        classification = await llm.complete_json(_REPLAN_SYSTEM_PROMPT, feedback, _REPLAN_SCHEMA_HINT)
+        if not classification:
+            raise ValueError("empty classification result")
+    except Exception as exc:
+        _replan_log.warning(
+            "Replan classification LLM call failed (%s) — falling back to keyword match", exc
+        )
+        classification = _classify_feedback_by_keywords(feedback_lower)
+        classified_by = "keyword_fallback"
 
-    has_cheaper = any(k in feedback_lower for k in cheaper_keywords)
-    has_removal = any(k in feedback_lower for k in removal_keywords)
-    has_additive = any(k in feedback_lower for k in additive_keywords)
-    has_rebuild = any(k in feedback_lower for k in rebuild_keywords)
+    has_cheaper = bool(classification.get("wants_cheaper"))
+    has_removal = bool(classification.get("wants_removal"))
+    has_additive = bool(classification.get("wants_additive"))
+    has_rebuild = bool(classification.get("wants_rebuild"))
+    excluded_from_classification = [
+        _safe_str(x, "").lower().strip() for x in (classification.get("excluded_items") or [])
+    ]
+    excluded_from_classification = [x for x in excluded_from_classification if x]
 
     # ── Explicit remove requests ──────────────────────────────────────────────
     excluded_items: list[str] = list(state.get("excluded_items") or [])
-    for item_name in re.findall(r"(?:remove|drop|no)\s+(\w+)", feedback_lower):
+    for item_name in excluded_from_classification:
         needs = [n for n in needs if item_name not in n.name.lower()]
         locked_items = [li for li in locked_items if item_name not in li["name"].lower()]
         if item_name not in excluded_items:
             excluded_items.append(item_name)
 
-    # ── Intent classification ─────────────────────────────────────────────────
+    # ── Intent → graph routing ─────────────────────────────────────────────────
     # Rebuild takes priority over everything else (dietary/swap changes need a
-    # fresh LLM pass regardless of other signals).
+    # fresh LLM decompose pass regardless of other signals).
     if has_rebuild and not has_cheaper and not has_additive:
         # Pure rebuild: vegan, jain, swap X for Y, etc.
         skip_decompose = False
@@ -908,7 +987,7 @@ async def replan_node(state: AgentState) -> dict:
         intent_mode = "ADDITIVE"
 
     elif (has_cheaper or has_removal) and not has_additive and not has_rebuild:
-        # Pure removal, pure cheaper, or removal+cheaper — no LLM needed
+        # Pure removal, pure cheaper, or removal+cheaper — no further LLM call needed
         skip_decompose = True
         preserve_cart = False
         use_economical = has_cheaper
@@ -932,27 +1011,23 @@ async def replan_node(state: AgentState) -> dict:
         new_constraints["prefer_budget_brands"] = True
 
     # ── Dietary constraints (for REBUILD/MIXED paths) ─────────────────────────
-    dietary_keywords = {
-        "vegan": "vegan", "vegetarian": "vegetarian", "veg": "vegetarian",
-        "no dairy": "dairy-free", "no meat": "vegetarian",
-        "no egg": "egg-free", "no gluten": "gluten-free",
-        "jain": "jain", "no onion": "jain",
-        "keto": "keto", "low carb": "low-carb",
-    }
-    for keyword, tag in dietary_keywords.items():
-        if keyword in feedback_lower:
-            new_constraints.setdefault("dietary", [])
-            if tag not in new_constraints["dietary"]:
-                new_constraints["dietary"].append(tag)
+    for tag in (classification.get("dietary_tags") or []):
+        tag = _safe_str(tag, "").lower().strip()
+        if not tag:
+            continue
+        new_constraints.setdefault("dietary", [])
+        if tag not in new_constraints["dietary"]:
+            new_constraints["dietary"].append(tag)
 
     # ── Swap requests ─────────────────────────────────────────────────────────
-    swap_pattern = re.search(
-        r"(?:swap|replace|change)\s+(\w+)\s+(?:for|with|to)\s+(\w+)",
-        feedback_lower,
-    )
-    if swap_pattern:
+    swap_map = classification.get("swap") or {}
+    if swap_map:
         new_constraints.setdefault("swap", {})
-        new_constraints["swap"][swap_pattern.group(1)] = swap_pattern.group(2)
+        for from_item, to_item in swap_map.items():
+            from_item = _safe_str(from_item, "").lower().strip()
+            to_item = _safe_str(to_item, "").lower().strip()
+            if from_item and to_item:
+                new_constraints["swap"][from_item] = to_item
 
     # ── Reset needs status for re-matching ────────────────────────────────────
     if skip_decompose:
@@ -994,8 +1069,8 @@ async def replan_node(state: AgentState) -> dict:
         raw_input = feedback
 
     reasoning = (
-        f"Replan #{replan_count + 1}: feedback='{feedback[:60]}' | intent={intent_mode} | "
-        f"skip_decompose={skip_decompose} use_economical={use_economical} | "
+        f"Replan #{replan_count + 1}: feedback='{feedback[:60]}' | classified_by={classified_by} | "
+        f"intent={intent_mode} | skip_decompose={skip_decompose} use_economical={use_economical} | "
         f"excluded={excluded_items} constraints={new_constraints}"
     )
 

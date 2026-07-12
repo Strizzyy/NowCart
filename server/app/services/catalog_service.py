@@ -489,24 +489,19 @@ class CatalogService:
     async def bulk_check_availability(self, product_ids: list[str]) -> dict[str, bool]:
         """Check availability for many products in one pass — no per-product async overhead.
 
-        Reads stock overrides directly from the in-memory cache store (O(1) dict lookup
-        per product, no async Redis round-trips), then falls back to product.in_stock.
-        Returns a dict mapping product_id → bool.
+        Resolves stock overrides via CacheLayer.get_stock_overrides_bulk (one MGET when
+        Redis is active, a direct in-memory dict read otherwise), then falls back to
+        product.in_stock. Returns a dict mapping product_id → bool.
         """
         global _products_by_id
 
-        # Peek at the in-memory override store directly to avoid per-call async overhead.
-        # CacheLayer._memory._store holds keys like "stock:{product_id}" → "1"/"0".
-        override_store: dict[str, str] = self.cache._memory._store
+        overrides = await self.cache.get_stock_overrides_bulk(product_ids)
 
         result: dict[str, bool] = {}
         for pid in product_ids:
-            override_key = f"stock:{pid}"
-            if override_key in override_store:
-                # Check TTL expiry inline
-                if not self.cache._memory._is_expired(override_key):
-                    result[pid] = override_store.get(override_key) == "1"
-                    continue
+            if pid in overrides:
+                result[pid] = overrides[pid]
+                continue
             # No override — use the in-memory product catalog
             product = _products_by_id.get(pid) if _products_by_id else None
             result[pid] = product.in_stock if product is not None else False

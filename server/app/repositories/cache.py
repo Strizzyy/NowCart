@@ -153,6 +153,36 @@ class CacheLayer:
         """Force a product in/out of stock for demo purposes."""
         await self._set(f"stock:{product_id}", "1" if in_stock else "0")
 
+    async def get_stock_overrides_bulk(self, product_ids: list[str]) -> dict[str, bool]:
+        """Resolve stock overrides for many products in one round trip.
+
+        Only returns entries for product_ids that actually have an override
+        set — callers should fall back to the product's own in_stock field for
+        any id missing from the result. Redis mode issues a single MGET rather
+        than N sequential GETs; memory mode reads the local dict directly.
+        """
+        if not product_ids:
+            return {}
+
+        keys = [f"stock:{pid}" for pid in product_ids]
+        r = await self._get_redis()
+        if r:
+            try:
+                raw_values = await r.mget(keys)
+                return {
+                    pid: raw == "1"
+                    for pid, raw in zip(product_ids, raw_values)
+                    if raw is not None
+                }
+            except Exception:
+                pass  # fall through to memory below
+
+        result: dict[str, bool] = {}
+        for pid, key in zip(product_ids, keys):
+            if key in self._memory._store and not self._memory._is_expired(key):
+                result[pid] = self._memory._store[key] == "1"
+        return result
+
     # --- LLM response cache ---
 
     async def get_cached_response(self, key: str) -> dict | None:
