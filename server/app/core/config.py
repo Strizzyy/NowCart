@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Resolve .env relative to this file so it works regardless of the process
 # working directory (e.g. when launched via systemd from a different cwd).
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"
+_DEFAULT_FEATURE_LOG_PATH = str(Path(__file__).parent.parent.parent / "logs" / "feature_usage.jsonl")
 
 
 class Settings(BaseSettings):
@@ -56,6 +57,9 @@ class Settings(BaseSettings):
     prediction_enabled: bool = True
     depletion_lookback_orders: int = 10  # how many past orders to analyze
     restock_confidence_threshold: float = 0.6  # min confidence to include in prediction
+
+    # --- Feature usage timing ---
+    feature_log_path: str = _DEFAULT_FEATURE_LOG_PATH
 
     @property
     def cors_list(self) -> list[str]:
