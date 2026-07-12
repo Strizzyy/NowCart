@@ -1,0 +1,386 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {
+      "path": "client/src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/api/client.ts",
+      "language": "typescript",
+      "sizeLines": 398,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/CartDrawer.tsx",
+      "language": "typescript",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Composer.tsx",
+      "language": "typescript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Footer.tsx",
+      "language": "typescript",
+      "sizeLines": 217,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/NowCartVerified.tsx",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ProductCard.tsx",
+      "language": "typescript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/EngineTrail.tsx",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/HitlPrompt.tsx",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/ReplanBar.tsx",
+      "language": "typescript",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/WhyThisOne.tsx",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/PanelResult.tsx",
+      "language": "typescript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/doors.tsx",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 556,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/SharePanel.tsx",
+      "language": "typescript",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 278,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 292,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/AboutPage.tsx",
+      "language": "typescript",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/AdminDashboardPage.tsx",
+      "language": "typescript",
+      "sizeLines": 413,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/DeliveryInfoPage.tsx",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/HomePage.tsx",
+      "language": "typescript",
+      "sizeLines": 361,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/LoginPage.tsx",
+      "language": "typescript",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/OrderHistoryPage.tsx",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/OrderSuccessPage.tsx",
+      "language": "typescript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/PaymentPage.tsx",
+      "language": "typescript",
+      "sizeLines": 554,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/PrivacyPolicyPage.tsx",
+      "language": "typescript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/ProductPage.tsx",
+      "language": "typescript",
+      "sizeLines": 234,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/SearchResultsPage.tsx",
+      "language": "typescript",
+      "sizeLines": 213,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/ShopPage.tsx",
+      "language": "typescript",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/SubscriptionsPage.tsx",
+      "language": "typescript",
+      "sizeLines": 478,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/TermsPage.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/index.ts",
+      "language": "typescript",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "client/src/App.tsx": [
+      "client/src/api/client.ts",
+      "client/src/components/CartDrawer.tsx",
+      "client/src/components/Footer.tsx",
+      "client/src/components/Header.tsx",
+      "client/src/components/PwaInstallPrompt.tsx",
+      "client/src/context/LocationContext.tsx",
+      "client/src/pages/AboutPage.tsx",
+      "client/src/pages/AdminDashboardPage.tsx",
+      "client/src/pages/DeliveryInfoPage.tsx",
+      "client/src/pages/HomePage.tsx",
+      "client/src/pages/LoginPage.tsx",
+      "client/src/pages/OrderHistoryPage.tsx",
+      "client/src/pages/OrderSuccessPage.tsx",
+      "client/src/pages/PaymentPage.tsx",
+      "client/src/pages/PrivacyPolicyPage.tsx",
+      "client/src/pages/ProductPage.tsx",
+      "client/src/pages/SearchResultsPage.tsx",
+      "client/src/pages/ShopPage.tsx",
+      "client/src/pages/SubscriptionsPage.tsx",
+      "client/src/pages/TermsPage.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/api/client.ts": [],
+    "client/src/components/CartDrawer.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/cart/EngineTrail.tsx",
+      "client/src/components/cart/HitlPrompt.tsx",
+      "client/src/components/cart/ReplanBar.tsx",
+      "client/src/components/cart/WhyThisOne.tsx",
+      "client/src/components/NowCartVerified.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/Composer.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/Footer.tsx": [
+      "client/src/hooks/usePwaInstall.ts",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/NowCartVerified.tsx": [],
+    "client/src/components/ProductCard.tsx": [
+      "client/src/api/client.ts",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/cart/EngineTrail.tsx": [],
+    "client/src/components/cart/HitlPrompt.tsx": [
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/cart/ReplanBar.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx"
+    ],
+    "client/src/components/cart/WhyThisOne.tsx": [
+      "client/src/api/client.ts"
+    ],
+    "client/src/components/frontdoors/FrontDoorPanel.tsx": [
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/doors.tsx",
+      "client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "client/src/components/frontdoors/panels/SharePanel.tsx",
+      "client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/PanelResult.tsx": [
+      "client/src/api/client.ts",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/doors.tsx": [
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/panels/ConstrainPanel.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/PanelResult.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/panels/PredictPanel.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/panels/SharePanel.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/PanelResult.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/panels/ShowPanel.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/PanelResult.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/components/frontdoors/panels/SpeakPanel.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/PanelResult.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/main.tsx": [
+      "client/src/App.tsx",
+      "client/src/index.css"
+    ],
+    "client/src/pages/AboutPage.tsx": [
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/AdminDashboardPage.tsx": [
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/DeliveryInfoPage.tsx": [],
+    "client/src/pages/HomePage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/frontdoors/doors.tsx",
+      "client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "client/src/components/ProductCard.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/LoginPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/OrderHistoryPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/OrderSuccessPage.tsx": [
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/PaymentPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/context/LocationContext.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/PrivacyPolicyPage.tsx": [],
+    "client/src/pages/ProductPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/ProductCard.tsx"
+    ],
+    "client/src/pages/SearchResultsPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/NowCartVerified.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/ShopPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/components/ProductCard.tsx"
+    ],
+    "client/src/pages/SubscriptionsPage.tsx": [
+      "client/src/api/client.ts",
+      "client/src/App.tsx",
+      "client/src/ui/index.ts"
+    ],
+    "client/src/pages/TermsPage.tsx": [],
+    "client/src/ui/index.ts": []
+  }
+}

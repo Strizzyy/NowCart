@@ -1,0 +1,62 @@
+{
+  "nodes": [
+    {
+      "id": "service:server/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "server/Dockerfile",
+      "summary": "Multi-stage Docker build for the FastAPI backend: a builder stage installs Python dependencies via uv into a virtualenv, and a slim runtime stage copies the venv plus application code, runs as a non-root user, exposes port 8000, and starts uvicorn with a health check for EC2 deployment.",
+      "tags": ["containerization", "infrastructure", "deployment", "python", "fastapi"],
+      "complexity": "moderate",
+      "languageNotes": "Multi-stage build separates the uv-based dependency install (builder) from the runtime image, keeping the final image slim; runs as an unprivileged 'nowcart' user and defines a HEALTHCHECK for orchestration/monitoring."
+    },
+    {
+      "id": "service:server/Dockerfile:builder",
+      "type": "service",
+      "name": "builder",
+      "filePath": "server/Dockerfile",
+      "summary": "Build stage based on python:3.11-slim that installs the uv package manager and resolves/installs Python dependencies from server/pyproject.toml and server/uv.lock into an isolated virtualenv at /app/.venv.",
+      "tags": ["containerization", "build-stage", "dependency-install"],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:server/Dockerfile:runtime",
+      "type": "service",
+      "name": "runtime",
+      "filePath": "server/Dockerfile",
+      "summary": "Final slim python:3.11-slim runtime image that copies the prebuilt virtualenv and application code, adds the BigBasket.csv data file, drops privileges to a non-root user, exposes port 8000, defines a HEALTHCHECK, and launches the app with uvicorn.",
+      "tags": ["containerization", "runtime", "deployment", "healthcheck"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:server/Dockerfile",
+      "target": "service:server/Dockerfile:builder",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:server/Dockerfile",
+      "target": "service:server/Dockerfile:runtime",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:server/Dockerfile:runtime",
+      "target": "service:server/Dockerfile:builder",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "service:server/Dockerfile",
+      "target": "file:server/app/main.py",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

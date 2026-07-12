@@ -1,0 +1,572 @@
+{
+  "batchIndex": 2,
+  "files": [
+    {
+      "path": "server/app/agents/__init__.py",
+      "language": "python",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/graph.py",
+      "language": "python",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/nodes.py",
+      "language": "python",
+      "sizeLines": 959,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/state.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/__init__.py",
+      "language": "python",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/admin.py",
+      "language": "python",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/cart.py",
+      "language": "python",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/constraint.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/health.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/outcome.py",
+      "language": "python",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/share.py",
+      "language": "python",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/vision.py",
+      "language": "python",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/voice.py",
+      "language": "python",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/cart.py",
+      "language": "python",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/enums.py",
+      "language": "python",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/need.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/__init__.py",
+      "language": "python",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/requests.py",
+      "language": "python",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/responses.py",
+      "language": "python",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/budget_service.py",
+      "language": "python",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/outcome_service.py",
+      "language": "python",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/share_service.py",
+      "language": "python",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/vision_service.py",
+      "language": "python",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "server/app/agents/__init__.py": [
+      "server/app/agents/graph.py",
+      "server/app/agents/nodes.py",
+      "server/app/agents/state.py"
+    ],
+    "server/app/agents/graph.py": [
+      "server/app/agents/nodes.py",
+      "server/app/agents/state.py"
+    ],
+    "server/app/agents/nodes.py": [
+      "server/app/agents/state.py",
+      "server/app/core/config.py",
+      "server/app/llm/factory.py",
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/domain/need.py",
+      "server/app/services/catalog_service.py"
+    ],
+    "server/app/agents/state.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/domain/need.py"
+    ],
+    "server/app/controllers/__init__.py": [
+      "server/app/controllers/__init__.py",
+      "server/app/controllers/admin.py",
+      "server/app/controllers/auth.py",
+      "server/app/controllers/cart.py",
+      "server/app/controllers/catalog.py",
+      "server/app/controllers/constraint.py",
+      "server/app/controllers/health.py",
+      "server/app/controllers/meta.py",
+      "server/app/controllers/orders.py",
+      "server/app/controllers/outcome.py",
+      "server/app/controllers/share.py",
+      "server/app/controllers/subscribe.py",
+      "server/app/controllers/vision.py",
+      "server/app/controllers/voice.py"
+    ],
+    "server/app/controllers/admin.py": [
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/controllers/cart.py": [
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/services/cart_ops_service.py"
+    ],
+    "server/app/controllers/constraint.py": [
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/services/budget_service.py"
+    ],
+    "server/app/controllers/health.py": [
+      "server/app/models/dto/responses.py"
+    ],
+    "server/app/controllers/outcome.py": [
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/services/outcome_service.py"
+    ],
+    "server/app/controllers/share.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/repositories/__init__.py",
+      "server/app/services/share_service.py"
+    ],
+    "server/app/controllers/vision.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/dto/responses.py",
+      "server/app/repositories/__init__.py",
+      "server/app/services/vision_service.py"
+    ],
+    "server/app/controllers/voice.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py",
+      "server/app/repositories/__init__.py",
+      "server/app/services/outcome_service.py"
+    ],
+    "server/app/models/domain/cart.py": [
+      "server/app/models/domain/enums.py"
+    ],
+    "server/app/models/domain/enums.py": [],
+    "server/app/models/domain/need.py": [
+      "server/app/models/domain/enums.py"
+    ],
+    "server/app/models/dto/__init__.py": [
+      "server/app/models/dto/requests.py",
+      "server/app/models/dto/responses.py"
+    ],
+    "server/app/models/dto/requests.py": [],
+    "server/app/models/dto/responses.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/product.py"
+    ],
+    "server/app/services/budget_service.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/services/outcome_service.py"
+    ],
+    "server/app/services/outcome_service.py": [
+      "server/app/agents/graph.py",
+      "server/app/agents/state.py",
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/services/share_service.py": [
+      "server/app/llm/factory.py",
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/services/outcome_service.py"
+    ],
+    "server/app/services/vision_service.py": [
+      "server/app/llm/factory.py",
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/services/outcome_service.py"
+    ]
+  },
+  "neighborMap": {
+    "server/app/agents/nodes.py": [
+      {
+        "path": "server/app/core/config.py",
+        "batchIndex": 4,
+        "symbols": [
+          "Settings",
+          "get_settings"
+        ]
+      },
+      {
+        "path": "server/app/llm/factory.py",
+        "batchIndex": 4,
+        "symbols": [
+          "get_text_provider",
+          "get_vision_provider"
+        ]
+      },
+      {
+        "path": "server/app/services/catalog_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_compute_relevance_score",
+          "CatalogService",
+          "get_catalog_service"
+        ]
+      }
+    ],
+    "server/app/controllers/__init__.py": [
+      {
+        "path": "server/app/controllers/auth.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_hash_password",
+          "RegisterRequest",
+          "LoginRequest",
+          "AuthResponse",
+          "_get_role",
+          "register",
+          "login",
+          "get_user_profile"
+        ]
+      },
+      {
+        "path": "server/app/controllers/catalog.py",
+        "batchIndex": 3,
+        "symbols": [
+          "search_products",
+          "recommend_products",
+          "get_product"
+        ]
+      },
+      {
+        "path": "server/app/controllers/meta.py",
+        "batchIndex": 4,
+        "symbols": [
+          "system_stats",
+          "system_info",
+          "_fetch_aws_costs",
+          "cost_breakdown",
+          "observability_dashboard"
+        ]
+      },
+      {
+        "path": "server/app/controllers/orders.py",
+        "batchIndex": 3,
+        "symbols": [
+          "PlaceOrderRequest",
+          "OrderResponse",
+          "ItemRating",
+          "RateOrderRequest",
+          "place_order",
+          "rate_order_items",
+          "get_order_history"
+        ]
+      },
+      {
+        "path": "server/app/controllers/subscribe.py",
+        "batchIndex": 3,
+        "symbols": [
+          "ReplanRequest",
+          "CounterfactualRequest",
+          "SubscriptionRequest",
+          "get_prediction_insights",
+          "add_subscription",
+          "remove_subscription",
+          "get_subscriptions",
+          "get_all_subscriptions_cart",
+          "get_due_subscriptions",
+          "get_predicted_cart",
+          "get_user_preferences",
+          "get_recently_ordered",
+          "replan_cart",
+          "get_counterfactuals"
+        ]
+      },
+      {
+        "path": "server/app/main.py",
+        "batchIndex": 4,
+        "symbols": [
+          "lifespan",
+          "create_app"
+        ]
+      }
+    ],
+    "server/app/controllers/admin.py": [
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      }
+    ],
+    "server/app/controllers/cart.py": [
+      {
+        "path": "server/app/services/cart_ops_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_find_economical_alternative",
+          "CartOpsService",
+          "get_cart_ops_service"
+        ]
+      }
+    ],
+    "server/app/controllers/share.py": [
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      }
+    ],
+    "server/app/controllers/vision.py": [
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      }
+    ],
+    "server/app/controllers/voice.py": [
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      }
+    ],
+    "server/app/models/domain/cart.py": [
+      {
+        "path": "server/app/models/domain/__init__.py",
+        "batchIndex": 3,
+        "symbols": []
+      },
+      {
+        "path": "server/app/services/cart_ops_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_find_economical_alternative",
+          "CartOpsService",
+          "get_cart_ops_service"
+        ]
+      },
+      {
+        "path": "server/app/services/confidence_service.py",
+        "batchIndex": 4,
+        "symbols": [
+          "ConfidenceService",
+          "get_confidence_service"
+        ]
+      },
+      {
+        "path": "server/app/services/subscribe_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "PredictedNeed",
+          "SubscribeService",
+          "get_subscribe_service",
+          "get_predictive_service"
+        ]
+      }
+    ],
+    "server/app/models/domain/enums.py": [
+      {
+        "path": "server/app/models/domain/__init__.py",
+        "batchIndex": 3,
+        "symbols": []
+      },
+      {
+        "path": "server/app/services/subscribe_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "PredictedNeed",
+          "SubscribeService",
+          "get_subscribe_service",
+          "get_predictive_service"
+        ]
+      }
+    ],
+    "server/app/models/domain/need.py": [
+      {
+        "path": "server/app/models/domain/__init__.py",
+        "batchIndex": 3,
+        "symbols": []
+      }
+    ],
+    "server/app/models/dto/responses.py": [
+      {
+        "path": "server/app/models/domain/product.py",
+        "batchIndex": 3,
+        "symbols": [
+          "Product"
+        ]
+      },
+      {
+        "path": "server/app/controllers/subscribe.py",
+        "batchIndex": 3,
+        "symbols": [
+          "ReplanRequest",
+          "CounterfactualRequest",
+          "SubscriptionRequest",
+          "get_prediction_insights",
+          "add_subscription",
+          "remove_subscription",
+          "get_subscriptions",
+          "get_all_subscriptions_cart",
+          "get_due_subscriptions",
+          "get_predicted_cart",
+          "get_user_preferences",
+          "get_recently_ordered",
+          "replan_cart",
+          "get_counterfactuals"
+        ]
+      },
+      {
+        "path": "server/app/main.py",
+        "batchIndex": 4,
+        "symbols": [
+          "lifespan",
+          "create_app"
+        ]
+      }
+    ],
+    "server/app/services/outcome_service.py": [
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      },
+      {
+        "path": "server/app/controllers/subscribe.py",
+        "batchIndex": 3,
+        "symbols": [
+          "ReplanRequest",
+          "CounterfactualRequest",
+          "SubscriptionRequest",
+          "get_prediction_insights",
+          "add_subscription",
+          "remove_subscription",
+          "get_subscriptions",
+          "get_all_subscriptions_cart",
+          "get_due_subscriptions",
+          "get_predicted_cart",
+          "get_user_preferences",
+          "get_recently_ordered",
+          "replan_cart",
+          "get_counterfactuals"
+        ]
+      }
+    ],
+    "server/app/services/share_service.py": [
+      {
+        "path": "server/app/llm/factory.py",
+        "batchIndex": 4,
+        "symbols": [
+          "get_text_provider",
+          "get_vision_provider"
+        ]
+      }
+    ],
+    "server/app/services/vision_service.py": [
+      {
+        "path": "server/app/llm/factory.py",
+        "batchIndex": 4,
+        "symbols": [
+          "get_text_provider",
+          "get_vision_provider"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,830 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "files": [
+    {
+      "path": ".claude/settings.json",
+      "language": "json",
+      "fileCategory": "config"
+    },
+    {
+      "path": ".dockerignore",
+      "language": "unknown",
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "language": "yaml",
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".kiro/specs/nowcart/design.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/specs/nowcart/requirements.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/specs/nowcart/tasks.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/specs/user-authentication/.config.kiro",
+      "language": "kiro",
+      "fileCategory": "code"
+    },
+    {
+      "path": ".kiro/specs/user-authentication/requirements.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code"
+    },
+    {
+      "path": "APK_BUILD_GUIDE.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "archi.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ARCHITECTURE_DIAGRAM.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "client/capacitor.config.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra"
+    },
+    {
+      "path": "client/eslint.config.js",
+      "language": "javascript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/gen-icons.mjs",
+      "language": "javascript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/index.html",
+      "language": "html",
+      "fileCategory": "markup"
+    },
+    {
+      "path": "client/nginx.conf",
+      "language": "conf",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/package.json",
+      "language": "json",
+      "fileCategory": "config"
+    },
+    {
+      "path": "client/README.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "client/src/api/client.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/api/schema.d.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/App.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/AddressManager.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/EngineTrail.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/HitlPrompt.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/ReplanBar.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/cart/WhyThisOne.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/CartDrawer.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Composer.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Footer.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/doors.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/PanelResult.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/SharePanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Header.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/NowCartVerified.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ProductCard.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/PwaInstallPrompt.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ui/Button.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ui/cn.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/context/LocationContext.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/hooks/useLocation.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/hooks/usePwaInstall.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/index.css",
+      "language": "css",
+      "fileCategory": "markup"
+    },
+    {
+      "path": "client/src/main.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/AboutPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/AdminDashboardPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/DeliveryInfoPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/HomePage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/LoginPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/OrderHistoryPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/OrderSuccessPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/PaymentPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/PrivacyPolicyPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/ProductPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/SearchResultsPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/ShopPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/SosPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/SubscriptionsPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/pages/TermsPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Button.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Card.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Chip.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/index.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Panel.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Spinner.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/States.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Toast.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Transition.tsx",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/tsconfig.app.json",
+      "language": "json",
+      "fileCategory": "config"
+    },
+    {
+      "path": "client/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config"
+    },
+    {
+      "path": "client/tsconfig.node.json",
+      "language": "json",
+      "fileCategory": "config"
+    },
+    {
+      "path": "client/vite.config.ts",
+      "language": "typescript",
+      "fileCategory": "code"
+    },
+    {
+      "path": "deploy.bat",
+      "language": "batch",
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker-compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra"
+    },
+    {
+      "path": "NowCart_Presentation_Script.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    },
+    {
+      "path": "scripts/add_5000_more.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/check_cors.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/check_page2.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/create_verified_csv.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/find_placeholders.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/fix_placeholders.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/graph.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/nodes.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/agents/state.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/async_jobs/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/async_jobs/lambda_handlers.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/async_jobs/sqs_publisher.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/admin.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/auth.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/cart.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/catalog.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/constraint.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/health.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/meta.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/orders.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/outcome.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/share.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/subscribe.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/vision.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/voice.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/core/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/core/config.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/core/logging.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/base.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/bedrock_provider.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/factory.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/gemini_provider.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/groq_provider.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/mock_provider.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/main.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/pii_redaction.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/rate_limit.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/request_id.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/telemetry.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/cart.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/enums.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/need.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/order.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/product.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/user.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/requests.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/dto/responses.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/base.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/cache.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/dynamodb.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/memory.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/__main__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/catalog.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/mock_data.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/seed_dynamodb.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/seed/stock_overrides.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/__init__.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/badge_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/budget_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/cart_ops_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/catalog_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/confidence_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/counterfactual_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/outcome_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/pantry_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/preference_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/semantic_search_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/share_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/subscribe_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/vision_service.py",
+      "language": "python",
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra"
+    },
+    {
+      "path": "server/pyproject.toml",
+      "language": "toml",
+      "fileCategory": "config"
+    },
+    {
+      "path": "SYSTEM_ARCHITECTURE.md",
+      "language": "markdown",
+      "fileCategory": "docs"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {"path": "client/src/ui/Button.tsx", "language": "typescript", "sizeLines": 69, "fileCategory": "code"},
+    {"path": "client/src/ui/Spinner.tsx", "language": "typescript", "sizeLines": 23, "fileCategory": "code"},
+    {"path": "client/src/ui/States.tsx", "language": "typescript", "sizeLines": 67, "fileCategory": "code"}
+  ],
+  "batchImportData": {
+    "client/src/ui/Button.tsx": ["client/src/ui/Spinner.tsx"],
+    "client/src/ui/Spinner.tsx": [],
+    "client/src/ui/States.tsx": ["client/src/ui/Button.tsx"]
+  }
+}

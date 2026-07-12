@@ -1,0 +1,47 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'config:.claude/settings.json' has no edges (orphan)",
+    "Node 'config:.ua/.understandignore' has no edges (orphan)",
+    "Node 'config:client/capacitor.config.ts' has no edges (orphan)",
+    "Node 'config:client/eslint.config.js' has no edges (orphan)",
+    "Node 'file:client/gen-icons.mjs' has no edges (orphan)",
+    "Node 'file:client/src/api/schema.d.ts' has no edges (orphan)",
+    "Node 'file:scripts/check_cors.py' has no edges (orphan)",
+    "Node 'file:scripts/check_page2.py' has no edges (orphan)",
+    "Node 'file:server/app/__init__.py' has no edges (orphan)",
+    "Node 'file:server/app/async_jobs/__init__.py' has no edges (orphan)",
+    "Node 'file:server/app/core/__init__.py' has no edges (orphan)",
+    "Node 'file:server/app/models/__init__.py' has no edges (orphan)",
+    "Node 'config:server/pyproject.toml' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 451,
+    "totalEdges": 992,
+    "totalLayers": 9,
+    "tourSteps": 14,
+    "nodeTypes": {
+      "file": 138,
+      "function": 205,
+      "class": 71,
+      "service": 11,
+      "pipeline": 1,
+      "resource": 2,
+      "config": 12,
+      "document": 11
+    },
+    "edgeTypes": {
+      "contains": 276,
+      "imports": 291,
+      "exports": 242,
+      "calls": 135,
+      "depends_on": 17,
+      "related": 11,
+      "implements": 6,
+      "deploys": 4,
+      "triggers": 1,
+      "documents": 3,
+      "configures": 6
+    }
+  }
+}

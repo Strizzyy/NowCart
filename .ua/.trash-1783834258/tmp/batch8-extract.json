@@ -1,0 +1,33 @@
+{
+  "batchIndex": 8,
+  "files": [
+    {
+      "path": "client/src/ui/Panel.tsx",
+      "language": "typescript",
+      "sizeLines": 127,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Toast.tsx",
+      "language": "typescript",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Transition.tsx",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "client/src/ui/Panel.tsx": [
+      "client/src/ui/Transition.tsx"
+    ],
+    "client/src/ui/Toast.tsx": [
+      "client/src/ui/Transition.tsx"
+    ],
+    "client/src/ui/Transition.tsx": []
+  },
+  "neighborMap": {}
+}

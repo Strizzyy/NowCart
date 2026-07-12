@@ -1,0 +1,29 @@
+{
+  "batchIndex": 16,
+  "files": [
+    {
+      "path": "server/app/core/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/__init__.py",
+      "language": "python",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/pyproject.toml",
+      "language": "toml",
+      "sizeLines": 53,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "server/app/core/__init__.py": [],
+    "server/app/models/__init__.py": [],
+    "server/pyproject.toml": []
+  },
+  "neighborMap": {}
+}

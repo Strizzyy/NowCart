@@ -1,0 +1,340 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".kiro/specs/nowcart/design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 194,
+      "nonEmptyLines": 160,
+      "sections": [
+        {
+          "heading": "Design — NowCart",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Layered responsibilities (Requirement 9.1)",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "Components and Interfaces",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "LLMProvider (Requirement 9.2)",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "Agents (Requirement 1.6)",
+          "level": 3,
+          "line": 61
+        },
+        {
+          "heading": "Services",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "Controllers (REST)",
+          "level": 3,
+          "line": 84
+        },
+        {
+          "heading": "Data Models",
+          "level": 2,
+          "line": 99
+        },
+        {
+          "heading": "Product (catalog — from BigBasket dataset)",
+          "level": 3,
+          "line": 103
+        },
+        {
+          "heading": "Cart / CartItem",
+          "level": 3,
+          "line": 112
+        },
+        {
+          "heading": "Need (decomposed)",
+          "level": 3,
+          "line": 118
+        },
+        {
+          "heading": "Storage layout",
+          "level": 3,
+          "line": 123
+        },
+        {
+          "heading": "Error Handling",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "Privacy & Security (Requirement 9.5)",
+          "level": 2,
+          "line": 136
+        },
+        {
+          "heading": "Scaling Strategy (Requirement 9.3, 9.4)",
+          "level": 2,
+          "line": 141
+        },
+        {
+          "heading": "Type Safety (Requirement 9.6)",
+          "level": 2,
+          "line": 147
+        },
+        {
+          "heading": "Testing Strategy",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "Correctness Properties",
+          "level": 2,
+          "line": 157
+        },
+        {
+          "heading": "Property 1: No silent drops",
+          "level": 3,
+          "line": 159
+        },
+        {
+          "heading": "Property 2: Budget invariant",
+          "level": 3,
+          "line": 164
+        },
+        {
+          "heading": "Property 3: Confidence gating",
+          "level": 3,
+          "line": 168
+        },
+        {
+          "heading": "Property 4: Substitution traceability",
+          "level": 3,
+          "line": 173
+        },
+        {
+          "heading": "Property 5: Privacy invariant",
+          "level": 3,
+          "line": 177
+        },
+        {
+          "heading": "Property 6: Deterministic demo",
+          "level": 3,
+          "line": 181
+        },
+        {
+          "heading": "Property 7: Graceful degradation",
+          "level": 3,
+          "line": 185
+        },
+        {
+          "heading": "Frontend (Nest grocery theme)",
+          "level": 2,
+          "line": 190
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 28
+      }
+    },
+    {
+      "path": ".kiro/specs/nowcart/requirements.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 227,
+      "nonEmptyLines": 178,
+      "sections": [
+        {
+          "heading": "Requirements Document",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Introduction",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Glossary",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "Requirement 1: Outcome Engine (A1)",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 43
+        },
+        {
+          "heading": "Requirement 2: Voice-to-Order (A2)",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 56
+        },
+        {
+          "heading": "Requirement 3: Constraint-First Ordering (A3)",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 68
+        },
+        {
+          "heading": "Requirement 4: Show It / Share It (B2 + B4)",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 79
+        },
+        {
+          "heading": "Requirement 5: Comparison Collapse & Confidence Score (C2 + C3)",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 91
+        },
+        {
+          "heading": "Requirement 6: Substitution Intelligence (D2)",
+          "level": 2,
+          "line": 98
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 103
+        },
+        {
+          "heading": "Requirement 7: SOS / Emergency Mode (D4)",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 114
+        },
+        {
+          "heading": "Requirement 8: Catalog & Data (cross-cutting)",
+          "level": 2,
+          "line": 120
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 125
+        },
+        {
+          "heading": "Requirement 9: Architecture, Scaling & Cost (cross-cutting / non-functional)",
+          "level": 2,
+          "line": 131
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 136
+        },
+        {
+          "heading": "Requirement 10: Frontend Revamp & Backend Sync (experience layer)",
+          "level": 2,
+          "line": 144
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 157
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 24
+      }
+    },
+    {
+      "path": ".kiro/specs/nowcart/tasks.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 130,
+      "nonEmptyLines": 110,
+      "sections": [
+        {
+          "heading": "Implementation Plan — NowCart",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Task Dependency Graph",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Tasks",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Notes",
+          "level": 2,
+          "line": 124
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    }
+  ]
+}

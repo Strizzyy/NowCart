@@ -1,0 +1,19 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {"path": "client/README.md", "language": "markdown", "sizeLines": 73, "fileCategory": "docs"},
+    {"path": "client/index.html", "language": "html", "sizeLines": 29, "fileCategory": "markup"},
+    {"path": "client/package.json", "language": "json", "sizeLines": 43, "fileCategory": "config"},
+    {"path": "client/tsconfig.app.json", "language": "json", "sizeLines": 25, "fileCategory": "config"},
+    {"path": "client/tsconfig.json", "language": "json", "sizeLines": 7, "fileCategory": "config"},
+    {"path": "client/tsconfig.node.json", "language": "json", "sizeLines": 24, "fileCategory": "config"}
+  ],
+  "batchImportData": {
+    "client/README.md": [],
+    "client/index.html": [],
+    "client/package.json": [],
+    "client/tsconfig.app.json": [],
+    "client/tsconfig.json": [],
+    "client/tsconfig.node.json": []
+  }
+}

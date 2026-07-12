@@ -1,0 +1,25 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {"path": ".dockerignore", "language": "unknown", "sizeLines": 22, "fileCategory": "infra"},
+    {"path": "APK_BUILD_GUIDE.md", "language": "markdown", "sizeLines": 175, "fileCategory": "docs"},
+    {"path": "ARCHITECTURE_DIAGRAM.md", "language": "markdown", "sizeLines": 114, "fileCategory": "docs"},
+    {"path": "NowCart_Presentation_Script.md", "language": "markdown", "sizeLines": 241, "fileCategory": "docs"},
+    {"path": "README.md", "language": "markdown", "sizeLines": 146, "fileCategory": "docs"},
+    {"path": "SYSTEM_ARCHITECTURE.md", "language": "markdown", "sizeLines": 402, "fileCategory": "docs"},
+    {"path": "archi.md", "language": "markdown", "sizeLines": 118, "fileCategory": "docs"},
+    {"path": "deploy.bat", "language": "batch", "sizeLines": 49, "fileCategory": "script"},
+    {"path": "docker-compose.yml", "language": "yaml", "sizeLines": 117, "fileCategory": "infra"}
+  ],
+  "batchImportData": {
+    ".dockerignore": [],
+    "APK_BUILD_GUIDE.md": [],
+    "ARCHITECTURE_DIAGRAM.md": [],
+    "NowCart_Presentation_Script.md": [],
+    "README.md": [],
+    "SYSTEM_ARCHITECTURE.md": [],
+    "archi.md": [],
+    "deploy.bat": [],
+    "docker-compose.yml": []
+  }
+}

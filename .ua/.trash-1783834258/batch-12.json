@@ -1,0 +1,230 @@
+{
+  "nodes": [
+    {
+      "id": "config:.dockerignore",
+      "type": "config",
+      "name": ".dockerignore",
+      "filePath": ".dockerignore",
+      "summary": "Excludes Python virtualenv/cache dirs, Node modules/build output, IDE/OS artifacts, and .env secret files from Docker build contexts.",
+      "tags": ["configuration", "containerization", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:APK_BUILD_GUIDE.md",
+      "type": "document",
+      "name": "APK_BUILD_GUIDE.md",
+      "filePath": "APK_BUILD_GUIDE.md",
+      "summary": "Step-by-step guide for building, signing, and hosting the NowCart Android APK (Android Studio, Gradle signing config, S3/EC2 hosting) plus notes on the already-live PWA.",
+      "tags": ["documentation", "deployment", "mobile", "android"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:ARCHITECTURE_DIAGRAM.md",
+      "type": "document",
+      "name": "ARCHITECTURE_DIAGRAM.md",
+      "filePath": "ARCHITECTURE_DIAGRAM.md",
+      "summary": "High-level visual architecture diagram of NowCart with a one-minute walkthrough of how requests flow through the system.",
+      "tags": ["documentation", "architecture", "overview"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:NowCart_Presentation_Script.md",
+      "type": "document",
+      "name": "NowCart_Presentation_Script.md",
+      "filePath": "NowCart_Presentation_Script.md",
+      "summary": "Full slide-by-slide presentation script for a hackathon grand finale pitch, covering the product story, demo voiceover, technical architecture, algorithms, and growth roadmap.",
+      "tags": ["documentation", "presentation", "pitch"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Project README describing NowCart's purpose, how it works, its architecture, tech stack, local development setup, deployment, and admin access.",
+      "tags": ["documentation", "entry-point", "overview"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:SYSTEM_ARCHITECTURE.md",
+      "type": "document",
+      "name": "SYSTEM_ARCHITECTURE.md",
+      "filePath": "SYSTEM_ARCHITECTURE.md",
+      "summary": "Comprehensive system architecture document detailing the LangGraph Outcome Engine node-by-node (intent, decompose, pantry filter, match/RAG, optimize, substitute, confidence, counterfactual), the Zero Door predictive restock path, data flow diagrams for each entry mode, middleware stack, LLM provider architecture, hybrid retrieval, infrastructure, scaling, observability, and security hardening.",
+      "tags": ["documentation", "architecture", "langgraph", "system-design"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:archi.md",
+      "type": "document",
+      "name": "archi.md",
+      "filePath": "archi.md",
+      "summary": "Hybrid system architecture diagram and one-minute presentation script explaining key implementation details behind the diagram.",
+      "tags": ["documentation", "architecture", "presentation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:deploy.bat",
+      "type": "file",
+      "name": "deploy.bat",
+      "filePath": "deploy.bat",
+      "summary": "Windows batch script that builds the frontend, syncs the build to an S3 bucket, invalidates the CloudFront distribution, and reminds the operator to SSH into EC2 to restart the backend service.",
+      "tags": ["deployment", "script", "ci-cd", "aws"],
+      "complexity": "simple",
+      "languageNotes": "Sequential 4-step batch script with %errorlevel% checks after each AWS CLI call; hardcodes a local dev path and specific S3 bucket/CloudFront distribution IDs."
+    },
+    {
+      "id": "service:docker-compose.yml",
+      "type": "service",
+      "name": "docker-compose.yml",
+      "filePath": "docker-compose.yml",
+      "summary": "Local development Docker Compose stack wiring together the FastAPI backend, nginx-served Vite frontend, Redis (cache/session), and DynamoDB Local (persistence), each with health checks and a shared bridge network.",
+      "tags": ["orchestration", "infrastructure", "containerization", "local-dev"],
+      "complexity": "moderate",
+      "languageNotes": "Uses depends_on with service_healthy conditions to sequence startup: dynamodb-local/redis before backend, backend before frontend."
+    },
+    {
+      "id": "service:docker-compose.yml:backend",
+      "type": "service",
+      "name": "backend",
+      "filePath": "docker-compose.yml",
+      "summary": "FastAPI backend service built from server/Dockerfile, configured via environment variables for DynamoDB, Redis, Groq/Gemini LLM providers, and CORS; exposes port 8000.",
+      "tags": ["service", "backend", "fastapi"],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:docker-compose.yml:frontend",
+      "type": "service",
+      "name": "frontend",
+      "filePath": "docker-compose.yml",
+      "summary": "Nginx-served Vite frontend built from client/Dockerfile, exposed on port 3000 and depending on the backend being healthy.",
+      "tags": ["service", "frontend", "nginx"],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:docker-compose.yml:redis",
+      "type": "service",
+      "name": "redis",
+      "filePath": "docker-compose.yml",
+      "summary": "Redis 7 Alpine service providing cart/session state and LLM response caching, with a persistent volume and periodic save policy.",
+      "tags": ["service", "cache", "redis"],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:docker-compose.yml:dynamodb-local",
+      "type": "service",
+      "name": "dynamodb-local",
+      "filePath": "docker-compose.yml",
+      "summary": "Local DynamoDB emulator service (amazon/dynamodb-local) for product/user/order persistence during development, backed by a persistent volume.",
+      "tags": ["service", "database", "dynamodb"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:docker-compose.yml",
+      "target": "service:docker-compose.yml:backend",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml",
+      "target": "service:docker-compose.yml:frontend",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml",
+      "target": "service:docker-compose.yml:redis",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml",
+      "target": "service:docker-compose.yml:dynamodb-local",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml:frontend",
+      "target": "service:docker-compose.yml:backend",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml:backend",
+      "target": "service:docker-compose.yml:redis",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:docker-compose.yml:backend",
+      "target": "service:docker-compose.yml:dynamodb-local",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:SYSTEM_ARCHITECTURE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:ARCHITECTURE_DIAGRAM.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:archi.md",
+      "target": "document:SYSTEM_ARCHITECTURE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:NowCart_Presentation_Script.md",
+      "target": "document:SYSTEM_ARCHITECTURE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "service:docker-compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:SYSTEM_ARCHITECTURE.md",
+      "target": "service:docker-compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.dockerignore",
+      "target": "service:docker-compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:deploy.bat",
+      "target": "document:APK_BUILD_GUIDE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "nodes": [
+    {
+      "id": "file:client/src/ui/Button.tsx",
+      "type": "file",
+      "name": "Button.tsx",
+      "filePath": "client/src/ui/Button.tsx",
+      "summary": "Shared button UI primitive with variant (primary/secondary/accent/outline/ghost) and size styling, a built-in loading spinner state, and left/right icon slots used across the client app.",
+      "tags": ["component", "ui-primitive", "button", "design-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/Button.tsx:Button",
+      "type": "function",
+      "name": "Button",
+      "filePath": "client/src/ui/Button.tsx",
+      "lineRange": [34, 69],
+      "summary": "Default-exported React component that renders a styled <button> combining variant/size class maps, disables itself while loading, and swaps in a Spinner when the loading prop is true.",
+      "tags": ["component", "button", "loading-state"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/ui/Spinner.tsx",
+      "type": "file",
+      "name": "Spinner.tsx",
+      "filePath": "client/src/ui/Spinner.tsx",
+      "summary": "Small reusable SVG loading spinner component with configurable size, className, and accessible label, used inside Button and other async UI states.",
+      "tags": ["component", "ui-primitive", "spinner", "loading-indicator"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/Spinner.tsx:Spinner",
+      "type": "function",
+      "name": "Spinner",
+      "filePath": "client/src/ui/Spinner.tsx",
+      "lineRange": [16, 23],
+      "summary": "Default-exported React component rendering an animated spinner icon sized and styled via props, with an accessible loading label.",
+      "tags": ["component", "spinner", "accessibility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/ui/States.tsx",
+      "type": "file",
+      "name": "States.tsx",
+      "filePath": "client/src/ui/States.tsx",
+      "summary": "UI primitives for common empty and error states, each accepting an icon/title/description and an optional retry/action Button, used to give consistent feedback screens across the app.",
+      "tags": ["component", "ui-primitive", "empty-state", "error-state"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/States.tsx:EmptyState",
+      "type": "function",
+      "name": "EmptyState",
+      "filePath": "client/src/ui/States.tsx",
+      "lineRange": [17, 30],
+      "summary": "Named-exported component that renders a centered empty-state layout with icon, title, description, and an optional action element.",
+      "tags": ["component", "empty-state"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/States.tsx:ErrorState",
+      "type": "function",
+      "name": "ErrorState",
+      "filePath": "client/src/ui/States.tsx",
+      "lineRange": [44, 67],
+      "summary": "Named-exported component that renders an error message with a default title/description and an optional retry Button wired to an onRetry callback.",
+      "tags": ["component", "error-state", "retry"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:client/src/ui/Button.tsx",
+      "target": "function:client/src/ui/Button.tsx:Button",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/Button.tsx",
+      "target": "function:client/src/ui/Button.tsx:Button",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/Spinner.tsx",
+      "target": "function:client/src/ui/Spinner.tsx:Spinner",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/Spinner.tsx",
+      "target": "function:client/src/ui/Spinner.tsx:Spinner",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/States.tsx",
+      "target": "function:client/src/ui/States.tsx:EmptyState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/States.tsx",
+      "target": "function:client/src/ui/States.tsx:EmptyState",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/States.tsx",
+      "target": "function:client/src/ui/States.tsx:ErrorState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/States.tsx",
+      "target": "function:client/src/ui/States.tsx:ErrorState",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/Button.tsx",
+      "target": "file:client/src/ui/Spinner.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/ui/States.tsx",
+      "target": "file:client/src/ui/Button.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:client/src/ui/Button.tsx:Button",
+      "target": "function:client/src/ui/Spinner.tsx:Spinner",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:client/src/ui/States.tsx:ErrorState",
+      "target": "function:client/src/ui/Button.tsx:Button",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

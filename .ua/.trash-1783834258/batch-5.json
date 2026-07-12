@@ -1,0 +1,258 @@
+{
+  "nodes": [
+    {
+      "id": "file:server/app/repositories/dynamodb.py",
+      "type": "file",
+      "name": "dynamodb.py",
+      "filePath": "server/app/repositories/dynamodb.py",
+      "summary": "DynamoDB repository implementing the primary datastore access layer: table provisioning and CRUD operations for products, users, and orders via aioboto3, with helpers to convert between Python floats and DynamoDB Decimal types.",
+      "tags": ["data-model", "service", "database", "async"],
+      "complexity": "complex",
+      "languageNotes": "Uses aioboto3 async DynamoDB resource sessions and recursive helpers to convert between float and Decimal for DynamoDB compatibility."
+    },
+    {
+      "id": "file:server/app/seed/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/seed/__init__.py",
+      "summary": "Package init for the seed module that re-exports catalog loading, mock data generation, and stock override helpers as the public seed API.",
+      "tags": ["entry-point", "barrel", "seed"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/seed/__main__.py",
+      "type": "file",
+      "name": "__main__.py",
+      "filePath": "server/app/seed/__main__.py",
+      "summary": "CLI entry point for `python -m app.seed`; orchestrates loading the catalog, applying stock overrides, seeding mock users/orders, and writing everything into the configured repository and cache.",
+      "tags": ["entry-point", "seed", "cli", "async"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/seed/catalog.py",
+      "type": "file",
+      "name": "catalog.py",
+      "filePath": "server/app/seed/catalog.py",
+      "summary": "Loads and normalizes the product catalog from CSV or XLSX datasets into domain Product models, generating stable product IDs, parsing units, tags, ratings, and descriptions.",
+      "tags": ["data-pipeline", "seed", "parsing", "utility"],
+      "complexity": "complex",
+      "languageNotes": "Supports both CSV (stdlib csv) and XLSX (openpyxl) dataset formats with a shared normalization pipeline."
+    },
+    {
+      "id": "file:server/app/seed/mock_data.py",
+      "type": "file",
+      "name": "mock_data.py",
+      "filePath": "server/app/seed/mock_data.py",
+      "summary": "Generates hardcoded mock User and Order domain objects used to seed the demo/dev environment with realistic sample data.",
+      "tags": ["seed", "data-model", "fixtures"],
+      "complexity": "complex",
+      "languageNotes": "create_mock_orders is a very large function (275 lines) composed almost entirely of repeated literal Order construction blocks."
+    },
+    {
+      "id": "file:server/app/seed/seed_dynamodb.py",
+      "type": "file",
+      "name": "seed_dynamodb.py",
+      "filePath": "server/app/seed/seed_dynamodb.py",
+      "summary": "High-level seeding routine that provisions DynamoDB tables and bulk-loads catalog, stock override, mock user, and mock order data into DynamoDB, plus a helper to check whether seeding already occurred.",
+      "tags": ["seed", "database", "service", "async"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/seed/stock_overrides.py",
+      "type": "file",
+      "name": "stock_overrides.py",
+      "filePath": "server/app/seed/stock_overrides.py",
+      "summary": "Derives a deterministic subset of product IDs to be marked as out-of-stock/overridden for demo purposes, based on a hash of the full product ID set.",
+      "tags": ["seed", "utility", "stock"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/repositories/dynamodb.py:_session_kwargs",
+      "type": "function",
+      "name": "_session_kwargs",
+      "filePath": "server/app/repositories/dynamodb.py",
+      "lineRange": [30, 39],
+      "summary": "Builds the keyword arguments (endpoint, region, credentials) used to construct the aioboto3 DynamoDB resource session, called by nearly every repository method.",
+      "tags": ["utility", "database", "config"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/repositories/dynamodb.py:DynamoDBRepository",
+      "type": "class",
+      "name": "DynamoDBRepository",
+      "filePath": "server/app/repositories/dynamodb.py",
+      "lineRange": [64, 270],
+      "summary": "Primary datastore repository providing async table creation and CRUD operations (get/list/upsert) for products, users, and orders against DynamoDB.",
+      "tags": ["data-model", "service", "database", "repository"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/seed/__main__.py:_run_seed",
+      "type": "function",
+      "name": "_run_seed",
+      "filePath": "server/app/seed/__main__.py",
+      "lineRange": [27, 90],
+      "summary": "Async driver that loads the catalog, computes stock overrides, bulk-upserts products, seeds mock users and orders into the repository/cache, and prints a summary report with timing.",
+      "tags": ["seed", "async", "cli", "orchestration"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/seed/__main__.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "server/app/seed/__main__.py",
+      "lineRange": [93, 101],
+      "summary": "Synchronous CLI entry point that runs `_run_seed` via asyncio and exits with a non-zero status on failure.",
+      "tags": ["entry-point", "cli"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/seed/catalog.py:_safe_float",
+      "type": "function",
+      "name": "_safe_float",
+      "filePath": "server/app/seed/catalog.py",
+      "lineRange": [39, 49],
+      "summary": "Safely coerces a raw dataset cell value to a float, falling back to a default when the value is blank or unparsable.",
+      "tags": ["utility", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/seed/catalog.py:_parse_unit_from_name",
+      "type": "function",
+      "name": "_parse_unit_from_name",
+      "filePath": "server/app/seed/catalog.py",
+      "lineRange": [65, 74],
+      "summary": "Extracts a quantity and unit (e.g. '500 ml') from a product name string using a regular expression.",
+      "tags": ["utility", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/seed/catalog.py:load_catalog",
+      "type": "function",
+      "name": "load_catalog",
+      "filePath": "server/app/seed/catalog.py",
+      "lineRange": [192, 272],
+      "summary": "Reads the product dataset (CSV or XLSX), normalizes each row into a domain Product with generated IDs, tags, units, ratings, and descriptions, and returns the full product list.",
+      "tags": ["data-pipeline", "seed", "parsing"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/seed/catalog.py:_read_xlsx",
+      "type": "function",
+      "name": "_read_xlsx",
+      "filePath": "server/app/seed/catalog.py",
+      "lineRange": [286, 296],
+      "summary": "Reads rows from an XLSX dataset file into a list of row values using openpyxl.",
+      "tags": ["utility", "parsing", "data-pipeline"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/seed/mock_data.py:create_mock_users",
+      "type": "function",
+      "name": "create_mock_users",
+      "filePath": "server/app/seed/mock_data.py",
+      "lineRange": [18, 64],
+      "summary": "Builds a fixed list of sample User domain objects used for local development and demo seeding.",
+      "tags": ["seed", "fixtures", "data-model"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/seed/mock_data.py:create_mock_orders",
+      "type": "function",
+      "name": "create_mock_orders",
+      "filePath": "server/app/seed/mock_data.py",
+      "lineRange": [67, 341],
+      "summary": "Generates a large fixed list of sample Order domain objects referencing given product IDs, covering varied order states and timelines for demo seeding.",
+      "tags": ["seed", "fixtures", "data-model"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb",
+      "type": "function",
+      "name": "seed_dynamodb",
+      "filePath": "server/app/seed/seed_dynamodb.py",
+      "lineRange": [28, 72],
+      "summary": "Ensures DynamoDB tables exist and, if not already populated (or forced), loads the catalog and mock data and bulk-writes products, users, and orders into DynamoDB.",
+      "tags": ["seed", "database", "async", "orchestration"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/seed/seed_dynamodb.py:is_dynamodb_seeded",
+      "type": "function",
+      "name": "is_dynamodb_seeded",
+      "filePath": "server/app/seed/seed_dynamodb.py",
+      "lineRange": [75, 83],
+      "summary": "Checks whether DynamoDB already contains seeded product data by creating tables if needed and querying the product list.",
+      "tags": ["seed", "database", "async"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/seed/stock_overrides.py:get_override_product_ids",
+      "type": "function",
+      "name": "get_override_product_ids",
+      "filePath": "server/app/seed/stock_overrides.py",
+      "lineRange": [28, 41],
+      "summary": "Deterministically selects a subset of the given product IDs to treat as stock overrides, ensuring consistent demo behavior across runs.",
+      "tags": ["utility", "stock", "seed"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "file:server/app/core/config.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "file:server/app/models/domain/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__init__.py", "target": "file:server/app/seed/catalog.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__init__.py", "target": "file:server/app/seed/mock_data.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__init__.py", "target": "file:server/app/seed/stock_overrides.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__main__.py", "target": "file:server/app/seed/catalog.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__main__.py", "target": "file:server/app/seed/mock_data.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/__main__.py", "target": "file:server/app/seed/stock_overrides.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/catalog.py", "target": "file:server/app/models/domain/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/mock_data.py", "target": "file:server/app/models/domain/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "file:server/app/core/config.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "file:server/app/repositories/dynamodb.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "file:server/app/seed/catalog.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "file:server/app/seed/mock_data.py", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "file:server/app/seed/stock_overrides.py", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "function:server/app/repositories/dynamodb.py:_session_kwargs", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "class:server/app/repositories/dynamodb.py:DynamoDBRepository", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/__main__.py", "target": "function:server/app/seed/__main__.py:_run_seed", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/__main__.py", "target": "function:server/app/seed/__main__.py:main", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_safe_float", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_parse_unit_from_name", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:load_catalog", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_read_xlsx", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/mock_data.py", "target": "function:server/app/seed/mock_data.py:create_mock_users", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/mock_data.py", "target": "function:server/app/seed/mock_data.py:create_mock_orders", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "function:server/app/seed/seed_dynamodb.py:is_dynamodb_seeded", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:server/app/seed/stock_overrides.py", "target": "function:server/app/seed/stock_overrides.py:get_override_product_ids", "type": "contains", "direction": "forward", "weight": 1.0},
+
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "function:server/app/repositories/dynamodb.py:_session_kwargs", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/repositories/dynamodb.py", "target": "class:server/app/repositories/dynamodb.py:DynamoDBRepository", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/__main__.py", "target": "function:server/app/seed/__main__.py:_run_seed", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/__main__.py", "target": "function:server/app/seed/__main__.py:main", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_safe_float", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_parse_unit_from_name", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:load_catalog", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/catalog.py", "target": "function:server/app/seed/catalog.py:_read_xlsx", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/mock_data.py", "target": "function:server/app/seed/mock_data.py:create_mock_users", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/mock_data.py", "target": "function:server/app/seed/mock_data.py:create_mock_orders", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/seed_dynamodb.py", "target": "function:server/app/seed/seed_dynamodb.py:is_dynamodb_seeded", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:server/app/seed/stock_overrides.py", "target": "function:server/app/seed/stock_overrides.py:get_override_product_ids", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "target": "class:server/app/repositories/dynamodb.py:DynamoDBRepository", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "target": "function:server/app/seed/catalog.py:load_catalog", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "target": "function:server/app/seed/stock_overrides.py:get_override_product_ids", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "target": "function:server/app/seed/mock_data.py:create_mock_users", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/seed_dynamodb.py:seed_dynamodb", "target": "function:server/app/seed/mock_data.py:create_mock_orders", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/seed_dynamodb.py:is_dynamodb_seeded", "target": "class:server/app/repositories/dynamodb.py:DynamoDBRepository", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "function:server/app/seed/__main__.py:_run_seed", "target": "function:server/app/seed/catalog.py:load_catalog", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/__main__.py:_run_seed", "target": "function:server/app/seed/stock_overrides.py:get_override_product_ids", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/__main__.py:_run_seed", "target": "function:server/app/seed/mock_data.py:create_mock_users", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/__main__.py:_run_seed", "target": "function:server/app/seed/mock_data.py:create_mock_orders", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:server/app/seed/__main__.py:main", "target": "function:server/app/seed/__main__.py:_run_seed", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

@@ -1,0 +1,93 @@
+[
+  {
+    "order": 1,
+    "title": "Project Overview",
+    "description": "NowCart is an intent-capture layer for quick commerce: instead of browsing a catalog, users speak a need, snap a dish photo, paste a recipe link, set a budget, or let the app predict a restock, and one AI reasoning engine turns that into a checkout-ready cart. The README lays out the five entry points (Show/Share/Speak/Constrain/Subscribe), the FastAPI + LangGraph + React stack, and how the pieces connect end to end. Keep this five-door mental model in mind -- every controller and service you see in this tour maps back to one of them.",
+    "nodeIds": ["document:README.md"]
+  },
+  {
+    "order": 2,
+    "title": "System Architecture Deep Dive",
+    "description": "Before touching code, this architecture document spells out the full request lifecycle: Feature Layer -> Security & Capture -> Decision -> Outcome Engine (Decompose -> Match -> Optimize -> Confidence) -> Storage -> Confident Cart -> Checkout. It also documents the hybrid retrieval pipeline (bi-encoder -> cross-encoder -> RapidFuzz), the multi-provider LLM strategy, and security hardening. Treat this as the map you'll be filling in with real files for the rest of the tour.",
+    "nodeIds": ["document:SYSTEM_ARCHITECTURE.md", "document:.kiro/specs/nowcart/design.md"]
+  },
+  {
+    "order": 3,
+    "title": "Frontend Entry Point",
+    "description": "On the client side, main.tsx is the literal first line of code that runs -- it mounts the React root and pulls in global CSS. From here, App.tsx takes over: it owns top-level routing and the user/cart context that every page and component shares. This is where the five \"front doors\" surface as UI.",
+    "nodeIds": ["file:client/src/main.tsx", "file:client/src/App.tsx"],
+    "languageLesson": "React 19 apps typically split concerns between a thin bootstrap file (mounting the root) and a root component that owns routing and shared state via Context -- keeping the entry point itself free of business logic."
+  },
+  {
+    "order": 4,
+    "title": "Client API Layer and Shared UI",
+    "description": "client/src/api/client.ts is the single typed fetch wrapper the entire frontend goes through -- every cart, catalog, subscription, prediction, checkout, and auth call funnels through this one file, making it the highest fan-in module on the client. ui/index.ts is the barrel file exporting shared primitives (Button, Card, Toast, etc.) so every page looks and behaves consistently. Together these two files are the contract between the UI and the backend you're about to explore.",
+    "nodeIds": ["file:client/src/api/client.ts", "file:client/src/ui/index.ts"],
+    "languageLesson": "TypeScript barrel files (index.ts re-exporting a folder's modules) create a clean public API surface, letting consumers write `import { Button } from '@/ui'` instead of deep relative paths."
+  },
+  {
+    "order": 5,
+    "title": "Frontend Feature Surfaces",
+    "description": "FrontDoorPanel.tsx is the modal dispatcher that renders the right intent-capture UI (constrain/predict/share/show/speak) depending on which door the user picked -- it's the visual counterpart to the five entry points from the README. CartDrawer.tsx then shows the resulting cart with recommended vs. economical picks, quantity controls, and a checkout call-to-action, while PaymentPage.tsx handles the final checkout flow. This trio carries a user from \"I have a need\" through to \"order placed.\"",
+    "nodeIds": ["file:client/src/components/frontdoors/FrontDoorPanel.tsx", "file:client/src/components/CartDrawer.tsx", "file:client/src/pages/PaymentPage.tsx"]
+  },
+  {
+    "order": 6,
+    "title": "Backend Entry Point",
+    "description": "server/app/main.py is where the FastAPI backend boots: it wires up the app's lifespan (seeding catalog data and the semantic search index on startup), registers middleware, includes all routers, and sets exception handlers. Every request from the client.ts wrapper you just saw ultimately lands in one of the routers assembled here. This is the backend's mirror of client/src/main.tsx -- the single place that ties the whole server together.",
+    "nodeIds": ["file:server/app/main.py"],
+    "languageLesson": "FastAPI's lifespan context manager runs setup/teardown code exactly once around the app's lifetime, replacing the older @app.on_event('startup') pattern -- ideal for warming caches or building in-memory indexes before traffic arrives."
+  },
+  {
+    "order": 7,
+    "title": "Core Config and Domain Models",
+    "description": "core/config.py is a Pydantic Settings object that centralizes environment config -- which LLM provider to use, API keys, data backend (DynamoDB vs. in-memory), caching, and search/prediction tuning -- accessed everywhere via a cached get_settings(). The domain models (Cart, Product, Need, and the IntentMode/NeedStatus enums) define the vocabulary used throughout the pipeline: a Need is what the user wants, a Product is what the catalog has, and a Cart is what gets returned. These are the nouns every controller and service below will manipulate.",
+    "nodeIds": ["file:server/app/core/config.py", "file:server/app/models/domain/cart.py", "file:server/app/models/domain/product.py", "file:server/app/models/domain/need.py", "file:server/app/models/domain/enums.py"]
+  },
+  {
+    "order": 8,
+    "title": "API Controllers",
+    "description": "Controllers translate HTTP requests into service calls. auth.py handles registration/login and role assignment; orders.py places orders, records ratings, and reads order history; subscribe.py is the largest controller, covering the entire predictive-restock feature set -- subscriptions, predicted/due carts, replanning, and counterfactual explanations. Notice these controllers don't contain business logic themselves -- they coordinate calls into the service layer you'll see next.",
+    "nodeIds": ["file:server/app/controllers/auth.py", "file:server/app/controllers/orders.py", "file:server/app/controllers/subscribe.py"]
+  },
+  {
+    "order": 9,
+    "title": "The Outcome Engine (LangGraph)",
+    "description": "This is the heart of NowCart: graph.py builds a LangGraph StateGraph wiring together intent, decompose, match, confidence, counterfactual, and replan nodes with conditional routing, while nodes.py implements each of those node functions, including LLM prompt construction and catalog matching. outcome_service.py is the orchestrator that injects user context (profile, preferences, recent orders) and invokes this graph to turn a raw intent into a finished cart -- this is the \"one reasoning engine\" the README promised handles all five entry points.",
+    "nodeIds": ["file:server/app/agents/graph.py", "file:server/app/agents/nodes.py", "file:server/app/services/outcome_service.py"],
+    "languageLesson": "LangGraph models multi-step AI reasoning as a directed state graph: each node is a pure function that transforms shared state, and conditional edges decide the next node based on that state -- making complex branching LLM pipelines (retry, replan, fallback) explicit and testable rather than buried in nested if/else."
+  },
+  {
+    "order": 10,
+    "title": "Catalog Matching, Retrieval, and Prediction Services",
+    "description": "catalog_service.py implements product search, relevance scoring, and fuzzy need-to-product matching used throughout the pipeline. semantic_search_service.py layers on top of it with hybrid retrieval -- bi-encoder embedding search, cross-encoder reranking, and a RapidFuzz fallback -- to turn fuzzy user language into precise catalog hits. subscribe_service.py is the largest service in the codebase, analyzing order history to predict restocks and build starter carts, powering the \"Subscribe\" front door. Together these three services do the heavy lifting behind the Outcome Engine's Match and confidence-scoring steps.",
+    "nodeIds": ["file:server/app/services/catalog_service.py", "file:server/app/services/semantic_search_service.py", "file:server/app/services/subscribe_service.py"]
+  },
+  {
+    "order": 11,
+    "title": "LLM Providers and Data Repositories",
+    "description": "llm/base.py defines the abstract LLMProvider and VisionProvider interfaces that concrete providers (Groq, Gemini, Bedrock, Mock) implement -- this is what lets NowCart swap between Groq Llama 3.3 for reasoning and Gemini Vision for dish-photo extraction without touching the agent code. repositories/__init__.py is the factory that hands back either a DynamoDB-backed or in-memory repository and cache singleton depending on config, which is how the same service code from Step 10 runs identically in local dev and production.",
+    "nodeIds": ["file:server/app/llm/base.py", "file:server/app/repositories/__init__.py"],
+    "languageLesson": "The abstract base class / interface pattern (Python's ABC) lets NowCart depend on the LLMProvider contract rather than a specific vendor SDK -- new providers are added by implementing the interface, with zero changes needed in the agent graph that calls them."
+  },
+  {
+    "order": 12,
+    "title": "Data Seeding",
+    "description": "server/app/seed/__main__.py is a CLI entry point (`python -m app.seed`) that loads the product catalog, applies stock overrides, seeds mock users and orders, and writes it all into whichever repository is configured. This is what main.py's lifespan startup runs to populate DynamoDB or the in-memory store before the app can serve the endpoints from Steps 8-11 -- without it, catalog_service and semantic_search_service would have nothing to match against.",
+    "nodeIds": ["file:server/app/seed/__main__.py"]
+  },
+  {
+    "order": 13,
+    "title": "Local Dev Stack and Containerization",
+    "description": "docker-compose.yml wires together everything you've explored into a runnable local stack: the FastAPI backend, the Nginx-served Vite frontend, Redis for cart/session/LLM-response caching, and a DynamoDB Local emulator, each with health checks on a shared network. The two Dockerfiles show how each half is packaged for production: the frontend compiles static assets in a Node builder stage then serves them from hardened Nginx, while the backend installs Python dependencies via uv in a builder stage and runs as a non-root user in a slim runtime image.",
+    "nodeIds": ["service:docker-compose.yml", "service:client/Dockerfile", "service:server/Dockerfile"],
+    "languageLesson": "Multi-stage Docker builds separate build-time tooling (compilers, package managers, dev dependencies) from the runtime image, so the shipped container only contains what's needed to run -- shrinking image size and attack surface."
+  },
+  {
+    "order": 14,
+    "title": "CI/CD: Shipping to Production",
+    "description": "deploy.yml is the capstone of the infrastructure story: every push to master triggers this GitHub Actions workflow, which builds the Vite frontend and syncs it to S3 with a CloudFront cache invalidation, then SSHes into the production EC2 host to write environment secrets, git-pull the backend, and restart the systemd service. This is the automated path from the code you've toured to the live NowCart application running in AWS ap-south-1.",
+    "nodeIds": ["pipeline:.github/workflows/deploy.yml"],
+    "languageLesson": "GitHub Actions workflows use `on` triggers (here, push to master), sequential `jobs` with `needs:` dependencies to enforce ordering (frontend deploys before backend), and `steps` for the actual shell commands -- turning a manual deploy runbook into a repeatable, auditable pipeline."
+  }
+]

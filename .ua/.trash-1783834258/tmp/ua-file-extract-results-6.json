@@ -1,0 +1,1339 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "client/src/components/AddressManager.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 390,
+      "nonEmptyLines": 359,
+      "functions": [
+        {
+          "name": "AddressManager",
+          "startLine": 22,
+          "endLine": 390,
+          "params": [
+            "{ onClose }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AddressManager",
+          "line": 22,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AddressManager",
+          "callee": "useLocation",
+          "lineNumber": 26
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 34
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 36
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 37
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 38
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 39
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "useState",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setDetecting",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setGpsError",
+          "lineNumber": 44
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "detectGPS",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setDetecting",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setGpsError",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setDetectedData",
+          "lineNumber": 51
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setNewBlock",
+          "lineNumber": 52
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setNewArea",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setNewCity",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setNewPin",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleDetectGPS",
+          "callee": "setSheet",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handleSaveGPS",
+          "callee": "addAddress",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleSaveGPS",
+          "callee": "onClose",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "newArea.trim",
+          "lineNumber": 74
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "newCity.trim",
+          "lineNumber": 74
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "addAddress",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "[newFlat, newArea].filter(Boolean).join",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "[newFlat, newArea].filter",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "[newFlat, newBlock, newArea, newCity, newPin].filter(Boolean).join",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "[newFlat, newBlock, newArea, newCity, newPin].filter",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handleSaveManual",
+          "callee": "onClose",
+          "lineNumber": 85
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewLabel",
+          "lineNumber": 89
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewNickname",
+          "lineNumber": 89
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewFlat",
+          "lineNumber": 89
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewBlock",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewArea",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewCity",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setNewPin",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setDetectedData",
+          "lineNumber": 91
+        },
+        {
+          "caller": "resetAddForm",
+          "callee": "setGpsError",
+          "lineNumber": 91
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "e.stopPropagation",
+          "lineNumber": 101
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "addresses.map",
+          "lineNumber": 120
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "[\r\n                        'flex items-start gap-3 p-3.5 rounded-xl border-2 transition cursor-pointer',\r\n                        isActive ? 'border-primary bg-primary-light/40' : 'border-border hover:border-primary/30',\r\n                      ].join",
+          "lineNumber": 126
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setActive",
+          "lineNumber": 130
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "onClose",
+          "lineNumber": 130
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "[addr.block, addr.area].filter(Boolean).join",
+          "lineNumber": 148
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "[addr.block, addr.area].filter",
+          "lineNumber": 148
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "e.stopPropagation",
+          "lineNumber": 157
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "removeAddress",
+          "lineNumber": 157
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "resetAddForm",
+          "lineNumber": 173
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setSheet",
+          "lineNumber": 173
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setSheet",
+          "lineNumber": 189
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "(['Home', 'Work', 'Other'] as AddressLabel[]).map",
+          "lineNumber": 200
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewLabel",
+          "lineNumber": 203
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "[\r\n                        'flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-sm font-semibold transition',\r\n                        newLabel === lbl\r\n                          ? `border-primary ${LABEL_META[lbl].color}`\r\n                          : 'border-border text-muted hover:border-primary/40',\r\n                      ].join",
+          "lineNumber": 204
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewNickname",
+          "lineNumber": 225
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setSheet",
+          "lineNumber": 260
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setSheet",
+          "lineNumber": 278
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewBlock",
+          "lineNumber": 298
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewArea",
+          "lineNumber": 304
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewCity",
+          "lineNumber": 310
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewPin",
+          "lineNumber": 315
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setSheet",
+          "lineNumber": 335
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewFlat",
+          "lineNumber": 344
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewBlock",
+          "lineNumber": 350
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewArea",
+          "lineNumber": 356
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewCity",
+          "lineNumber": 363
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "setNewPin",
+          "lineNumber": 369
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "e.target.value.replace(/\\D/g, '').slice",
+          "lineNumber": 369
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "e.target.value.replace",
+          "lineNumber": 369
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "newArea.trim",
+          "lineNumber": 379
+        },
+        {
+          "caller": "AddressManager",
+          "callee": "newCity.trim",
+          "lineNumber": 379
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/components/Header.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 403,
+      "nonEmptyLines": 380,
+      "functions": [
+        {
+          "name": "useAnimatedPlaceholder",
+          "startLine": 26,
+          "endLine": 72,
+          "params": []
+        },
+        {
+          "name": "Header",
+          "startLine": 74,
+          "endLine": 403,
+          "params": [
+            "{ ctx, onLogout }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Header",
+          "line": 74,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "useState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "useRef",
+          "lineNumber": 28
+        },
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "useRef",
+          "lineNumber": 29
+        },
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "useEffect",
+          "lineNumber": 31
+        },
+        {
+          "caller": "tick",
+          "callee": "setDisplay",
+          "lineNumber": 39
+        },
+        {
+          "caller": "tick",
+          "callee": "full.slice",
+          "lineNumber": 39
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 40
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 43
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 47
+        },
+        {
+          "caller": "tick",
+          "callee": "setDisplay",
+          "lineNumber": 51
+        },
+        {
+          "caller": "tick",
+          "callee": "full.slice",
+          "lineNumber": 51
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 52
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 57
+        },
+        {
+          "caller": "tick",
+          "callee": "setTimeout",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "setTimeout",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useAnimatedPlaceholder",
+          "callee": "clearTimeout",
+          "lineNumber": 68
+        },
+        {
+          "caller": "Header",
+          "callee": "useState",
+          "lineNumber": 75
+        },
+        {
+          "caller": "Header",
+          "callee": "useState",
+          "lineNumber": 76
+        },
+        {
+          "caller": "Header",
+          "callee": "useState",
+          "lineNumber": 77
+        },
+        {
+          "caller": "Header",
+          "callee": "useState",
+          "lineNumber": 78
+        },
+        {
+          "caller": "Header",
+          "callee": "useNavigate",
+          "lineNumber": 79
+        },
+        {
+          "caller": "Header",
+          "callee": "useLocation",
+          "lineNumber": 80
+        },
+        {
+          "caller": "Header",
+          "callee": "usePwaInstall",
+          "lineNumber": 81
+        },
+        {
+          "caller": "Header",
+          "callee": "useDeliveryLoc",
+          "lineNumber": 82
+        },
+        {
+          "caller": "Header",
+          "callee": "useAnimatedPlaceholder",
+          "lineNumber": 83
+        },
+        {
+          "caller": "handleInstallClick",
+          "callee": "setShowIosInstall",
+          "lineNumber": 86
+        },
+        {
+          "caller": "handleInstallClick",
+          "callee": "setShowIosInstall",
+          "lineNumber": 87
+        },
+        {
+          "caller": "handleInstallClick",
+          "callee": "triggerInstall",
+          "lineNumber": 88
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "e.preventDefault",
+          "lineNumber": 95
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "searchQuery.trim",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "navigate",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "encodeURIComponent",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "searchQuery.trim",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleSearch",
+          "callee": "setSearchQuery",
+          "lineNumber": 98
+        },
+        {
+          "caller": "Header",
+          "callee": "setSearchQuery",
+          "lineNumber": 146
+        },
+        {
+          "caller": "Header",
+          "callee": "ctx.setCartOpen",
+          "lineNumber": 174
+        },
+        {
+          "caller": "Header",
+          "callee": "cartTotal.toFixed",
+          "lineNumber": 176
+        },
+        {
+          "caller": "Header",
+          "callee": "cartTotal.toFixed",
+          "lineNumber": 179
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 190
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 204
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 218
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 226
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 233
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowUserMenu",
+          "lineNumber": 239
+        },
+        {
+          "caller": "Header",
+          "callee": "onLogout",
+          "lineNumber": 239
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowAddressManager",
+          "lineNumber": 255
+        },
+        {
+          "caller": "Header",
+          "callee": "[\r\n              { label: 'Home',        icon: '🏠', href: '/' },\r\n              { label: 'Shop',        icon: '🛒', href: '/shop' },\r\n              { label: 'Fruits & Veggies', icon: '🥦', href: '/shop?category=fruits%20vegetables' },\r\n              { label: 'Staples',     icon: '🌾', href: '/shop?category=foodgrains%20oil%20masala' },\r\n              { label: 'Snacks',      icon: '🍪', href: '/shop?category=snacks%20branded%20foods' },\r\n              { label: 'Dairy',       icon: '🥛', href: '/shop?category=bakery%20cakes%20dairy' },\r\n              { label: 'Beverages',   icon: '🧃', href: '/shop?category=beverages' },\r\n              { label: 'Beauty',      icon: '💄', href: '/shop?category=beauty%20hygiene' },\r\n              { label: 'Household',   icon: '🧹', href: '/shop?category=cleaning%20household' },\r\n            ].map",
+          "lineNumber": 297
+        },
+        {
+          "caller": "Header",
+          "callee": "href.substring",
+          "lineNumber": 312
+        },
+        {
+          "caller": "Header",
+          "callee": "href.indexOf",
+          "lineNumber": 312
+        },
+        {
+          "caller": "Header",
+          "callee": "[\r\n                    'flex flex-col items-center gap-1 px-3 py-1.5 rounded-none relative group transition-colors shrink-0',\r\n                    isActive ? 'text-primary-ink' : 'text-muted hover:text-dark',\r\n                  ].join",
+          "lineNumber": 317
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowAddressManager",
+          "lineNumber": 358
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowIosInstall",
+          "lineNumber": 362
+        },
+        {
+          "caller": "Header",
+          "callee": "e.stopPropagation",
+          "lineNumber": 366
+        },
+        {
+          "caller": "Header",
+          "callee": "[\r\n                { icon: <Share size={16} className=\"text-primary-ink shrink-0\" />, text: <>Tap the <strong>Share</strong> button at the bottom of Safari</> },\r\n                { icon: <span className=\"text-base leading-none shrink-0\">⊕</span>, text: <>Scroll down and tap <strong>Add to Home Screen</strong></> },\r\n                { icon: <span className=\"text-base leading-none shrink-0\">✓</span>, text: <>Tap <strong>Add</strong> in the top-right corner</> },\r\n              ].map",
+          "lineNumber": 379
+        },
+        {
+          "caller": "Header",
+          "callee": "setShowIosInstall",
+          "lineNumber": 393
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/components/PwaInstallPrompt.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 97,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "PwaInstallPrompt",
+          "startLine": 16,
+          "endLine": 97,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PwaInstallPrompt",
+          "line": 16,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "usePwaInstall",
+          "lineNumber": 17
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "useEffect",
+          "lineNumber": 20
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "localStorage.getItem",
+          "lineNumber": 24
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "setTimeout",
+          "lineNumber": 28
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "setVisible",
+          "lineNumber": 28
+        },
+        {
+          "caller": "PwaInstallPrompt",
+          "callee": "clearTimeout",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handleInstall",
+          "callee": "triggerInstall",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleInstall",
+          "callee": "localStorage.setItem",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleInstall",
+          "callee": "setVisible",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleDismiss",
+          "callee": "setVisible",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handleDismiss",
+          "callee": "localStorage.setItem",
+          "lineNumber": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/context/LocationContext.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 14,
+      "functions": [
+        {
+          "name": "LocationProvider",
+          "startLine": 8,
+          "endLine": 11,
+          "params": [
+            "{ children }"
+          ]
+        },
+        {
+          "name": "useLocation",
+          "startLine": 14,
+          "endLine": 18,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "LocationProvider",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "useLocation",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "LocationProvider",
+          "callee": "useDeliveryLocation",
+          "lineNumber": 9
+        },
+        {
+          "caller": "useLocation",
+          "callee": "useContext",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/hooks/useLocation.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 196,
+      "nonEmptyLines": 173,
+      "functions": [
+        {
+          "name": "loadAddresses",
+          "startLine": 23,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "saveAddresses",
+          "startLine": 30,
+          "endLine": 32,
+          "params": [
+            "list"
+          ]
+        },
+        {
+          "name": "reverseGeocode",
+          "startLine": 35,
+          "endLine": 82,
+          "params": [
+            "lat",
+            "lng"
+          ]
+        },
+        {
+          "name": "useDeliveryLocation",
+          "startLine": 84,
+          "endLine": 196,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "reverseGeocode",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "useDeliveryLocation",
+          "line": 84,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "loadAddresses",
+          "callee": "localStorage.getItem",
+          "lineNumber": 25
+        },
+        {
+          "caller": "loadAddresses",
+          "callee": "JSON.parse",
+          "lineNumber": 26
+        },
+        {
+          "caller": "saveAddresses",
+          "callee": "localStorage.setItem",
+          "lineNumber": 31
+        },
+        {
+          "caller": "saveAddresses",
+          "callee": "JSON.stringify",
+          "lineNumber": 31
+        },
+        {
+          "caller": "reverseGeocode",
+          "callee": "fetch",
+          "lineNumber": 37
+        },
+        {
+          "caller": "reverseGeocode",
+          "callee": "res.json",
+          "lineNumber": 42
+        },
+        {
+          "caller": "reverseGeocode",
+          "callee": "[\r\n      addr.quarter,        // \"Block B\"\r\n      addr.industrial,     // \"Industrial Area\"\r\n      addr.residential,    // residential colony name\r\n      addr.allotments,     // plotted colony\r\n      addr.road,           // street name\r\n      addr.pedestrian,\r\n      addr.footway,\r\n      addr.neighbourhood,\r\n    ].filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "reverseGeocode",
+          "callee": "blockParts.join",
+          "lineNumber": 58
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useState",
+          "lineNumber": 85
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useState",
+          "lineNumber": 86
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "localStorage.getItem",
+          "lineNumber": 87
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useState",
+          "lineNumber": 89
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "addresses.find",
+          "lineNumber": 91
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useEffect",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 95
+        },
+        {
+          "caller": "persist",
+          "callee": "setAddresses",
+          "lineNumber": 99
+        },
+        {
+          "caller": "persist",
+          "callee": "saveAddresses",
+          "lineNumber": 100
+        },
+        {
+          "caller": "setActive",
+          "callee": "setActiveIdState",
+          "lineNumber": 104
+        },
+        {
+          "caller": "setActive",
+          "callee": "setLocState",
+          "lineNumber": 105
+        },
+        {
+          "caller": "setActive",
+          "callee": "localStorage.setItem",
+          "lineNumber": 106
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useCallback",
+          "lineNumber": 110
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "resolve",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "navigator.geolocation.getCurrentPosition",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "reverseGeocode",
+          "lineNumber": 119
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "resolve",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "navigator.geolocation.getCurrentPosition",
+          "lineNumber": 125
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "reverseGeocode",
+          "lineNumber": 127
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "resolve",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 131
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "resolve",
+          "lineNumber": 132
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 137
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "resolve",
+          "lineNumber": 138
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useCallback",
+          "lineNumber": 147
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "Date.now",
+          "lineNumber": 148
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "persist",
+          "lineNumber": 151
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setActive",
+          "lineNumber": 152
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useCallback",
+          "lineNumber": 157
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "addresses.filter",
+          "lineNumber": 158
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "persist",
+          "lineNumber": 159
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setActive",
+          "lineNumber": 162
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setActiveIdState",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setLocState",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "localStorage.removeItem",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useCallback",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "addresses.map",
+          "lineNumber": 169
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "persist",
+          "lineNumber": 170
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "useCallback",
+          "lineNumber": 173
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "detectGPS",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "Date.now",
+          "lineNumber": 176
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "persist",
+          "lineNumber": 181
+        },
+        {
+          "caller": "useDeliveryLocation",
+          "callee": "setActive",
+          "lineNumber": 182
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/hooks/usePwaInstall.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 78,
+      "nonEmptyLines": 66,
+      "functions": [
+        {
+          "name": "isRunningAsInstalledPwa",
+          "startLine": 11,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "usePwaInstall",
+          "startLine": 20,
+          "endLine": 78,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "isRunningAsInstalledPwa",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "usePwaInstall",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRunningAsInstalledPwa",
+          "callee": "window.matchMedia",
+          "lineNumber": 13
+        },
+        {
+          "caller": "isRunningAsInstalledPwa",
+          "callee": "window.matchMedia",
+          "lineNumber": 14
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "useState",
+          "lineNumber": 22
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "useEffect",
+          "lineNumber": 24
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "isRunningAsInstalledPwa",
+          "lineNumber": 26
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "setState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "/iphone|ipad|ipod/i.test",
+          "lineNumber": 32
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "/^((?!chrome|android).)*safari/i.test",
+          "lineNumber": 33
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "setState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "e.preventDefault",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handler",
+          "callee": "setDeferredPrompt",
+          "lineNumber": 42
+        },
+        {
+          "caller": "handler",
+          "callee": "setState",
+          "lineNumber": 43
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "window.addEventListener",
+          "lineNumber": 45
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "setState",
+          "lineNumber": 50
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "window.removeEventListener",
+          "lineNumber": 51
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "setTimeout",
+          "lineNumber": 57
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "setState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "window.removeEventListener",
+          "lineNumber": 62
+        },
+        {
+          "caller": "usePwaInstall",
+          "callee": "clearTimeout",
+          "lineNumber": 63
+        },
+        {
+          "caller": "triggerInstall",
+          "callee": "deferredPrompt.prompt",
+          "lineNumber": 71
+        },
+        {
+          "caller": "triggerInstall",
+          "callee": "setDeferredPrompt",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

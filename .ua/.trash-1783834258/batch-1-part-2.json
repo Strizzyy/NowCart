@@ -1,0 +1,818 @@
+{
+  "nodes": [
+    {
+      "id": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "type": "file",
+      "name": "PanelResult.tsx",
+      "filePath": "client/src/components/frontdoors/PanelResult.tsx",
+      "summary": "Shared result-summary UI (cart preview, item list, totals) rendered after any front-door panel finishes building a cart.",
+      "tags": [
+        "component",
+        "cart",
+        "result"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/PanelResult.tsx:PanelResult",
+      "type": "function",
+      "name": "PanelResult",
+      "filePath": "client/src/components/frontdoors/PanelResult.tsx",
+      "lineRange": [
+        24,
+        98
+      ],
+      "summary": "Displays a summary of the built cart (items, totals, remaining budget, shortfall) with a caption and view-cart action.",
+      "tags": [
+        "component",
+        "cart",
+        "result"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/doors.tsx",
+      "type": "file",
+      "name": "doors.tsx",
+      "filePath": "client/src/components/frontdoors/doors.tsx",
+      "summary": "Static configuration array defining the five front-door entry points (constrain, predict, share, show, speak) with their icons and labels.",
+      "tags": [
+        "config",
+        "data",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "type": "file",
+      "name": "ConstrainPanel.tsx",
+      "filePath": "client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "summary": "Front-door panel for capturing a budget and serving size to build a budget-constrained cart via the constraint API.",
+      "tags": [
+        "component",
+        "constraint",
+        "cart-builder"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/ConstrainPanel.tsx:ConstrainPanel",
+      "type": "function",
+      "name": "ConstrainPanel",
+      "filePath": "client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "lineRange": [
+        15,
+        158
+      ],
+      "summary": "Two-phase panel collecting budget and servings, submitting them to the constraint API, then showing the resulting cart.",
+      "tags": [
+        "component",
+        "constraint",
+        "form"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "type": "file",
+      "name": "PredictPanel.tsx",
+      "filePath": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "summary": "Front-door panel for subscription-based predictive reordering: manages recurring subscriptions, due-for-reorder carts, pantry tracking and personalized prediction insights.",
+      "tags": [
+        "component",
+        "subscriptions",
+        "predictions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:resolveUserId",
+      "type": "function",
+      "name": "resolveUserId",
+      "filePath": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "lineRange": [
+        29,
+        46
+      ],
+      "summary": "Derives a stable user id from the stored user object for subscription/prediction API calls.",
+      "tags": [
+        "utility",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:BrandPicker",
+      "type": "function",
+      "name": "BrandPicker",
+      "filePath": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "lineRange": [
+        64,
+        196
+      ],
+      "summary": "Debounced product/brand search picker used to select a product when creating a new subscription.",
+      "tags": [
+        "component",
+        "search",
+        "subscriptions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:PredictPanel",
+      "type": "function",
+      "name": "PredictPanel",
+      "filePath": "client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "lineRange": [
+        201,
+        556
+      ],
+      "summary": "Main predictive-reorder panel managing subscriptions, due-cart, prediction insights and pantry state, and building a subscribed cart.",
+      "tags": [
+        "component",
+        "subscriptions",
+        "predictions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "type": "file",
+      "name": "SharePanel.tsx",
+      "filePath": "client/src/components/frontdoors/panels/SharePanel.tsx",
+      "summary": "Front-door panel that accepts a shared recipe/social link or pasted text and parses it into a cart via the share-parse API.",
+      "tags": [
+        "component",
+        "share",
+        "cart-builder"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/SharePanel.tsx:SharePanel",
+      "type": "function",
+      "name": "SharePanel",
+      "filePath": "client/src/components/frontdoors/panels/SharePanel.tsx",
+      "lineRange": [
+        17,
+        115
+      ],
+      "summary": "Panel accepting a shared link/text, submitting it to the share-parse API, then showing the resulting cart.",
+      "tags": [
+        "component",
+        "share",
+        "form"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "type": "file",
+      "name": "ShowPanel.tsx",
+      "filePath": "client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "summary": "Front-door panel for image-based intent capture, letting users take a photo or upload an image analyzed by the vision API to build a cart.",
+      "tags": [
+        "component",
+        "vision",
+        "cart-builder"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/ShowPanel.tsx:ShowPanel",
+      "type": "function",
+      "name": "ShowPanel",
+      "filePath": "client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "lineRange": [
+        20,
+        278
+      ],
+      "summary": "Panel for capturing an image via camera or gallery upload, submitting it (with optional text) to the vision-analyze API.",
+      "tags": [
+        "component",
+        "vision",
+        "form"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "type": "file",
+      "name": "SpeakPanel.tsx",
+      "filePath": "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "summary": "Front-door panel for voice-based intent capture using the Web Speech API, including live transcription, follow-up voice commands, and cart updates.",
+      "tags": [
+        "component",
+        "voice",
+        "cart-builder"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:getRecognition",
+      "type": "function",
+      "name": "getRecognition",
+      "filePath": "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "lineRange": [
+        26,
+        38
+      ],
+      "summary": "Lazily constructs and configures a browser SpeechRecognition instance if available.",
+      "tags": [
+        "utility",
+        "voice",
+        "web-speech-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:SpeakPanel",
+      "type": "function",
+      "name": "SpeakPanel",
+      "filePath": "client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "lineRange": [
+        49,
+        292
+      ],
+      "summary": "Voice intent-capture panel managing microphone permission, live transcription via Web Speech API, and follow-up voice commands against the cart.",
+      "tags": [
+        "component",
+        "voice",
+        "chat"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "client/src/main.tsx",
+      "summary": "Application bootstrap entry point that mounts the React root and imports global CSS.",
+      "tags": [
+        "entry-point",
+        "bootstrap"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/pages/AboutPage.tsx",
+      "type": "file",
+      "name": "AboutPage.tsx",
+      "filePath": "client/src/pages/AboutPage.tsx",
+      "summary": "Static \"About Us\" marketing page listing the team and company mission.",
+      "tags": [
+        "page",
+        "marketing",
+        "static-content"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/AboutPage.tsx:AboutPage",
+      "type": "function",
+      "name": "AboutPage",
+      "filePath": "client/src/pages/AboutPage.tsx",
+      "lineRange": [
+        44,
+        105
+      ],
+      "summary": "Renders the static About page with team member cards and mission copy.",
+      "tags": [
+        "page",
+        "static-content"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/AdminDashboardPage.tsx",
+      "type": "file",
+      "name": "AdminDashboardPage.tsx",
+      "filePath": "client/src/pages/AdminDashboardPage.tsx",
+      "summary": "Internal admin dashboard showing usage statistics, scaling info, and LLM/AWS cost breakdowns with periodic auto-refresh.",
+      "tags": [
+        "page",
+        "admin",
+        "dashboard",
+        "analytics"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/AdminDashboardPage.tsx:KpiCard",
+      "type": "function",
+      "name": "KpiCard",
+      "filePath": "client/src/pages/AdminDashboardPage.tsx",
+      "lineRange": [
+        57,
+        72
+      ],
+      "summary": "Small stat-tile component showing an icon, title, value and sub-label for the admin dashboard KPIs.",
+      "tags": [
+        "component",
+        "dashboard",
+        "stat-tile"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/AdminDashboardPage.tsx:MiniBar",
+      "type": "function",
+      "name": "MiniBar",
+      "filePath": "client/src/pages/AdminDashboardPage.tsx",
+      "lineRange": [
+        74,
+        85
+      ],
+      "summary": "Small horizontal bar-chart component rendering a labeled value against a max scale.",
+      "tags": [
+        "component",
+        "dashboard",
+        "chart"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/AdminDashboardPage.tsx:AdminDashboardPage",
+      "type": "function",
+      "name": "AdminDashboardPage",
+      "filePath": "client/src/pages/AdminDashboardPage.tsx",
+      "lineRange": [
+        96,
+        413
+      ],
+      "summary": "Admin dashboard page fetching and periodically refreshing usage stats, scaling info and LLM/AWS cost data, rendered across tabbed sections.",
+      "tags": [
+        "page",
+        "admin",
+        "dashboard"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/DeliveryInfoPage.tsx",
+      "type": "file",
+      "name": "DeliveryInfoPage.tsx",
+      "filePath": "client/src/pages/DeliveryInfoPage.tsx",
+      "summary": "Static page describing delivery zones, timing windows and delivery policies.",
+      "tags": [
+        "page",
+        "static-content"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/DeliveryInfoPage.tsx:DeliveryInfoPage",
+      "type": "function",
+      "name": "DeliveryInfoPage",
+      "filePath": "client/src/pages/DeliveryInfoPage.tsx",
+      "lineRange": [
+        4,
+        103
+      ],
+      "summary": "Renders the static delivery info page describing zones, timing and policies.",
+      "tags": [
+        "page",
+        "static-content"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/HomePage.tsx",
+      "type": "file",
+      "name": "HomePage.tsx",
+      "filePath": "client/src/pages/HomePage.tsx",
+      "summary": "Landing page presenting the front-door intent panels and featured/recommended products to start a shopping session.",
+      "tags": [
+        "page",
+        "landing",
+        "home"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/HomePage.tsx:HomePage",
+      "type": "function",
+      "name": "HomePage",
+      "filePath": "client/src/pages/HomePage.tsx",
+      "lineRange": [
+        33,
+        361
+      ],
+      "summary": "Landing page rendering the front-door intent panels grid and a featured products section.",
+      "tags": [
+        "page",
+        "landing"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "target": "function:client/src/components/frontdoors/PanelResult.tsx:PanelResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "target": "function:client/src/components/frontdoors/PanelResult.tsx:PanelResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/doors.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/ConstrainPanel.tsx:ConstrainPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/ConstrainPanel.tsx:ConstrainPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:resolveUserId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:BrandPicker",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:PredictPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/PredictPanel.tsx:PredictPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/SharePanel.tsx:SharePanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/SharePanel.tsx:SharePanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/ShowPanel.tsx:ShowPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/ShowPanel.tsx:ShowPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:getRecognition",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:SpeakPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:SpeakPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "file:client/src/components/frontdoors/PanelResult.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/main.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/main.tsx",
+      "target": "file:client/src/index.css",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/AboutPage.tsx",
+      "target": "function:client/src/pages/AboutPage.tsx:AboutPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/AboutPage.tsx",
+      "target": "function:client/src/pages/AboutPage.tsx:AboutPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/AboutPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "function:client/src/pages/AdminDashboardPage.tsx:KpiCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "function:client/src/pages/AdminDashboardPage.tsx:MiniBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "function:client/src/pages/AdminDashboardPage.tsx:AdminDashboardPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "function:client/src/pages/AdminDashboardPage.tsx:AdminDashboardPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/AdminDashboardPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/DeliveryInfoPage.tsx",
+      "target": "function:client/src/pages/DeliveryInfoPage.tsx:DeliveryInfoPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/DeliveryInfoPage.tsx",
+      "target": "function:client/src/pages/DeliveryInfoPage.tsx:DeliveryInfoPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "function:client/src/pages/HomePage.tsx:HomePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "function:client/src/pages/HomePage.tsx:HomePage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/components/frontdoors/doors.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/components/ProductCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/HomePage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

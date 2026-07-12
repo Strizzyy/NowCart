@@ -1,0 +1,525 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 9,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".dockerignore",
+      "language": "unknown",
+      "fileCategory": "infra",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "metrics": {}
+    },
+    {
+      "path": "APK_BUILD_GUIDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 175,
+      "nonEmptyLines": 126,
+      "sections": [
+        {
+          "heading": "NowCart — APK Build Guide",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "What's Already Done (by Kiro)",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Prerequisites (install these if not already installed)",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "Step 1 — Open in Android Studio",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "Step 2 — Generate a Signing Key (one time only)",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Step 3 — Configure Signing in Gradle",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "Step 4 — Build the APK",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "Step 5 — Host the APK on your EC2 / S3",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Via S3 (easiest):",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "Via EC2 directly:",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Step 6 — Add Download Link to the App / README",
+          "level": 2,
+          "line": 122
+        },
+        {
+          "heading": "Day-to-Day Workflow (after initial setup)",
+          "level": 2,
+          "line": 136
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "PWA — Already Live",
+          "level": 2,
+          "line": 163
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "ARCHITECTURE_DIAGRAM.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 114,
+      "nonEmptyLines": 93,
+      "sections": [
+        {
+          "heading": "NowCart — High-Level Architecture",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1-minute walkthrough",
+          "level": 2,
+          "line": 102
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "NowCart_Presentation_Script.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 241,
+      "nonEmptyLines": 133,
+      "sections": [
+        {
+          "heading": "NowCart — Grand Finale Presentation Script",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Amazon HackOn Grand Finale · Bangalore · Team Codyssey",
+          "level": 3,
+          "line": 2
+        },
+        {
+          "heading": "Slide 1 — Title: \"NowCart. Reimagining Urgent Shopping\" — 0:30",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Slide 2 — The Bottleneck in Quick Commerce — 0:45",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "Slide 3 — Every Platform Searches. NowCart Reasons. — 0:45",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "Slide 4 — Understanding NowCart's Target Audience — 0:40",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "Slide 5 — Five Ways In. One Confident Cart Out. — 1:00",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Slide 6 — Demo Video — 0:15 intro + ~3:30 video (self-narrated) + 0:15 close",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Appendix — Demo Video Voiceover, Grand Finale Edit (synced to the 0:00–3:30 screen recording)",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Slide 7 — Technical Architecture — 1:30",
+          "level": 2,
+          "line": 137
+        },
+        {
+          "heading": "Slide 8 — The NowCart Tech Stack — 1:15",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "Slide 9 — Algorithms & Scaling Strategy — 2:45",
+          "level": 2,
+          "line": 169
+        },
+        {
+          "heading": "Slide 10 — Future Vision: Expansion Roadmap — 0:45",
+          "level": 2,
+          "line": 191
+        },
+        {
+          "heading": "Slide 11 — Multi-Segment Growth & Value Impact — 0:45",
+          "level": 2,
+          "line": 203
+        },
+        {
+          "heading": "Slide 12 — Thank You — 0:30",
+          "level": 2,
+          "line": 215
+        },
+        {
+          "heading": "Quick reference — Live demo talking points (if the jury asks to see it live)",
+          "level": 2,
+          "line": 227
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 146,
+      "nonEmptyLines": 106,
+      "sections": [
+        {
+          "heading": "NowCart",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "How it works",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Stack",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "Running locally",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "Deployment",
+          "level": 2,
+          "line": 133
+        },
+        {
+          "heading": "Admin",
+          "level": 2,
+          "line": 144
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "SYSTEM_ARCHITECTURE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 402,
+      "nonEmptyLines": 324,
+      "sections": [
+        {
+          "heading": "NowCart — System Architecture Document",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Executive Summary",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "High-Level Architecture",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Outcome Engine — Node-by-Node Detail",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "1. Intent Node",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "2. Decompose Node",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "3. Pantry Filter Node",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "4. Match Node (Hybrid Retrieval / RAG)",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "5. Optimize Node",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "6. Preference Boost Node",
+          "level": 3,
+          "line": 97
+        },
+        {
+          "heading": "7. Substitute Node",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "8. Confidence Node",
+          "level": 3,
+          "line": 103
+        },
+        {
+          "heading": "9. Counterfactual Node",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "Re-planning Loop (`_should_replan`)",
+          "level": 3,
+          "line": 110
+        },
+        {
+          "heading": "Zero Door — Predictive Restock (no input)",
+          "level": 2,
+          "line": 115
+        },
+        {
+          "heading": "Data Flow Diagrams",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Speak It — Voice/Text-to-Cart",
+          "level": 3,
+          "line": 136
+        },
+        {
+          "heading": "Show It — Photo-to-Cart",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "Constrain It — Budget-First",
+          "level": 3,
+          "line": 168
+        },
+        {
+          "heading": "Share It — Link/YouTube/Text-to-Cart",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "SOS — Emergency Kit",
+          "level": 3,
+          "line": 202
+        },
+        {
+          "heading": "Middleware Stack (execution order)",
+          "level": 2,
+          "line": 223
+        },
+        {
+          "heading": "LLM Provider Architecture",
+          "level": 2,
+          "line": 240
+        },
+        {
+          "heading": "Hybrid Retrieval (Deep Dive)",
+          "level": 2,
+          "line": 264
+        },
+        {
+          "heading": "Quantity Normalization",
+          "level": 3,
+          "line": 279
+        },
+        {
+          "heading": "Authentication, Orders & Admin",
+          "level": 2,
+          "line": 290
+        },
+        {
+          "heading": "Infrastructure",
+          "level": 2,
+          "line": 298
+        },
+        {
+          "heading": "Development (Docker Compose)",
+          "level": 3,
+          "line": 300
+        },
+        {
+          "heading": "Production (AWS — live)",
+          "level": 3,
+          "line": 313
+        },
+        {
+          "heading": "Async Job Flow (designed)",
+          "level": 3,
+          "line": 328
+        },
+        {
+          "heading": "Scaling Strategy",
+          "level": 2,
+          "line": 349
+        },
+        {
+          "heading": "Observability",
+          "level": 2,
+          "line": 364
+        },
+        {
+          "heading": "Security & Production Hardening",
+          "level": 2,
+          "line": 388
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 33
+      }
+    },
+    {
+      "path": "archi.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 119,
+      "nonEmptyLines": 89,
+      "sections": [
+        {
+          "heading": "NowCart — Hybrid System Architecture",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Presentation Script (1 minute)",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Key Implementation Details in This Hybrid Diagram",
+          "level": 2,
+          "line": 111
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "deploy.bat",
+      "language": "batch",
+      "fileCategory": "script",
+      "totalLines": 49,
+      "nonEmptyLines": 45,
+      "metrics": {}
+    },
+    {
+      "path": "docker-compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 117,
+      "nonEmptyLines": 111,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 15
+        },
+        {
+          "heading": "networks",
+          "level": 1,
+          "line": 111
+        },
+        {
+          "heading": "volumes",
+          "level": 1,
+          "line": 115
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    }
+  ]
+}

@@ -1,0 +1,3743 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 23,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "server/app/agents/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/agents/graph.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 103,
+      "nonEmptyLines": 82,
+      "functions": [
+        {
+          "name": "_should_replan",
+          "startLine": 39,
+          "endLine": 45,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "_replan_route",
+          "startLine": 52,
+          "endLine": 56,
+          "params": [
+            "state"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_should_replan",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "_replan_route",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_should_replan",
+          "callee": "state.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "_should_replan",
+          "callee": "state.get",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_replan_route",
+          "callee": "state.get",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/agents/nodes.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 959,
+      "nonEmptyLines": 828,
+      "functions": [
+        {
+          "name": "_normalize_quantity_to_packs",
+          "startLine": 38,
+          "endLine": 57,
+          "params": [
+            "quantity",
+            "unit"
+          ]
+        },
+        {
+          "name": "intent_node",
+          "startLine": 85,
+          "endLine": 119,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "decompose_node",
+          "startLine": 135,
+          "endLine": 346,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "match_node",
+          "startLine": 354,
+          "endLine": 650,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "confidence_node",
+          "startLine": 658,
+          "endLine": 713,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "counterfactual_node",
+          "startLine": 721,
+          "endLine": 765,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "replan_node",
+          "startLine": 773,
+          "endLine": 959,
+          "params": [
+            "state"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_normalize_quantity_to_packs",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "intent_node",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "decompose_node",
+          "line": 135,
+          "isDefault": false
+        },
+        {
+          "name": "match_node",
+          "line": 354,
+          "isDefault": false
+        },
+        {
+          "name": "confidence_node",
+          "line": 658,
+          "isDefault": false
+        },
+        {
+          "name": "counterfactual_node",
+          "line": 721,
+          "isDefault": false
+        },
+        {
+          "name": "replan_node",
+          "line": 773,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "unit.lower().strip",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "unit.lower",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "round",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "round",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "round",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "round",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_normalize_quantity_to_packs",
+          "callee": "max",
+          "lineNumber": 57
+        },
+        {
+          "caller": "intent_node",
+          "callee": "state.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "intent_node",
+          "callee": "raw.lower",
+          "lineNumber": 88
+        },
+        {
+          "caller": "intent_node",
+          "callee": "state.get",
+          "lineNumber": 90
+        },
+        {
+          "caller": "intent_node",
+          "callee": "_SERVING_PATTERN.search",
+          "lineNumber": 91
+        },
+        {
+          "caller": "intent_node",
+          "callee": "int",
+          "lineNumber": 93
+        },
+        {
+          "caller": "intent_node",
+          "callee": "match.group",
+          "lineNumber": 93
+        },
+        {
+          "caller": "intent_node",
+          "callee": "re.search",
+          "lineNumber": 95
+        },
+        {
+          "caller": "intent_node",
+          "callee": "text_lower.strip",
+          "lineNumber": 95
+        },
+        {
+          "caller": "intent_node",
+          "callee": "int",
+          "lineNumber": 97
+        },
+        {
+          "caller": "intent_node",
+          "callee": "short_match.group",
+          "lineNumber": 97
+        },
+        {
+          "caller": "intent_node",
+          "callee": "state.get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "intent_node",
+          "callee": "state.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "intent_node",
+          "callee": "_MODE_KEYWORDS.items",
+          "lineNumber": 109
+        },
+        {
+          "caller": "intent_node",
+          "callee": "any",
+          "lineNumber": 110
+        },
+        {
+          "caller": "intent_node",
+          "callee": "state.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 145
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 146
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 147
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "list",
+          "lineNumber": 149
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 149
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 150
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 151
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 152
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 153
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 154
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "get_text_provider",
+          "lineNumber": 157
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "constraints.get",
+          "lineNumber": 163
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 164
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "', '.join",
+          "lineNumber": 164
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "constraints.get",
+          "lineNumber": 165
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 166
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "constraints.get",
+          "lineNumber": 167
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "constraints[\"swap\"].items",
+          "lineNumber": 168
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 169
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "', '.join",
+          "lineNumber": 169
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "\"; \".join",
+          "lineNumber": 171
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "', '.join",
+          "lineNumber": 178
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 196
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 198
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 200
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 202
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 204
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "parts.append",
+          "lineNumber": 206
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "'; '.join",
+          "lineNumber": 208
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "\"\\n\".join",
+          "lineNumber": 214
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 215
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 215
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "state.get",
+          "lineNumber": 219
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "_logging.getLogger",
+          "lineNumber": 292
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "_decompose_log.info",
+          "lineNumber": 293
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "llm.complete_json",
+          "lineNumber": 298
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "_decompose_log.info",
+          "lineNumber": 300
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "result.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "float",
+          "lineNumber": 308
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 308
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 309
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "new_needs.append",
+          "lineNumber": 310
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "Need",
+          "lineNumber": 310
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 311
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "item.get",
+          "lineNumber": 314
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "Need",
+          "lineNumber": 322
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "float",
+          "lineNumber": 324
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "li.get",
+          "lineNumber": 324
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "li.get",
+          "lineNumber": 328
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "locked_needs.append",
+          "lineNumber": 330
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "result.get",
+          "lineNumber": 335
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "result.get",
+          "lineNumber": 335
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "len",
+          "lineNumber": 337
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "len",
+          "lineNumber": 337
+        },
+        {
+          "caller": "decompose_node",
+          "callee": "len",
+          "lineNumber": 339
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 357
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 358
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 359
+        },
+        {
+          "caller": "match_node",
+          "callee": "_logging.getLogger",
+          "lineNumber": 363
+        },
+        {
+          "caller": "match_node",
+          "callee": "get_catalog_service",
+          "lineNumber": 365
+        },
+        {
+          "caller": "match_node",
+          "callee": "get_semantic_search_service",
+          "lineNumber": 370
+        },
+        {
+          "caller": "match_node",
+          "callee": "get_repository",
+          "lineNumber": 377
+        },
+        {
+          "caller": "match_node",
+          "callee": "_match_log.info",
+          "lineNumber": 379
+        },
+        {
+          "caller": "match_node",
+          "callee": "len",
+          "lineNumber": 379
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 387
+        },
+        {
+          "caller": "match_node",
+          "callee": "li.get",
+          "lineNumber": 388
+        },
+        {
+          "caller": "match_node",
+          "callee": "needs_to_search.append",
+          "lineNumber": 399
+        },
+        {
+          "caller": "match_node",
+          "callee": "_time.perf_counter",
+          "lineNumber": 402
+        },
+        {
+          "caller": "_search_need",
+          "callee": "_time.perf_counter",
+          "lineNumber": 406
+        },
+        {
+          "caller": "_search_need",
+          "callee": "hybrid_service.search_with_context",
+          "lineNumber": 409
+        },
+        {
+          "caller": "_search_need",
+          "callee": "_time.perf_counter",
+          "lineNumber": 415
+        },
+        {
+          "caller": "_search_need",
+          "callee": "catalog.fuzzy_match_need",
+          "lineNumber": 417
+        },
+        {
+          "caller": "_search_need",
+          "callee": "_time.perf_counter",
+          "lineNumber": 422
+        },
+        {
+          "caller": "_search_need",
+          "callee": "_match_log.info",
+          "lineNumber": 423
+        },
+        {
+          "caller": "_search_need",
+          "callee": "len",
+          "lineNumber": 425
+        },
+        {
+          "caller": "_search_need",
+          "callee": "len",
+          "lineNumber": 425
+        },
+        {
+          "caller": "match_node",
+          "callee": "_asyncio.gather",
+          "lineNumber": 429
+        },
+        {
+          "caller": "match_node",
+          "callee": "_search_need",
+          "lineNumber": 429
+        },
+        {
+          "caller": "match_node",
+          "callee": "_match_log.info",
+          "lineNumber": 430
+        },
+        {
+          "caller": "match_node",
+          "callee": "len",
+          "lineNumber": 432
+        },
+        {
+          "caller": "match_node",
+          "callee": "_time.perf_counter",
+          "lineNumber": 433
+        },
+        {
+          "caller": "match_node",
+          "callee": "id",
+          "lineNumber": 438
+        },
+        {
+          "caller": "match_node",
+          "callee": "zip",
+          "lineNumber": 438
+        },
+        {
+          "caller": "match_node",
+          "callee": "id",
+          "lineNumber": 456
+        },
+        {
+          "caller": "match_node",
+          "callee": "max",
+          "lineNumber": 462
+        },
+        {
+          "caller": "match_node",
+          "callee": "score_map.get",
+          "lineNumber": 462
+        },
+        {
+          "caller": "match_node",
+          "callee": "repo.get_product",
+          "lineNumber": 467
+        },
+        {
+          "caller": "match_node",
+          "callee": "fuzzy_matches.append",
+          "lineNumber": 469
+        },
+        {
+          "caller": "match_node",
+          "callee": "fuzzy_matches.sort",
+          "lineNumber": 471
+        },
+        {
+          "caller": "match_node",
+          "callee": "score_map.get",
+          "lineNumber": 471
+        },
+        {
+          "caller": "match_node",
+          "callee": "score_map.get",
+          "lineNumber": 478
+        },
+        {
+          "caller": "match_node",
+          "callee": "id",
+          "lineNumber": 484
+        },
+        {
+          "caller": "match_node",
+          "callee": "all_candidate_pids.extend",
+          "lineNumber": 485
+        },
+        {
+          "caller": "match_node",
+          "callee": "catalog.bulk_check_availability",
+          "lineNumber": 488
+        },
+        {
+          "caller": "match_node",
+          "callee": "list",
+          "lineNumber": 489
+        },
+        {
+          "caller": "match_node",
+          "callee": "dict.fromkeys",
+          "lineNumber": 489
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 492
+        },
+        {
+          "caller": "match_node",
+          "callee": "_normalize_quantity_to_packs",
+          "lineNumber": 499
+        },
+        {
+          "caller": "match_node",
+          "callee": "CartItem",
+          "lineNumber": 500
+        },
+        {
+          "caller": "match_node",
+          "callee": "li.get",
+          "lineNumber": 503
+        },
+        {
+          "caller": "match_node",
+          "callee": "float",
+          "lineNumber": 504
+        },
+        {
+          "caller": "match_node",
+          "callee": "li.get",
+          "lineNumber": 504
+        },
+        {
+          "caller": "match_node",
+          "callee": "li.get",
+          "lineNumber": 509
+        },
+        {
+          "caller": "match_node",
+          "callee": "items.append",
+          "lineNumber": 511
+        },
+        {
+          "caller": "match_node",
+          "callee": "economical_items.append",
+          "lineNumber": 512
+        },
+        {
+          "caller": "match_node",
+          "callee": "need_candidate_data.get",
+          "lineNumber": 515
+        },
+        {
+          "caller": "match_node",
+          "callee": "id",
+          "lineNumber": 515
+        },
+        {
+          "caller": "match_node",
+          "callee": "notes.append",
+          "lineNumber": 520
+        },
+        {
+          "caller": "match_node",
+          "callee": "availability.get",
+          "lineNumber": 529
+        },
+        {
+          "caller": "match_node",
+          "callee": "available_candidates.append",
+          "lineNumber": 531
+        },
+        {
+          "caller": "match_node",
+          "callee": "min",
+          "lineNumber": 539
+        },
+        {
+          "caller": "match_node",
+          "callee": "min",
+          "lineNumber": 560
+        },
+        {
+          "caller": "match_node",
+          "callee": "_normalize_quantity_to_packs",
+          "lineNumber": 561
+        },
+        {
+          "caller": "match_node",
+          "callee": "items.append",
+          "lineNumber": 580
+        },
+        {
+          "caller": "match_node",
+          "callee": "CartItem",
+          "lineNumber": 580
+        },
+        {
+          "caller": "match_node",
+          "callee": "sorted",
+          "lineNumber": 594
+        },
+        {
+          "caller": "match_node",
+          "callee": "len",
+          "lineNumber": 596
+        },
+        {
+          "caller": "match_node",
+          "callee": "round",
+          "lineNumber": 600
+        },
+        {
+          "caller": "match_node",
+          "callee": "economical_items.append",
+          "lineNumber": 602
+        },
+        {
+          "caller": "match_node",
+          "callee": "CartItem",
+          "lineNumber": 602
+        },
+        {
+          "caller": "match_node",
+          "callee": "min",
+          "lineNumber": 605
+        },
+        {
+          "caller": "match_node",
+          "callee": "economical_items.append",
+          "lineNumber": 608
+        },
+        {
+          "caller": "match_node",
+          "callee": "CartItem",
+          "lineNumber": 608
+        },
+        {
+          "caller": "match_node",
+          "callee": "economical_items.append",
+          "lineNumber": 615
+        },
+        {
+          "caller": "match_node",
+          "callee": "CartItem",
+          "lineNumber": 615
+        },
+        {
+          "caller": "match_node",
+          "callee": "min",
+          "lineNumber": 619
+        },
+        {
+          "caller": "match_node",
+          "callee": "Cart",
+          "lineNumber": 622
+        },
+        {
+          "caller": "match_node",
+          "callee": "str",
+          "lineNumber": 623
+        },
+        {
+          "caller": "match_node",
+          "callee": "uuid.uuid4",
+          "lineNumber": 623
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 631
+        },
+        {
+          "caller": "match_node",
+          "callee": "state.get",
+          "lineNumber": 632
+        },
+        {
+          "caller": "match_node",
+          "callee": "any",
+          "lineNumber": 633
+        },
+        {
+          "caller": "match_node",
+          "callee": "n.startswith",
+          "lineNumber": 633
+        },
+        {
+          "caller": "match_node",
+          "callee": "cart.notes.insert",
+          "lineNumber": 634
+        },
+        {
+          "caller": "match_node",
+          "callee": "cart.recompute_total",
+          "lineNumber": 635
+        },
+        {
+          "caller": "match_node",
+          "callee": "sum",
+          "lineNumber": 637
+        },
+        {
+          "caller": "match_node",
+          "callee": "round",
+          "lineNumber": 639
+        },
+        {
+          "caller": "match_node",
+          "callee": "len",
+          "lineNumber": 641
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "state.get",
+          "lineNumber": 660
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "Cart",
+          "lineNumber": 660
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "state.get",
+          "lineNumber": 661
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "state.get",
+          "lineNumber": 662
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "min",
+          "lineNumber": 679
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "len",
+          "lineNumber": 679
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "item.name.split",
+          "lineNumber": 679
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "max",
+          "lineNumber": 681
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "min",
+          "lineNumber": 681
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "round",
+          "lineNumber": 682
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "low_confidence_items.append",
+          "lineNumber": 685
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "len",
+          "lineNumber": 687
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "round",
+          "lineNumber": 688
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "\", \".join",
+          "lineNumber": 693
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "len",
+          "lineNumber": 704
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "len",
+          "lineNumber": 704
+        },
+        {
+          "caller": "confidence_node",
+          "callee": "round",
+          "lineNumber": 709
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "state.get",
+          "lineNumber": 723
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "Cart",
+          "lineNumber": 723
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "state.get",
+          "lineNumber": 724
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "state.get",
+          "lineNumber": 725
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "state.get",
+          "lineNumber": 726
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "state.get",
+          "lineNumber": 727
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "get_counterfactual_service",
+          "lineNumber": 736
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "candidates.get",
+          "lineNumber": 740
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "len",
+          "lineNumber": 741
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "any",
+          "lineNumber": 746
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "cf_service.get_counterfactuals_for_cart_item",
+          "lineNumber": 751
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "cf_data.get",
+          "lineNumber": 757
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "sum",
+          "lineNumber": 759
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "len",
+          "lineNumber": 759
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "counterfactuals.values",
+          "lineNumber": 759
+        },
+        {
+          "caller": "counterfactual_node",
+          "callee": "len",
+          "lineNumber": 763
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 798
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 799
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 800
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 801
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 802
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 803
+        },
+        {
+          "caller": "replan_node",
+          "callee": "feedback.lower",
+          "lineNumber": 808
+        },
+        {
+          "caller": "replan_node",
+          "callee": "dict",
+          "lineNumber": 809
+        },
+        {
+          "caller": "replan_node",
+          "callee": "any",
+          "lineNumber": 824
+        },
+        {
+          "caller": "replan_node",
+          "callee": "any",
+          "lineNumber": 825
+        },
+        {
+          "caller": "replan_node",
+          "callee": "any",
+          "lineNumber": 826
+        },
+        {
+          "caller": "replan_node",
+          "callee": "any",
+          "lineNumber": 827
+        },
+        {
+          "caller": "replan_node",
+          "callee": "list",
+          "lineNumber": 830
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 830
+        },
+        {
+          "caller": "replan_node",
+          "callee": "re.findall",
+          "lineNumber": 831
+        },
+        {
+          "caller": "replan_node",
+          "callee": "n.name.lower",
+          "lineNumber": 832
+        },
+        {
+          "caller": "replan_node",
+          "callee": "li[\"name\"].lower",
+          "lineNumber": 833
+        },
+        {
+          "caller": "replan_node",
+          "callee": "excluded_items.append",
+          "lineNumber": 835
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 870
+        },
+        {
+          "caller": "replan_node",
+          "callee": "Cart",
+          "lineNumber": 870
+        },
+        {
+          "caller": "replan_node",
+          "callee": "max",
+          "lineNumber": 872
+        },
+        {
+          "caller": "replan_node",
+          "callee": "len",
+          "lineNumber": 872
+        },
+        {
+          "caller": "replan_node",
+          "callee": "round",
+          "lineNumber": 873
+        },
+        {
+          "caller": "replan_node",
+          "callee": "round",
+          "lineNumber": 874
+        },
+        {
+          "caller": "replan_node",
+          "callee": "new_constraints.setdefault",
+          "lineNumber": 875
+        },
+        {
+          "caller": "replan_node",
+          "callee": "dietary_keywords.items",
+          "lineNumber": 886
+        },
+        {
+          "caller": "replan_node",
+          "callee": "new_constraints.setdefault",
+          "lineNumber": 888
+        },
+        {
+          "caller": "replan_node",
+          "callee": "new_constraints[\"dietary\"].append",
+          "lineNumber": 890
+        },
+        {
+          "caller": "replan_node",
+          "callee": "re.search",
+          "lineNumber": 893
+        },
+        {
+          "caller": "replan_node",
+          "callee": "new_constraints.setdefault",
+          "lineNumber": 898
+        },
+        {
+          "caller": "replan_node",
+          "callee": "swap_pattern.group",
+          "lineNumber": 899
+        },
+        {
+          "caller": "replan_node",
+          "callee": "swap_pattern.group",
+          "lineNumber": 899
+        },
+        {
+          "caller": "replan_node",
+          "callee": "Need",
+          "lineNumber": 916
+        },
+        {
+          "caller": "replan_node",
+          "callee": "float",
+          "lineNumber": 918
+        },
+        {
+          "caller": "replan_node",
+          "callee": "li.get",
+          "lineNumber": 918
+        },
+        {
+          "caller": "replan_node",
+          "callee": "li.get",
+          "lineNumber": 922
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 932
+        },
+        {
+          "caller": "replan_node",
+          "callee": "new_constraints.get",
+          "lineNumber": 933
+        },
+        {
+          "caller": "replan_node",
+          "callee": "state.get",
+          "lineNumber": 957
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/agents/state.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 69,
+      "classes": [
+        {
+          "name": "AgentState",
+          "startLine": 15,
+          "endLine": 84,
+          "methods": [],
+          "properties": [
+            "raw_input",
+            "mode",
+            "servings",
+            "needs",
+            "candidates",
+            "cart",
+            "substitutions",
+            "confidence",
+            "reasoning_trail",
+            "clarification",
+            "user_id",
+            "user_region",
+            "user_age",
+            "user_gender",
+            "user_preferences",
+            "feedback",
+            "replan_count",
+            "constraints",
+            "excluded_items",
+            "preserve_cart",
+            "locked_items",
+            "meal_context",
+            "skip_decompose",
+            "use_economical",
+            "counterfactuals"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AgentState",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/controllers/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 34,
+      "metrics": {
+        "importCount": 14,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/admin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "stock_override",
+          "startLine": 17,
+          "endLine": 35,
+          "params": [
+            "req"
+          ]
+        },
+        {
+          "name": "recompute_badges",
+          "startLine": 39,
+          "endLine": 51,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "stock_override",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "recompute_badges",
+          "line": 38,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "stock_override",
+          "callee": "get_cache",
+          "lineNumber": 23
+        },
+        {
+          "caller": "stock_override",
+          "callee": "get_repository",
+          "lineNumber": 24
+        },
+        {
+          "caller": "stock_override",
+          "callee": "cache.set_stock_override",
+          "lineNumber": 26
+        },
+        {
+          "caller": "stock_override",
+          "callee": "repo.get_product",
+          "lineNumber": 29
+        },
+        {
+          "caller": "stock_override",
+          "callee": "repo.upsert_product",
+          "lineNumber": 32
+        },
+        {
+          "caller": "stock_override",
+          "callee": "OkResponse",
+          "lineNumber": 35
+        },
+        {
+          "caller": "recompute_badges",
+          "callee": "get_badge_service",
+          "lineNumber": 46
+        },
+        {
+          "caller": "recompute_badges",
+          "callee": "badge_service.recompute_badges",
+          "lineNumber": 47
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/cart.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 65,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "cart_operation",
+          "startLine": 17,
+          "endLine": 55,
+          "params": [
+            "req"
+          ]
+        },
+        {
+          "name": "get_cart",
+          "startLine": 59,
+          "endLine": 65,
+          "params": [
+            "session_id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "cart_operation",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "get_cart",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cart_operation",
+          "callee": "get_cart_ops_service",
+          "lineNumber": 19
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "req.op.lower",
+          "lineNumber": 21
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.add_item",
+          "lineNumber": 23
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.remove_item",
+          "lineNumber": 29
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.update_quantity",
+          "lineNumber": 34
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.clear_cart",
+          "lineNumber": 40
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.get_total",
+          "lineNumber": 42
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "HTTPException",
+          "lineNumber": 44
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "service.get_cart",
+          "lineNumber": 46
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "HTTPException",
+          "lineNumber": 48
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "HTTPException",
+          "lineNumber": 50
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "HTTPException",
+          "lineNumber": 53
+        },
+        {
+          "caller": "cart_operation",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 55
+        },
+        {
+          "caller": "get_cart",
+          "callee": "get_cart_ops_service",
+          "lineNumber": 61
+        },
+        {
+          "caller": "get_cart",
+          "callee": "service.get_cart",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_cart",
+          "callee": "HTTPException",
+          "lineNumber": 64
+        },
+        {
+          "caller": "get_cart",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/constraint.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 19,
+      "functions": [
+        {
+          "name": "constraint_cart",
+          "startLine": 16,
+          "endLine": 24,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "constraint_cart",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constraint_cart",
+          "callee": "get_budget_service",
+          "lineNumber": 18
+        },
+        {
+          "caller": "constraint_cart",
+          "callee": "service.build_constrained_cart",
+          "lineNumber": 19
+        },
+        {
+          "caller": "constraint_cart",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/health.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 11,
+      "nonEmptyLines": 7,
+      "functions": [
+        {
+          "name": "health",
+          "startLine": 10,
+          "endLine": 11,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "health",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "health",
+          "callee": "HealthResponse",
+          "lineNumber": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/outcome.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 24,
+      "functions": [
+        {
+          "name": "create_outcome",
+          "startLine": 16,
+          "endLine": 30,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "create_outcome",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_outcome",
+          "callee": "get_outcome_service",
+          "lineNumber": 24
+        },
+        {
+          "caller": "create_outcome",
+          "callee": "service.process_outcome",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create_outcome",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 30
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/share.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 194,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "_build_demo_share_cart",
+          "startLine": 29,
+          "endLine": 159,
+          "params": [
+            "session_id"
+          ]
+        },
+        {
+          "name": "_is_demo_share",
+          "startLine": 162,
+          "endLine": 166,
+          "params": [
+            "url"
+          ]
+        },
+        {
+          "name": "parse_share",
+          "startLine": 170,
+          "endLine": 194,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_build_demo_share_cart",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "_is_demo_share",
+          "line": 162,
+          "isDefault": false
+        },
+        {
+          "name": "parse_share",
+          "line": 169,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "Cart",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "CartItem",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_build_demo_share_cart",
+          "callee": "cart.recompute_total",
+          "lineNumber": 158
+        },
+        {
+          "caller": "parse_share",
+          "callee": "_is_demo_share",
+          "lineNumber": 174
+        },
+        {
+          "caller": "parse_share",
+          "callee": "asyncio.sleep",
+          "lineNumber": 176
+        },
+        {
+          "caller": "parse_share",
+          "callee": "str",
+          "lineNumber": 178
+        },
+        {
+          "caller": "parse_share",
+          "callee": "uuid.uuid4",
+          "lineNumber": 178
+        },
+        {
+          "caller": "parse_share",
+          "callee": "_build_demo_share_cart",
+          "lineNumber": 179
+        },
+        {
+          "caller": "parse_share",
+          "callee": "get_cache",
+          "lineNumber": 182
+        },
+        {
+          "caller": "parse_share",
+          "callee": "cache.save_cart",
+          "lineNumber": 183
+        },
+        {
+          "caller": "parse_share",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 185
+        },
+        {
+          "caller": "parse_share",
+          "callee": "get_share_service",
+          "lineNumber": 188
+        },
+        {
+          "caller": "parse_share",
+          "callee": "service.parse_shared_content",
+          "lineNumber": 189
+        },
+        {
+          "caller": "parse_share",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 194
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/vision.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 194,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "_build_demo_vision_cart",
+          "startLine": 27,
+          "endLine": 157,
+          "params": [
+            "session_id"
+          ]
+        },
+        {
+          "name": "analyze_image",
+          "startLine": 161,
+          "endLine": 194,
+          "params": [
+            "file",
+            "text",
+            "session_id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_build_demo_vision_cart",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "analyze_image",
+          "line": 160,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "Cart",
+          "lineNumber": 29
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "CartItem",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_build_demo_vision_cart",
+          "callee": "cart.recompute_total",
+          "lineNumber": 156
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "File",
+          "lineNumber": 162
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "Form",
+          "lineNumber": 163
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "Form",
+          "lineNumber": 164
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "asyncio.sleep",
+          "lineNumber": 171
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "str",
+          "lineNumber": 173
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "uuid.uuid4",
+          "lineNumber": 173
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "_build_demo_vision_cart",
+          "lineNumber": 174
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "get_cache",
+          "lineNumber": 177
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "cache.save_cart",
+          "lineNumber": 178
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 180
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "get_vision_service",
+          "lineNumber": 183
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "file.read",
+          "lineNumber": 187
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "service.analyze_image",
+          "lineNumber": 189
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 194
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/controllers/voice.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 209,
+      "nonEmptyLines": 191,
+      "functions": [
+        {
+          "name": "_build_demo_cart",
+          "startLine": 25,
+          "endLine": 177,
+          "params": [
+            "session_id"
+          ]
+        },
+        {
+          "name": "_is_demo_query",
+          "startLine": 180,
+          "endLine": 182,
+          "params": [
+            "transcript"
+          ]
+        },
+        {
+          "name": "voice_intent",
+          "startLine": 186,
+          "endLine": 209,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_build_demo_cart",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "_is_demo_query",
+          "line": 180,
+          "isDefault": false
+        },
+        {
+          "name": "voice_intent",
+          "line": 185,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_build_demo_cart",
+          "callee": "Cart",
+          "lineNumber": 27
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "CartItem",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_build_demo_cart",
+          "callee": "cart.recompute_total",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_is_demo_query",
+          "callee": "transcript.lower().strip",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_is_demo_query",
+          "callee": "transcript.lower",
+          "lineNumber": 182
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "_is_demo_query",
+          "lineNumber": 190
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "asyncio.sleep",
+          "lineNumber": 192
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "str",
+          "lineNumber": 194
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "uuid.uuid4",
+          "lineNumber": 194
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "_build_demo_cart",
+          "lineNumber": 195
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "get_cache",
+          "lineNumber": 198
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "cache.save_cart",
+          "lineNumber": 199
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 201
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "get_outcome_service",
+          "lineNumber": 204
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "service.process_outcome",
+          "lineNumber": 205
+        },
+        {
+          "caller": "voice_intent",
+          "callee": "CartResponse.from_domain",
+          "lineNumber": 209
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/models/domain/cart.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 56,
+      "classes": [
+        {
+          "name": "Substitution",
+          "startLine": 7,
+          "endLine": 14,
+          "methods": [],
+          "properties": [
+            "original_product_id",
+            "original_name",
+            "substitute_product_id",
+            "substitute_name",
+            "reason"
+          ]
+        },
+        {
+          "name": "CartItem",
+          "startLine": 17,
+          "endLine": 40,
+          "methods": [
+            "line_total"
+          ],
+          "properties": [
+            "product_id",
+            "name",
+            "brand",
+            "price",
+            "quantity",
+            "unit",
+            "reason",
+            "confidence",
+            "substituted_for",
+            "image_url",
+            "recently_ordered",
+            "days_ago",
+            "out_of_stock_suggestion"
+          ]
+        },
+        {
+          "name": "Cart",
+          "startLine": 43,
+          "endLine": 70,
+          "methods": [
+            "recompute_total"
+          ],
+          "properties": [
+            "session_id",
+            "items",
+            "economical_items",
+            "total",
+            "economical_total",
+            "currency",
+            "mode",
+            "confidence",
+            "substitutions",
+            "notes",
+            "clarification",
+            "reasoning_trail",
+            "budget",
+            "remaining_budget",
+            "shortfall",
+            "eta_minutes",
+            "degraded"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Substitution",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "CartItem",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "Cart",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "line_total",
+          "callee": "round",
+          "lineNumber": 40
+        },
+        {
+          "caller": "recompute_total",
+          "callee": "round",
+          "lineNumber": 66
+        },
+        {
+          "caller": "recompute_total",
+          "callee": "sum",
+          "lineNumber": 66
+        },
+        {
+          "caller": "recompute_total",
+          "callee": "round",
+          "lineNumber": 67
+        },
+        {
+          "caller": "recompute_total",
+          "callee": "sum",
+          "lineNumber": 67
+        },
+        {
+          "caller": "recompute_total",
+          "callee": "round",
+          "lineNumber": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "server/app/models/domain/enums.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 19,
+      "classes": [
+        {
+          "name": "IntentMode",
+          "startLine": 5,
+          "endLine": 15,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "NeedStatus",
+          "startLine": 18,
+          "endLine": 25,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "IntentMode",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "NeedStatus",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "server/app/models/domain/need.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 15,
+      "classes": [
+        {
+          "name": "Need",
+          "startLine": 7,
+          "endLine": 20,
+          "methods": [],
+          "properties": [
+            "name",
+            "quantity",
+            "unit",
+            "category_hint",
+            "matched_product_id",
+            "status",
+            "note"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Need",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/models/dto/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 36,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/models/dto/requests.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 37,
+      "classes": [
+        {
+          "name": "OutcomeRequest",
+          "startLine": 5,
+          "endLine": 11,
+          "methods": [],
+          "properties": [
+            "text",
+            "servings",
+            "session_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "VoiceIntentRequest",
+          "startLine": 14,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "transcript",
+            "session_id"
+          ]
+        },
+        {
+          "name": "ConstraintRequest",
+          "startLine": 21,
+          "endLine": 27,
+          "methods": [],
+          "properties": [
+            "budget",
+            "servings",
+            "text",
+            "session_id"
+          ]
+        },
+        {
+          "name": "ShareRequest",
+          "startLine": 30,
+          "endLine": 35,
+          "methods": [],
+          "properties": [
+            "url",
+            "text",
+            "session_id"
+          ]
+        },
+        {
+          "name": "CartOpRequest",
+          "startLine": 38,
+          "endLine": 44,
+          "methods": [],
+          "properties": [
+            "session_id",
+            "op",
+            "entity",
+            "quantity"
+          ]
+        },
+        {
+          "name": "SosRequest",
+          "startLine": 47,
+          "endLine": 51,
+          "methods": [],
+          "properties": [
+            "situation",
+            "session_id"
+          ]
+        },
+        {
+          "name": "StockOverrideRequest",
+          "startLine": 54,
+          "endLine": 58,
+          "methods": [],
+          "properties": [
+            "product_id",
+            "in_stock"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OutcomeRequest",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "VoiceIntentRequest",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "ConstraintRequest",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "ShareRequest",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "CartOpRequest",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "SosRequest",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "StockOverrideRequest",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "server/app/models/dto/responses.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 162,
+      "nonEmptyLines": 139,
+      "classes": [
+        {
+          "name": "HealthResponse",
+          "startLine": 15,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "status",
+            "service",
+            "version"
+          ]
+        },
+        {
+          "name": "OkResponse",
+          "startLine": 21,
+          "endLine": 23,
+          "methods": [],
+          "properties": [
+            "ok",
+            "message"
+          ]
+        },
+        {
+          "name": "ErrorResponse",
+          "startLine": 26,
+          "endLine": 31,
+          "methods": [],
+          "properties": [
+            "error",
+            "detail",
+            "request_id"
+          ]
+        },
+        {
+          "name": "ProductResponse",
+          "startLine": 34,
+          "endLine": 69,
+          "methods": [
+            "from_domain"
+          ],
+          "properties": [
+            "product_id",
+            "name",
+            "brand",
+            "category",
+            "sub_category",
+            "sale_price",
+            "market_price",
+            "rating",
+            "unit",
+            "in_stock",
+            "delivery_eta_min",
+            "image_url",
+            "description",
+            "verified",
+            "order_count_month"
+          ]
+        },
+        {
+          "name": "SubstitutionResponse",
+          "startLine": 72,
+          "endLine": 81,
+          "methods": [
+            "from_domain"
+          ],
+          "properties": [
+            "original_product_id",
+            "original_name",
+            "substitute_product_id",
+            "substitute_name",
+            "reason"
+          ]
+        },
+        {
+          "name": "CartItemResponse",
+          "startLine": 84,
+          "endLine": 117,
+          "methods": [
+            "from_domain"
+          ],
+          "properties": [
+            "product_id",
+            "name",
+            "brand",
+            "price",
+            "quantity",
+            "unit",
+            "line_total",
+            "reason",
+            "confidence",
+            "substituted_for",
+            "image_url",
+            "recently_ordered",
+            "days_ago",
+            "out_of_stock_suggestion"
+          ]
+        },
+        {
+          "name": "CartResponse",
+          "startLine": 120,
+          "endLine": 162,
+          "methods": [
+            "from_domain"
+          ],
+          "properties": [
+            "session_id",
+            "items",
+            "economical_items",
+            "total",
+            "economical_total",
+            "currency",
+            "mode",
+            "confidence",
+            "substitutions",
+            "notes",
+            "clarification",
+            "reasoning_trail",
+            "budget",
+            "remaining_budget",
+            "shortfall",
+            "eta_minutes",
+            "degraded",
+            "pantry_filtered"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "HealthResponse",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "OkResponse",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "ErrorResponse",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "ProductResponse",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "SubstitutionResponse",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "CartItemResponse",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "CartResponse",
+          "line": 120,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "from_domain",
+          "callee": "cls",
+          "lineNumber": 53
+        },
+        {
+          "caller": "from_domain",
+          "callee": "cls",
+          "lineNumber": 81
+        },
+        {
+          "caller": "from_domain",
+          "callee": "s.model_dump",
+          "lineNumber": 81
+        },
+        {
+          "caller": "from_domain",
+          "callee": "cls",
+          "lineNumber": 102
+        },
+        {
+          "caller": "from_domain",
+          "callee": "cls",
+          "lineNumber": 144
+        },
+        {
+          "caller": "from_domain",
+          "callee": "CartItemResponse.from_domain",
+          "lineNumber": 146
+        },
+        {
+          "caller": "from_domain",
+          "callee": "CartItemResponse.from_domain",
+          "lineNumber": 147
+        },
+        {
+          "caller": "from_domain",
+          "callee": "SubstitutionResponse.from_domain",
+          "lineNumber": 153
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "server/app/services/budget_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 87,
+      "functions": [
+        {
+          "name": "get_budget_service",
+          "startLine": 106,
+          "endLine": 111,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "BudgetService",
+          "startLine": 15,
+          "endLine": 100,
+          "methods": [
+            "build_constrained_cart",
+            "_trim_to_budget",
+            "apply_budget"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BudgetService",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "get_budget_service",
+          "line": 106,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "build_constrained_cart",
+          "callee": "get_outcome_service",
+          "lineNumber": 38
+        },
+        {
+          "caller": "build_constrained_cart",
+          "callee": "service.process_outcome",
+          "lineNumber": 39
+        },
+        {
+          "caller": "build_constrained_cart",
+          "callee": "self._trim_to_budget",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "round",
+          "lineNumber": 55
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "list",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "enumerate",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "indexed_items.sort",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "kept_indices.append",
+          "lineNumber": 69
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "cart.notes.append",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "kept_indices.sort",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "len",
+          "lineNumber": 80
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "cart.recompute_total",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "round",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "round",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_trim_to_budget",
+          "callee": "cart.notes.append",
+          "lineNumber": 88
+        },
+        {
+          "caller": "apply_budget",
+          "callee": "self._trim_to_budget",
+          "lineNumber": 100
+        },
+        {
+          "caller": "get_budget_service",
+          "callee": "BudgetService",
+          "lineNumber": 110
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/services/outcome_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 266,
+      "nonEmptyLines": 230,
+      "functions": [
+        {
+          "name": "get_outcome_service",
+          "startLine": 264,
+          "endLine": 266,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "OutcomeService",
+          "startLine": 35,
+          "endLine": 260,
+          "methods": [
+            "process_outcome",
+            "replan_cart",
+            "_inject_user_context",
+            "_annotate_recently_ordered"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "OutcomeService",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "get_outcome_service",
+          "line": 263,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "process_outcome",
+          "callee": "time.perf_counter",
+          "lineNumber": 49
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "self._inject_user_context",
+          "lineNumber": 72
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "outcome_graph.ainvoke",
+          "lineNumber": 75
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "result.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "Cart",
+          "lineNumber": 79
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "str",
+          "lineNumber": 80
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "uuid.uuid4",
+          "lineNumber": 80
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "result.get",
+          "lineNumber": 81
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "result.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "result.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "result.get",
+          "lineNumber": 97
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "cart.reasoning_trail.append",
+          "lineNumber": 99
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "len",
+          "lineNumber": 100
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "self._annotate_recently_ordered",
+          "lineNumber": 105
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "logger.exception",
+          "lineNumber": 108
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "Cart",
+          "lineNumber": 109
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "str",
+          "lineNumber": 110
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "uuid.uuid4",
+          "lineNumber": 110
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "time.perf_counter",
+          "lineNumber": 118
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "logger.info",
+          "lineNumber": 119
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "len",
+          "lineNumber": 123
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "get_cache",
+          "lineNumber": 131
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "cache.save_cart",
+          "lineNumber": 132
+        },
+        {
+          "caller": "process_outcome",
+          "callee": "logger.warning",
+          "lineNumber": 134
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 160
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 162
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 163
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 164
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 165
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "item.get",
+          "lineNumber": 168
+        },
+        {
+          "caller": "replan_cart",
+          "callee": "self.process_outcome",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "time.perf_counter",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "_USER_CONTEXT_CACHE.get",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "time.monotonic",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "state.update",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "logger.info",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "time.perf_counter",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_fetch_user",
+          "callee": "get_repository",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_fetch_user",
+          "callee": "repo.get_user",
+          "lineNumber": 209
+        },
+        {
+          "caller": "_fetch_user",
+          "callee": "logger.debug",
+          "lineNumber": 218
+        },
+        {
+          "caller": "_fetch_preferences",
+          "callee": "get_preference_service",
+          "lineNumber": 223
+        },
+        {
+          "caller": "_fetch_preferences",
+          "callee": "pref_service.get_user_preference",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_fetch_preferences",
+          "callee": "preference.model_dump",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_fetch_preferences",
+          "callee": "logger.debug",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "asyncio.gather",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "_fetch_user",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "_fetch_preferences",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "logger.warning",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "state.update",
+          "lineNumber": 242
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "time.monotonic",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "time.perf_counter",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_inject_user_context",
+          "callee": "logger.info",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_annotate_recently_ordered",
+          "callee": "get_pantry_service",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_annotate_recently_ordered",
+          "callee": "pantry_service.get_recently_ordered",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_annotate_recently_ordered",
+          "callee": "logger.debug",
+          "lineNumber": 260
+        },
+        {
+          "caller": "get_outcome_service",
+          "callee": "OutcomeService",
+          "lineNumber": 266
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/services/share_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 168,
+      "nonEmptyLines": 136,
+      "functions": [
+        {
+          "name": "_is_url",
+          "startLine": 33,
+          "endLine": 35,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "_extract_text_from_html",
+          "startLine": 38,
+          "endLine": 55,
+          "params": [
+            "html",
+            "max_chars"
+          ]
+        },
+        {
+          "name": "_fetch_url_content",
+          "startLine": 58,
+          "endLine": 77,
+          "params": [
+            "url"
+          ]
+        },
+        {
+          "name": "get_share_service",
+          "startLine": 163,
+          "endLine": 168,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "ShareService",
+          "startLine": 80,
+          "endLine": 157,
+          "methods": [
+            "parse_shared_content"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_is_url",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_text_from_html",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "_fetch_url_content",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "ShareService",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "get_share_service",
+          "line": 163,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_is_url",
+          "callee": "text.strip().startswith",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_is_url",
+          "callee": "text.strip",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub",
+          "lineNumber": 44
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace(\"&amp;\", \"&\").replace(\"&lt;\", \"<\").replace",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace(\"&amp;\", \"&\").replace",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace(\"&nbsp;\", \" \").replace(\"&#39;\", \"'\").replace",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace(\"&nbsp;\", \" \").replace",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "html.replace",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub(r\"\\s+\", \" \", html).strip",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_extract_text_from_html",
+          "callee": "re.sub",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "client.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "resp.raise_for_status",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "resp.headers.get",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "_extract_text_from_html",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_fetch_url_content",
+          "callee": "logger.warning",
+          "lineNumber": 76
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "get_text_provider",
+          "lineNumber": 104
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "_is_url",
+          "lineNumber": 107
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "_fetch_url_content",
+          "lineNumber": 109
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "llm.complete_text",
+          "lineNumber": 123
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "llm.complete_text",
+          "lineNumber": 131
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "llm.complete_text",
+          "lineNumber": 140
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "get_outcome_service",
+          "lineNumber": 147
+        },
+        {
+          "caller": "parse_shared_content",
+          "callee": "outcome_service.process_outcome",
+          "lineNumber": 148
+        },
+        {
+          "caller": "get_share_service",
+          "callee": "ShareService",
+          "lineNumber": 167
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 5,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/services/vision_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 117,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "get_vision_service",
+          "startLine": 112,
+          "endLine": 117,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "VisionService",
+          "startLine": 19,
+          "endLine": 106,
+          "methods": [
+            "analyze_image"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "VisionService",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "get_vision_service",
+          "line": 112,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "analyze_image",
+          "callee": "get_vision_provider",
+          "lineNumber": 43
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision.describe_image",
+          "lineNumber": 59
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision_result.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "logger.warning",
+          "lineNumber": 63
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "get_outcome_service",
+          "lineNumber": 66
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "outcome_service.process_outcome",
+          "lineNumber": 67
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "cart.notes.append",
+          "lineNumber": 72
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision_result.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision_result.get",
+          "lineNumber": 79
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision_result.get",
+          "lineNumber": 80
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "vision_result.get",
+          "lineNumber": 81
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "\", \".join",
+          "lineNumber": 85
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "get_outcome_service",
+          "lineNumber": 91
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "outcome_service.process_outcome",
+          "lineNumber": 92
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "cart.reasoning_trail.insert",
+          "lineNumber": 99
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "cart.reasoning_trail.insert",
+          "lineNumber": 101
+        },
+        {
+          "caller": "analyze_image",
+          "callee": "', '.join",
+          "lineNumber": 101
+        },
+        {
+          "caller": "get_vision_service",
+          "callee": "VisionService",
+          "lineNumber": 116
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "client/src/ui/Button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 69,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "Button",
+          "startLine": 34,
+          "endLine": 69,
+          "params": [
+            "{\r\n  variant = 'primary',\r\n  size = 'md',\r\n  loading = false,\r\n  leftIcon,\r\n  rightIcon,\r\n  fullWidth = false,\r\n  disabled,\r\n  className = '',\r\n  children,\r\n  ...rest\r\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Button",
+          "line": 34,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Button",
+          "callee": "[\r\n        'inline-flex items-center justify-center font-semibold transition-colors duration-150',\r\n        'disabled:opacity-50 disabled:cursor-not-allowed select-none',\r\n        VARIANTS[variant],\r\n        SIZES[size],\r\n        fullWidth ? 'w-full' : '',\r\n        className,\r\n      ].join",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/Spinner.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 21,
+      "functions": [
+        {
+          "name": "Spinner",
+          "startLine": 16,
+          "endLine": 23,
+          "params": [
+            "{ size = 20, className = 'text-primary', label = 'Loading' }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Spinner",
+          "line": 16,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/States.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 63,
+      "functions": [
+        {
+          "name": "EmptyState",
+          "startLine": 17,
+          "endLine": 30,
+          "params": [
+            "{ icon, title, description, action, className = '' }"
+          ]
+        },
+        {
+          "name": "ErrorState",
+          "startLine": 44,
+          "endLine": 67,
+          "params": [
+            "{\r\n  title = 'Something went wrong',\r\n  description = 'We hit a snag. Please try again.',\r\n  onRetry,\r\n  retryLabel = 'Try again',\r\n  className = '',\r\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmptyState",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "ErrorState",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

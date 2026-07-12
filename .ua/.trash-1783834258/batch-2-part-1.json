@@ -1,0 +1,401 @@
+{
+  "nodes": [
+    {
+      "id": "file:server/app/agents/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/agents/__init__.py",
+      "summary": "Package init for the agents module that re-exports the LangGraph pipeline builder, node functions, and shared agent state for use by the outcome service.",
+      "tags": ["entry-point", "barrel", "langgraph"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/agents/graph.py",
+      "type": "file",
+      "name": "graph.py",
+      "filePath": "server/app/agents/graph.py",
+      "summary": "Builds the LangGraph StateGraph wiring together intent, decompose, match, confidence, counterfactual, and replan nodes with conditional routing edges for the Outcome Engine pipeline.",
+      "tags": ["langgraph", "state-machine", "orchestration", "pipeline"],
+      "complexity": "moderate",
+      "languageNotes": "Uses LangGraph's add_conditional_edges with small routing helper functions (_should_replan, _replan_route) to decide whether the graph should loop back into replanning."
+    },
+    {
+      "id": "file:server/app/agents/nodes.py",
+      "type": "file",
+      "name": "nodes.py",
+      "filePath": "server/app/agents/nodes.py",
+      "summary": "Implements the core LangGraph node functions (intent, decompose, match, confidence, counterfactual, replan) that make up the Decompose -> Match -> Optimize -> Confidence outcome pipeline, including LLM prompt construction and catalog matching logic.",
+      "tags": ["langgraph", "llm", "business-logic", "pipeline", "matching"],
+      "complexity": "complex",
+      "languageNotes": "Very large file (959 lines) combining prompt construction, async catalog search fan-out via asyncio.gather, and quantity normalization heuristics."
+    },
+    {
+      "id": "file:server/app/agents/state.py",
+      "type": "file",
+      "name": "state.py",
+      "filePath": "server/app/agents/state.py",
+      "summary": "Defines the AgentState schema shared across all LangGraph nodes, carrying raw input, needs, candidates, cart, confidence, and conversation context through the pipeline.",
+      "tags": ["state-management", "type-definition", "langgraph"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/controllers/__init__.py",
+      "summary": "Aggregates and re-exports all FastAPI controller routers (admin, cart, catalog, auth, orders, outcome, share, vision, voice, etc.) for registration with the main app.",
+      "tags": ["entry-point", "barrel", "api-handler"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "server/app/controllers/admin.py",
+      "summary": "Admin-only FastAPI endpoints for overriding product stock status and triggering badge recomputation.",
+      "tags": ["api-handler", "admin", "controller"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/cart.py",
+      "type": "file",
+      "name": "cart.py",
+      "filePath": "server/app/controllers/cart.py",
+      "summary": "FastAPI endpoints for cart mutation operations (add/remove/update/clear items) and cart retrieval, delegating to CartOpsService.",
+      "tags": ["api-handler", "controller", "cart"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/constraint.py",
+      "type": "file",
+      "name": "constraint.py",
+      "filePath": "server/app/controllers/constraint.py",
+      "summary": "FastAPI endpoint that builds a budget-constrained cart by delegating to BudgetService.",
+      "tags": ["api-handler", "controller", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/health.py",
+      "type": "file",
+      "name": "health.py",
+      "filePath": "server/app/controllers/health.py",
+      "summary": "Simple health-check endpoint returning service status for uptime monitoring.",
+      "tags": ["api-handler", "health-check", "monitoring"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/outcome.py",
+      "type": "file",
+      "name": "outcome.py",
+      "filePath": "server/app/controllers/outcome.py",
+      "summary": "FastAPI endpoint that accepts free-text intent requests and routes them through OutcomeService to produce a cart.",
+      "tags": ["api-handler", "controller", "outcome-engine"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/share.py",
+      "type": "file",
+      "name": "share.py",
+      "filePath": "server/app/controllers/share.py",
+      "summary": "FastAPI endpoint for parsing shared content (URLs or text) into a cart, including a demo-mode cart builder used when DEMO_ENABLED is set.",
+      "tags": ["api-handler", "controller", "share", "demo-mode"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/controllers/vision.py",
+      "type": "file",
+      "name": "vision.py",
+      "filePath": "server/app/controllers/vision.py",
+      "summary": "FastAPI endpoint that analyzes an uploaded image (or runs in demo mode) to extract a shopping cart via VisionService.",
+      "tags": ["api-handler", "controller", "vision", "demo-mode"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:_normalize_quantity_to_packs",
+      "type": "function",
+      "name": "_normalize_quantity_to_packs",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [38, 57],
+      "summary": "Normalizes a free-form quantity and unit string into a pack count, handling units like kg, g, l, ml, and pieces.",
+      "tags": ["utility", "normalization", "parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:intent_node",
+      "type": "function",
+      "name": "intent_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [85, 119],
+      "summary": "First LangGraph node that parses raw user input to detect intent mode (e.g., dinner-party, restock) and serving size before decomposition.",
+      "tags": ["langgraph", "node", "intent-detection"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:decompose_node",
+      "type": "function",
+      "name": "decompose_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [135, 346],
+      "summary": "Core decomposition node that uses an LLM to break a raw intent into structured shopping needs (items, quantities, constraints), producing the Need list consumed by matching.",
+      "tags": ["langgraph", "node", "llm", "decomposition"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:match_node",
+      "type": "function",
+      "name": "match_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [354, 650],
+      "summary": "Matches decomposed needs against the product catalog using hybrid semantic search and fuzzy matching, building cart items and economical alternatives concurrently via asyncio.gather.",
+      "tags": ["langgraph", "node", "catalog-matching", "async"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:confidence_node",
+      "type": "function",
+      "name": "confidence_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [658, 713],
+      "summary": "Computes an overall confidence score for the assembled cart and flags low-confidence items needing clarification.",
+      "tags": ["langgraph", "node", "confidence-scoring"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:counterfactual_node",
+      "type": "function",
+      "name": "counterfactual_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [721, 765],
+      "summary": "Generates \"what-if\" counterfactual alternatives for cart items using the counterfactual service, used to explain substitution reasoning.",
+      "tags": ["langgraph", "node", "counterfactuals"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/agents/nodes.py:replan_node",
+      "type": "function",
+      "name": "replan_node",
+      "filePath": "server/app/agents/nodes.py",
+      "lineRange": [773, 959],
+      "summary": "Reprocesses a cart based on user feedback text, extracting new constraints (dietary, swaps, exclusions) and re-running matching to produce an updated cart.",
+      "tags": ["langgraph", "node", "replanning", "feedback"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:server/app/agents/state.py:AgentState",
+      "type": "class",
+      "name": "AgentState",
+      "filePath": "server/app/agents/state.py",
+      "lineRange": [15, 84],
+      "summary": "State object threaded through every LangGraph node, holding raw input, needs, candidates, cart, confidence, user context, and replanning fields.",
+      "tags": ["state-management", "type-definition", "langgraph"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/admin.py:stock_override",
+      "type": "function",
+      "name": "stock_override",
+      "filePath": "server/app/controllers/admin.py",
+      "lineRange": [17, 35],
+      "summary": "Admin endpoint that overrides a product's stock status in both the cache and the repository.",
+      "tags": ["api-handler", "admin"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/admin.py:recompute_badges",
+      "type": "function",
+      "name": "recompute_badges",
+      "filePath": "server/app/controllers/admin.py",
+      "lineRange": [39, 51],
+      "summary": "Admin endpoint that triggers recomputation of product badges via BadgeService.",
+      "tags": ["api-handler", "admin"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/cart.py:cart_operation",
+      "type": "function",
+      "name": "cart_operation",
+      "filePath": "server/app/controllers/cart.py",
+      "lineRange": [17, 55],
+      "summary": "Dispatches cart mutation operations (add, remove, update, clear, total) to CartOpsService based on the requested op string.",
+      "tags": ["api-handler", "cart"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/cart.py:get_cart",
+      "type": "function",
+      "name": "get_cart",
+      "filePath": "server/app/controllers/cart.py",
+      "lineRange": [59, 65],
+      "summary": "Retrieves the current cart for a session via CartOpsService.",
+      "tags": ["api-handler", "cart"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/constraint.py:constraint_cart",
+      "type": "function",
+      "name": "constraint_cart",
+      "filePath": "server/app/controllers/constraint.py",
+      "lineRange": [16, 24],
+      "summary": "Endpoint that builds a budget-constrained cart using BudgetService and returns it as a CartResponse.",
+      "tags": ["api-handler", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/outcome.py:create_outcome",
+      "type": "function",
+      "name": "create_outcome",
+      "filePath": "server/app/controllers/outcome.py",
+      "lineRange": [16, 30],
+      "summary": "Endpoint that submits free-text intent to OutcomeService and returns the resulting cart.",
+      "tags": ["api-handler", "outcome-engine"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/share.py:_build_demo_share_cart",
+      "type": "function",
+      "name": "_build_demo_share_cart",
+      "filePath": "server/app/controllers/share.py",
+      "lineRange": [29, 159],
+      "summary": "Builds a hardcoded demo cart used when share parsing runs in demo mode, bypassing the real LLM pipeline.",
+      "tags": ["demo-mode", "fixture", "share"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/share.py:parse_share",
+      "type": "function",
+      "name": "parse_share",
+      "filePath": "server/app/controllers/share.py",
+      "lineRange": [170, 194],
+      "summary": "Endpoint that parses shared URL or text content into a cart, either via the demo cart builder or ShareService.parse_shared_content.",
+      "tags": ["api-handler", "share"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/vision.py:_build_demo_vision_cart",
+      "type": "function",
+      "name": "_build_demo_vision_cart",
+      "filePath": "server/app/controllers/vision.py",
+      "lineRange": [27, 157],
+      "summary": "Builds a hardcoded demo cart used when image analysis runs in demo mode.",
+      "tags": ["demo-mode", "fixture", "vision"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/vision.py:analyze_image",
+      "type": "function",
+      "name": "analyze_image",
+      "filePath": "server/app/controllers/vision.py",
+      "lineRange": [161, 194],
+      "summary": "Endpoint that accepts an uploaded image (or demo mode) and returns a cart derived via VisionService.analyze_image.",
+      "tags": ["api-handler", "vision"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:_normalize_quantity_to_packs", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:intent_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:decompose_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:match_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:confidence_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:counterfactual_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:replan_node", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/agents/state.py", "target": "class:server/app/agents/state.py:AgentState", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/admin.py", "target": "function:server/app/controllers/admin.py:stock_override", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/admin.py", "target": "function:server/app/controllers/admin.py:recompute_badges", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/cart.py", "target": "function:server/app/controllers/cart.py:cart_operation", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/cart.py", "target": "function:server/app/controllers/cart.py:get_cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/constraint.py", "target": "function:server/app/controllers/constraint.py:constraint_cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/outcome.py", "target": "function:server/app/controllers/outcome.py:create_outcome", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/share.py", "target": "function:server/app/controllers/share.py:_build_demo_share_cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/share.py", "target": "function:server/app/controllers/share.py:parse_share", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/vision.py", "target": "function:server/app/controllers/vision.py:_build_demo_vision_cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/vision.py", "target": "function:server/app/controllers/vision.py:analyze_image", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:intent_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:decompose_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:match_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:confidence_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:counterfactual_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/nodes.py", "target": "function:server/app/agents/nodes.py:replan_node", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/agents/state.py", "target": "class:server/app/agents/state.py:AgentState", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/admin.py", "target": "function:server/app/controllers/admin.py:stock_override", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/admin.py", "target": "function:server/app/controllers/admin.py:recompute_badges", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/cart.py", "target": "function:server/app/controllers/cart.py:cart_operation", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/cart.py", "target": "function:server/app/controllers/cart.py:get_cart", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/constraint.py", "target": "function:server/app/controllers/constraint.py:constraint_cart", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/outcome.py", "target": "function:server/app/controllers/outcome.py:create_outcome", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/share.py", "target": "function:server/app/controllers/share.py:parse_share", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/controllers/vision.py", "target": "function:server/app/controllers/vision.py:analyze_image", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:server/app/agents/__init__.py", "target": "file:server/app/agents/graph.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/__init__.py", "target": "file:server/app/agents/nodes.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/__init__.py", "target": "file:server/app/agents/state.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/agents/graph.py", "target": "file:server/app/agents/nodes.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/graph.py", "target": "file:server/app/agents/state.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/agents/state.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/core/config.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/llm/factory.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/models/domain/need.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/agents/nodes.py", "target": "file:server/app/services/catalog_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/admin.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/auth.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/catalog.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/constraint.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/health.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/meta.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/orders.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/outcome.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/share.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/subscribe.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/vision.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/__init__.py", "target": "file:server/app/controllers/voice.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/admin.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/admin.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/admin.py", "target": "file:server/app/repositories/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/cart.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/cart.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/cart.py", "target": "file:server/app/services/cart_ops_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/constraint.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/constraint.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/constraint.py", "target": "file:server/app/services/budget_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/health.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/outcome.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/outcome.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/outcome.py", "target": "file:server/app/services/outcome_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/repositories/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/share.py", "target": "file:server/app/services/share_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/controllers/vision.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/vision.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/vision.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/vision.py", "target": "file:server/app/repositories/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/vision.py", "target": "file:server/app/services/vision_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "function:server/app/controllers/admin.py:stock_override", "target": "function:server/app/repositories/__init__.py:get_cache", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/admin.py:stock_override", "target": "function:server/app/repositories/__init__.py:get_repository", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/cart.py:cart_operation", "target": "function:server/app/services/cart_ops_service.py:get_cart_ops_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/cart.py:get_cart", "target": "function:server/app/services/cart_ops_service.py:get_cart_ops_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/constraint.py:constraint_cart", "target": "function:server/app/services/budget_service.py:get_budget_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/outcome.py:create_outcome", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/share.py:parse_share", "target": "function:server/app/services/share_service.py:get_share_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/share.py:parse_share", "target": "function:server/app/repositories/__init__.py:get_cache", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/vision.py:analyze_image", "target": "function:server/app/services/vision_service.py:get_vision_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/vision.py:analyze_image", "target": "function:server/app/repositories/__init__.py:get_cache", "type": "calls", "direction": "forward", "weight": 0.8 }
+  ]
+}

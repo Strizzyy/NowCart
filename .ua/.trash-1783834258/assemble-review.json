@@ -1,0 +1,15 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 0,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "notes": [
+    "Merge report contained no 'Fixed' pattern list and no 'Could not fix' section — input (451 nodes, 989 edges) matched output (451 nodes, 992 edges) except for the 3 imports edges recovered from importMap, so no ID/complexity corrections or drops were needed.",
+    "Verified: 0 nodes missing an id, 0 nodes with invalid complexity values, 0 dangling edges (all source/target ids resolve to existing nodes).",
+    "Node types present: file(138), function(205), class(71), service(11), config(12), document(11), pipeline(1), resource(2). 'pipeline' and 'resource' are domain-specific types for the CI/CD workflow file (.github/workflows/deploy.yml) and its two jobs, sourced verbatim from batch-11.json — not corruption. Minor inconsistency: the two 'resource'-typed nodes use a 'step:' id prefix rather than 'resource:' (e.g. step:.github/workflows/deploy.yml:deploy-frontend), which doesn't match the type field; left as-is since it was intentional in the original batch output and not flagged by the merge script.",
+    "Cross-batch import verification: checked all 165 importMap entries against assembled-graph.json; 293 entries had both endpoints present as nodes. Found 2 'missing' edges but both were self-referential (a file importing itself per scan-result.json's importMap — e.g. server/app/core/logging.py -> server/app/core/logging.py), which are scan artifacts, not real missing edges, so no edges were added for these.",
+    "No batch files contained nodes lacking an id, unknown/unmappable types, or unknown complexity values, so no recovery or remapping was necessary this run."
+  ]
+}
