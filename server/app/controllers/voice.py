@@ -19,6 +19,7 @@ router = APIRouter(prefix="/api/voice", tags=["voice"])
 
 
 # --------------- hardcoded demo data for "healthy breakfast for two people" ---------------
+_DEMO_ENABLED = False  # flip to True to use hardcoded demo cart instead of real parsing
 _DEMO_TRIGGER = "healthy breakfast for two people"
 
 
@@ -187,7 +188,7 @@ async def voice_intent(req: VoiceIntentRequest) -> CartResponse:
     """Route a voice transcript through the outcome engine (mode=TEXT)."""
 
     # --- Demo shortcut ---
-    if _is_demo_query(req.transcript):
+    if _DEMO_ENABLED and _is_demo_query(req.transcript):
         # Fake a ~2s "thinking" delay so it looks like real AI processing
         await asyncio.sleep(2.2)
 

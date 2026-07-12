@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/share", tags=["share"])
 
 
 # --------------- hardcoded demo data for "Share It" pasta YouTube link ---------------
-_DEMO_ENABLED = True  # flip to False to restore normal flow
+_DEMO_ENABLED = False  # flip to True to use hardcoded demo cart instead of real parsing
 _DEMO_URL_TRIGGER = "bTo0J-lDbUU"  # unique video ID from the demo YouTube link
 
 
