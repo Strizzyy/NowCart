@@ -1,0 +1,15 @@
+{
+  "batchIndex": 11,
+  "files": [
+    {
+      "path": ".github/workflows/deploy.yml",
+      "language": "yaml",
+      "sizeLines": 100,
+      "fileCategory": "infra"
+    }
+  ],
+  "batchImportData": {
+    ".github/workflows/deploy.yml": []
+  },
+  "neighborMap": {}
+}

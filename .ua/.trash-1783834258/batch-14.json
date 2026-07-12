@@ -1,0 +1,97 @@
+{
+  "nodes": [
+    {
+      "id": "document:client/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "client/README.md",
+      "summary": "Boilerplate Vite React+TypeScript README describing the default template, React Compiler note, and guidance for expanding the ESLint configuration.",
+      "tags": ["documentation", "frontend", "vite", "boilerplate"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "client/index.html",
+      "summary": "Vite entry HTML for the NowCart PWA client, wiring PWA meta tags, Apple touch icons, Google Fonts, and mounting the React app via src/main.tsx.",
+      "tags": ["entry-point", "html", "pwa", "frontend"],
+      "complexity": "simple",
+      "languageNotes": "Includes PWA-specific meta tags (mobile-web-app-capable, apple-mobile-web-app-*, theme-color) indicating the client is installable as a Progressive Web App."
+    },
+    {
+      "id": "config:client/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "client/package.json",
+      "summary": "NPM manifest for the NowCart React client, defining Vite build/dev scripts, OpenAPI type generation, Capacitor Android packaging, and dependencies including React 19, Tailwind CSS v4, react-router-dom, and lucide-react.",
+      "tags": ["configuration", "build-system", "npm", "frontend"],
+      "complexity": "simple",
+      "languageNotes": "Includes a gen:types script running openapi-typescript against a local FastAPI backend's /openapi.json, and a build:apk script that syncs the web build into a Capacitor Android project."
+    },
+    {
+      "id": "config:client/tsconfig.app.json",
+      "type": "config",
+      "name": "tsconfig.app.json",
+      "filePath": "client/tsconfig.app.json",
+      "summary": "TypeScript compiler configuration for the client application source, setting bundler module resolution and strict type-checking options for files under src/.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "client/tsconfig.json",
+      "summary": "Root TypeScript project reference file that composes tsconfig.app.json and tsconfig.node.json for the client's split app/tooling build configuration.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "client/tsconfig.node.json",
+      "summary": "TypeScript compiler configuration for Node-context tooling files (e.g. vite.config.ts), enabling strict type-checking with bundler module resolution separate from the app build.",
+      "tags": ["configuration", "typescript", "build-system"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:client/tsconfig.json",
+      "target": "config:client/tsconfig.app.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:client/tsconfig.json",
+      "target": "config:client/tsconfig.node.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:client/tsconfig.app.json",
+      "target": "file:client/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:client/package.json",
+      "target": "file:client/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:client/README.md",
+      "target": "config:client/package.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

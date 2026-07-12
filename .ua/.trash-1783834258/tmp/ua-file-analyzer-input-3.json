@@ -1,0 +1,212 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {
+      "path": "server/app/controllers/auth.py",
+      "language": "python",
+      "sizeLines": 186,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/catalog.py",
+      "language": "python",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/orders.py",
+      "language": "python",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/subscribe.py",
+      "language": "python",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/__init__.py",
+      "language": "python",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/order.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/product.py",
+      "language": "python",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/models/domain/user.py",
+      "language": "python",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/__init__.py",
+      "language": "python",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/base.py",
+      "language": "python",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/cache.py",
+      "language": "python",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/repositories/memory.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/__init__.py",
+      "language": "python",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/badge_service.py",
+      "language": "python",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/cart_ops_service.py",
+      "language": "python",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/catalog_service.py",
+      "language": "python",
+      "sizeLines": 649,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/counterfactual_service.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/pantry_service.py",
+      "language": "python",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/preference_service.py",
+      "language": "python",
+      "sizeLines": 244,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/subscribe_service.py",
+      "language": "python",
+      "sizeLines": 585,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "server/app/controllers/auth.py": [
+      "server/app/models/domain/user.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/controllers/catalog.py": [
+      "server/app/repositories/__init__.py",
+      "server/app/services/catalog_service.py"
+    ],
+    "server/app/controllers/orders.py": [
+      "server/app/models/domain/order.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/controllers/subscribe.py": [
+      "server/app/models/dto/responses.py",
+      "server/app/services/counterfactual_service.py",
+      "server/app/services/outcome_service.py",
+      "server/app/services/pantry_service.py",
+      "server/app/services/preference_service.py",
+      "server/app/services/subscribe_service.py"
+    ],
+    "server/app/models/domain/__init__.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/domain/need.py",
+      "server/app/models/domain/order.py",
+      "server/app/models/domain/product.py",
+      "server/app/models/domain/user.py"
+    ],
+    "server/app/models/domain/order.py": [],
+    "server/app/models/domain/product.py": [],
+    "server/app/models/domain/user.py": [],
+    "server/app/repositories/__init__.py": [
+      "server/app/core/config.py",
+      "server/app/repositories/base.py",
+      "server/app/repositories/cache.py",
+      "server/app/repositories/memory.py"
+    ],
+    "server/app/repositories/base.py": [
+      "server/app/models/domain/__init__.py"
+    ],
+    "server/app/repositories/cache.py": [
+      "server/app/core/config.py",
+      "server/app/models/domain/__init__.py"
+    ],
+    "server/app/repositories/memory.py": [
+      "server/app/models/domain/__init__.py"
+    ],
+    "server/app/services/__init__.py": [
+      "server/app/services/catalog_service.py"
+    ],
+    "server/app/services/badge_service.py": [
+      "server/app/models/domain/product.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/services/cart_ops_service.py": [
+      "server/app/models/domain/cart.py",
+      "server/app/repositories/__init__.py",
+      "server/app/services/catalog_service.py"
+    ],
+    "server/app/services/catalog_service.py": [
+      "server/app/models/domain/__init__.py",
+      "server/app/repositories/__init__.py",
+      "server/app/repositories/base.py",
+      "server/app/repositories/cache.py"
+    ],
+    "server/app/services/counterfactual_service.py": [
+      "server/app/models/domain/product.py",
+      "server/app/services/preference_service.py"
+    ],
+    "server/app/services/pantry_service.py": [
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/services/preference_service.py": [
+      "server/app/models/domain/order.py",
+      "server/app/models/domain/product.py",
+      "server/app/repositories/__init__.py"
+    ],
+    "server/app/services/subscribe_service.py": [
+      "server/app/core/config.py",
+      "server/app/models/domain/cart.py",
+      "server/app/models/domain/enums.py",
+      "server/app/models/domain/order.py",
+      "server/app/repositories/__init__.py",
+      "server/app/services/catalog_service.py"
+    ]
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "nodes": [
+    {
+      "id": "file:client/src/components/AddressManager.tsx",
+      "type": "file",
+      "name": "AddressManager.tsx",
+      "filePath": "client/src/components/AddressManager.tsx",
+      "summary": "Modal/sheet UI component for managing saved delivery addresses, letting users detect their location via GPS reverse-geocoding or add/edit addresses manually with labels (Home/Work/Other).",
+      "tags": ["component", "location", "form", "modal"],
+      "complexity": "complex",
+      "languageNotes": "Single large functional component with many useState hooks driving a multi-step sheet UI (list -> GPS detect -> manual entry)."
+    },
+    {
+      "id": "function:client/src/components/AddressManager.tsx:AddressManager",
+      "type": "function",
+      "name": "AddressManager",
+      "filePath": "client/src/components/AddressManager.tsx",
+      "lineRange": [22, 390],
+      "summary": "Default-exported React component rendering the address management sheet: lists saved addresses, handles GPS detection, manual address entry, activation, and deletion.",
+      "tags": ["component", "location", "form"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/Header.tsx",
+      "type": "file",
+      "name": "Header.tsx",
+      "filePath": "client/src/components/Header.tsx",
+      "summary": "Site header component with search bar (animated placeholder), navigation category links, cart button, user menu, PWA install trigger, and the delivery address selector that opens AddressManager.",
+      "tags": ["component", "entry-point", "navigation", "pwa"],
+      "complexity": "complex",
+      "languageNotes": "Contains a custom useAnimatedPlaceholder hook defined and used locally within the same file for a typewriter-style search placeholder effect."
+    },
+    {
+      "id": "function:client/src/components/Header.tsx:useAnimatedPlaceholder",
+      "type": "function",
+      "name": "useAnimatedPlaceholder",
+      "filePath": "client/src/components/Header.tsx",
+      "lineRange": [26, 72],
+      "summary": "Local hook that cycles through placeholder search phrases with a typewriter-style typing/erasing animation using timed setTimeout callbacks.",
+      "tags": ["hook", "animation", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/Header.tsx:Header",
+      "type": "function",
+      "name": "Header",
+      "filePath": "client/src/components/Header.tsx",
+      "lineRange": [74, 403],
+      "summary": "Default-exported React component rendering the app header: search, category navigation, cart summary, user menu, address selector, and iOS PWA install instructions.",
+      "tags": ["component", "entry-point", "navigation"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/PwaInstallPrompt.tsx",
+      "type": "file",
+      "name": "PwaInstallPrompt.tsx",
+      "filePath": "client/src/components/PwaInstallPrompt.tsx",
+      "summary": "Dismissible toast/banner component that prompts eligible users to install the PWA after a delay, persisting dismissal state to localStorage.",
+      "tags": ["component", "pwa", "onboarding"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/PwaInstallPrompt.tsx:PwaInstallPrompt",
+      "type": "function",
+      "name": "PwaInstallPrompt",
+      "filePath": "client/src/components/PwaInstallPrompt.tsx",
+      "lineRange": [16, 97],
+      "summary": "Default-exported component that shows a delayed install prompt using usePwaInstall, and lets the user install or dismiss (with localStorage-backed persistence).",
+      "tags": ["component", "pwa"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/context/LocationContext.tsx",
+      "type": "file",
+      "name": "LocationContext.tsx",
+      "filePath": "client/src/context/LocationContext.tsx",
+      "summary": "React context that wraps the useDeliveryLocation hook so delivery-location state is shared app-wide via a single provider instance, exposing a useLocation() accessor hook.",
+      "tags": ["context", "location", "provider"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/context/LocationContext.tsx:LocationProvider",
+      "type": "function",
+      "name": "LocationProvider",
+      "filePath": "client/src/context/LocationContext.tsx",
+      "lineRange": [8, 11],
+      "summary": "Provider component that instantiates useDeliveryLocation once and exposes its value to descendants via LocationContext.",
+      "tags": ["provider", "location"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/context/LocationContext.tsx:useLocation",
+      "type": "function",
+      "name": "useLocation",
+      "filePath": "client/src/context/LocationContext.tsx",
+      "lineRange": [14, 18],
+      "summary": "Consumer hook that reads the LocationContext value, throwing if used outside a LocationProvider; the recommended way for components to access delivery-location state.",
+      "tags": ["hook", "location", "context"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/hooks/useLocation.ts",
+      "type": "file",
+      "name": "useLocation.ts",
+      "filePath": "client/src/hooks/useLocation.ts",
+      "summary": "Core delivery-location logic: localStorage-backed saved addresses, Nominatim reverse-geocoding for GPS coordinates, and the useDeliveryLocation hook exposing address CRUD, active-address selection, and GPS detection.",
+      "tags": ["hook", "location", "geocoding", "utility"],
+      "complexity": "complex",
+      "languageNotes": "reverseGeocode calls the OpenStreetMap Nominatim API and prioritizes address components (quarter, industrial, residential, road) to build a human-readable block/area string."
+    },
+    {
+      "id": "function:client/src/hooks/useLocation.ts:loadAddresses",
+      "type": "function",
+      "name": "loadAddresses",
+      "filePath": "client/src/hooks/useLocation.ts",
+      "lineRange": [23, 28],
+      "summary": "Reads and JSON-parses the saved addresses list from localStorage, returning an empty array on failure.",
+      "tags": ["utility", "storage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/hooks/useLocation.ts:saveAddresses",
+      "type": "function",
+      "name": "saveAddresses",
+      "filePath": "client/src/hooks/useLocation.ts",
+      "lineRange": [30, 32],
+      "summary": "Serializes and writes the addresses list to localStorage.",
+      "tags": ["utility", "storage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/hooks/useLocation.ts:reverseGeocode",
+      "type": "function",
+      "name": "reverseGeocode",
+      "filePath": "client/src/hooks/useLocation.ts",
+      "lineRange": [35, 82],
+      "summary": "Reverse-geocodes GPS latitude/longitude via the Nominatim API and derives a readable block/area string from the returned address components.",
+      "tags": ["geocoding", "api", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/hooks/useLocation.ts:useDeliveryLocation",
+      "type": "function",
+      "name": "useDeliveryLocation",
+      "filePath": "client/src/hooks/useLocation.ts",
+      "lineRange": [84, 196],
+      "summary": "Exported hook managing delivery-location state: saved addresses, active address id, GPS-based detection with fallback accuracy handling, add/remove/update address, all persisted to localStorage.",
+      "tags": ["hook", "location", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/hooks/usePwaInstall.ts",
+      "type": "file",
+      "name": "usePwaInstall.ts",
+      "filePath": "client/src/hooks/usePwaInstall.ts",
+      "summary": "Hook that detects PWA install eligibility across platforms (standalone mode detection, iOS Safari heuristics, beforeinstallprompt capture) and exposes a triggerInstall function.",
+      "tags": ["hook", "pwa", "browser-api"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/hooks/usePwaInstall.ts:isRunningAsInstalledPwa",
+      "type": "function",
+      "name": "isRunningAsInstalledPwa",
+      "filePath": "client/src/hooks/usePwaInstall.ts",
+      "lineRange": [11, 18],
+      "summary": "Detects whether the app is currently running in standalone/installed PWA mode via matchMedia checks.",
+      "tags": ["utility", "pwa", "browser-api"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall",
+      "type": "function",
+      "name": "usePwaInstall",
+      "filePath": "client/src/hooks/usePwaInstall.ts",
+      "lineRange": [20, 78],
+      "summary": "Exported hook tracking PWA install state (installed, installable, iOS-safari) by listening for the beforeinstallprompt event and exposing a triggerInstall action.",
+      "tags": ["hook", "pwa", "state-management"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {"source": "file:client/src/components/AddressManager.tsx", "target": "function:client/src/components/AddressManager.tsx:AddressManager", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/components/AddressManager.tsx", "target": "function:client/src/components/AddressManager.tsx:AddressManager", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/components/AddressManager.tsx", "target": "file:client/src/context/LocationContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:client/src/components/AddressManager.tsx", "target": "file:client/src/hooks/useLocation.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:client/src/components/AddressManager.tsx:AddressManager", "target": "function:client/src/context/LocationContext.tsx:useLocation", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:client/src/components/Header.tsx", "target": "function:client/src/components/Header.tsx:useAnimatedPlaceholder", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/components/Header.tsx", "target": "function:client/src/components/Header.tsx:Header", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/components/Header.tsx", "target": "function:client/src/components/Header.tsx:Header", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/components/Header.tsx", "target": "file:client/src/App.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:client/src/components/Header.tsx", "target": "file:client/src/components/AddressManager.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:client/src/components/Header.tsx", "target": "file:client/src/context/LocationContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:client/src/components/Header.tsx", "target": "file:client/src/hooks/usePwaInstall.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:client/src/components/Header.tsx:Header", "target": "function:client/src/components/Header.tsx:useAnimatedPlaceholder", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/components/Header.tsx:Header", "target": "function:client/src/context/LocationContext.tsx:useLocation", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/components/Header.tsx:Header", "target": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/components/Header.tsx:Header", "target": "file:client/src/components/AddressManager.tsx", "type": "depends_on", "direction": "forward", "weight": 0.6},
+
+    {"source": "file:client/src/components/PwaInstallPrompt.tsx", "target": "function:client/src/components/PwaInstallPrompt.tsx:PwaInstallPrompt", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/components/PwaInstallPrompt.tsx", "target": "function:client/src/components/PwaInstallPrompt.tsx:PwaInstallPrompt", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/components/PwaInstallPrompt.tsx", "target": "file:client/src/hooks/usePwaInstall.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:client/src/components/PwaInstallPrompt.tsx:PwaInstallPrompt", "target": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:client/src/context/LocationContext.tsx", "target": "function:client/src/context/LocationContext.tsx:LocationProvider", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/context/LocationContext.tsx", "target": "function:client/src/context/LocationContext.tsx:useLocation", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/context/LocationContext.tsx", "target": "function:client/src/context/LocationContext.tsx:LocationProvider", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/context/LocationContext.tsx", "target": "function:client/src/context/LocationContext.tsx:useLocation", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/context/LocationContext.tsx", "target": "file:client/src/hooks/useLocation.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:client/src/context/LocationContext.tsx:LocationProvider", "target": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:loadAddresses", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:saveAddresses", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:reverseGeocode", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:reverseGeocode", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/hooks/useLocation.ts", "target": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "target": "function:client/src/hooks/useLocation.ts:loadAddresses", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "target": "function:client/src/hooks/useLocation.ts:saveAddresses", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/hooks/useLocation.ts:useDeliveryLocation", "target": "function:client/src/hooks/useLocation.ts:reverseGeocode", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:client/src/hooks/usePwaInstall.ts", "target": "function:client/src/hooks/usePwaInstall.ts:isRunningAsInstalledPwa", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/usePwaInstall.ts", "target": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:client/src/hooks/usePwaInstall.ts", "target": "function:client/src/hooks/usePwaInstall.ts:isRunningAsInstalledPwa", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:client/src/hooks/usePwaInstall.ts", "target": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:client/src/hooks/usePwaInstall.ts:usePwaInstall", "target": "function:client/src/hooks/usePwaInstall.ts:isRunningAsInstalledPwa", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

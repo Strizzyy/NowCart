@@ -1,0 +1,1161 @@
+{
+  "nodes": [
+    {
+      "id": "file:server/app/async_jobs/sqs_publisher.py",
+      "type": "file",
+      "name": "sqs_publisher.py",
+      "filePath": "server/app/async_jobs/sqs_publisher.py",
+      "summary": "Wraps AWS SQS to publish asynchronous job messages (e.g. background tasks) with job type/status enums and a singleton publisher accessor.",
+      "tags": [
+        "async-jobs",
+        "aws",
+        "messaging",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/async_jobs/sqs_publisher.py:JobType",
+      "type": "class",
+      "name": "JobType",
+      "filePath": "server/app/async_jobs/sqs_publisher.py",
+      "lineRange": [
+        29,
+        34
+      ],
+      "summary": "Enum of supported async job types processed via SQS.",
+      "tags": [
+        "enum",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/async_jobs/sqs_publisher.py:JobStatus",
+      "type": "class",
+      "name": "JobStatus",
+      "filePath": "server/app/async_jobs/sqs_publisher.py",
+      "lineRange": [
+        37,
+        42
+      ],
+      "summary": "Enum of possible statuses for an async job's lifecycle.",
+      "tags": [
+        "enum",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/async_jobs/sqs_publisher.py:SQSPublisher",
+      "type": "class",
+      "name": "SQSPublisher",
+      "filePath": "server/app/async_jobs/sqs_publisher.py",
+      "lineRange": [
+        54,
+        128
+      ],
+      "summary": "Publishes job messages to an AWS SQS queue, lazily creating a boto3 client and serializing payloads for downstream workers.",
+      "tags": [
+        "service",
+        "aws",
+        "messaging"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/async_jobs/sqs_publisher.py:get_sqs_publisher",
+      "type": "function",
+      "name": "get_sqs_publisher",
+      "filePath": "server/app/async_jobs/sqs_publisher.py",
+      "lineRange": [
+        135,
+        139
+      ],
+      "summary": "Factory function returning a singleton SQSPublisher instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/controllers/meta.py",
+      "type": "file",
+      "name": "meta.py",
+      "filePath": "server/app/controllers/meta.py",
+      "summary": "FastAPI controller exposing operational/meta endpoints: system stats, system info, AWS cost breakdown, and an observability dashboard for monitoring the deployed service.",
+      "tags": [
+        "api-handler",
+        "observability",
+        "monitoring",
+        "controller"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/controllers/meta.py:system_stats",
+      "type": "function",
+      "name": "system_stats",
+      "filePath": "server/app/controllers/meta.py",
+      "lineRange": [
+        24,
+        37
+      ],
+      "summary": "Endpoint handler returning a live metrics snapshot of the running application.",
+      "tags": [
+        "api-handler",
+        "monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/controllers/meta.py:system_info",
+      "type": "function",
+      "name": "system_info",
+      "filePath": "server/app/controllers/meta.py",
+      "lineRange": [
+        41,
+        80
+      ],
+      "summary": "Endpoint handler returning system/environment info such as configuration and runtime details.",
+      "tags": [
+        "api-handler",
+        "monitoring"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/meta.py:_fetch_aws_costs",
+      "type": "function",
+      "name": "_fetch_aws_costs",
+      "filePath": "server/app/controllers/meta.py",
+      "lineRange": [
+        93,
+        171
+      ],
+      "summary": "Queries AWS Cost Explorer via boto3 to compute service-level cost breakdown for a recent date range.",
+      "tags": [
+        "aws",
+        "cost-tracking",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/controllers/meta.py:cost_breakdown",
+      "type": "function",
+      "name": "cost_breakdown",
+      "filePath": "server/app/controllers/meta.py",
+      "lineRange": [
+        175,
+        206
+      ],
+      "summary": "Endpoint handler exposing AWS cost breakdown data fetched via _fetch_aws_costs.",
+      "tags": [
+        "api-handler",
+        "cost-tracking"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/meta.py:observability_dashboard",
+      "type": "function",
+      "name": "observability_dashboard",
+      "filePath": "server/app/controllers/meta.py",
+      "lineRange": [
+        210,
+        225
+      ],
+      "summary": "Endpoint handler serving an observability dashboard view combining metrics and cost data.",
+      "tags": [
+        "api-handler",
+        "monitoring",
+        "dashboard"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/core/config.py",
+      "type": "file",
+      "name": "config.py",
+      "filePath": "server/app/core/config.py",
+      "summary": "Central application settings (Pydantic Settings) covering environment, LLM provider selection and API keys, data backend, caching, and semantic search/prediction tuning, exposed via a cached get_settings() accessor.",
+      "tags": [
+        "config",
+        "settings",
+        "entry-point"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/core/config.py:Settings",
+      "type": "class",
+      "name": "Settings",
+      "filePath": "server/app/core/config.py",
+      "lineRange": [
+        16,
+        86
+      ],
+      "summary": "Pydantic settings model defining all configurable application parameters, including LLM provider keys and feature flags, with helper properties for parsing comma-separated lists.",
+      "tags": [
+        "data-model",
+        "config",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/core/config.py:get_settings",
+      "type": "function",
+      "name": "get_settings",
+      "filePath": "server/app/core/config.py",
+      "lineRange": [
+        90,
+        91
+      ],
+      "summary": "Cached accessor returning the singleton Settings instance for use across the app.",
+      "tags": [
+        "factory",
+        "singleton",
+        "config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/core/logging.py",
+      "type": "file",
+      "name": "logging.py",
+      "filePath": "server/app/core/logging.py",
+      "summary": "Configures the application's root logging handler/formatter and provides a get_logger helper for module-scoped loggers.",
+      "tags": [
+        "utility",
+        "logging",
+        "config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/core/logging.py:setup_logging",
+      "type": "function",
+      "name": "setup_logging",
+      "filePath": "server/app/core/logging.py",
+      "lineRange": [
+        8,
+        19
+      ],
+      "summary": "Initializes root logger with a stream handler and standard formatter at the given level.",
+      "tags": [
+        "logging",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/core/logging.py:get_logger",
+      "type": "function",
+      "name": "get_logger",
+      "filePath": "server/app/core/logging.py",
+      "lineRange": [
+        22,
+        24
+      ],
+      "summary": "Returns a named logger instance, ensuring setup_logging has run first.",
+      "tags": [
+        "logging",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/llm/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/llm/__init__.py",
+      "summary": "Package barrel for the llm module, re-exporting the base provider interfaces and factory functions.",
+      "tags": [
+        "entry-point",
+        "barrel"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/llm/base.py",
+      "type": "file",
+      "name": "base.py",
+      "filePath": "server/app/llm/base.py",
+      "summary": "Defines abstract base interfaces LLMProvider and VisionProvider that concrete LLM/vision providers (Groq, Gemini, Bedrock, Mock) implement.",
+      "tags": [
+        "type-definition",
+        "interface",
+        "llm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/llm/base.py:LLMProvider",
+      "type": "class",
+      "name": "LLMProvider",
+      "filePath": "server/app/llm/base.py",
+      "lineRange": [
+        6,
+        18
+      ],
+      "summary": "Abstract interface for text LLM providers, declaring complete_json and complete_text methods.",
+      "tags": [
+        "interface",
+        "llm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/llm/base.py:VisionProvider",
+      "type": "class",
+      "name": "VisionProvider",
+      "filePath": "server/app/llm/base.py",
+      "lineRange": [
+        22,
+        30
+      ],
+      "summary": "Abstract interface for vision-capable LLM providers, declaring a describe_image method.",
+      "tags": [
+        "interface",
+        "llm",
+        "vision"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/llm/bedrock_provider.py",
+      "type": "file",
+      "name": "bedrock_provider.py",
+      "filePath": "server/app/llm/bedrock_provider.py",
+      "summary": "LLMProvider implementation backed by AWS Bedrock's converse API, with response caching and JSON/text completion methods.",
+      "tags": [
+        "llm",
+        "aws",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/llm/bedrock_provider.py:_cache_key",
+      "type": "function",
+      "name": "_cache_key",
+      "filePath": "server/app/llm/bedrock_provider.py",
+      "lineRange": [
+        30,
+        32
+      ],
+      "summary": "Computes a deterministic SHA-256 cache key from system/user prompt content.",
+      "tags": [
+        "utility",
+        "caching"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "type": "class",
+      "name": "BedrockProvider",
+      "filePath": "server/app/llm/bedrock_provider.py",
+      "lineRange": [
+        35,
+        148
+      ],
+      "summary": "LLMProvider implementation using AWS Bedrock's converse API with cache-backed JSON and text completion.",
+      "tags": [
+        "llm",
+        "aws",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/llm/factory.py",
+      "type": "file",
+      "name": "factory.py",
+      "filePath": "server/app/llm/factory.py",
+      "summary": "Factory selecting the active text and vision LLM providers (Groq, Bedrock, Gemini, or Mock) based on application settings.",
+      "tags": [
+        "factory",
+        "llm",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/llm/factory.py:get_text_provider",
+      "type": "function",
+      "name": "get_text_provider",
+      "filePath": "server/app/llm/factory.py",
+      "lineRange": [
+        23,
+        46
+      ],
+      "summary": "Selects and instantiates a text LLM provider (Groq, Bedrock, Gemini, or Mock fallback) based on configured API keys.",
+      "tags": [
+        "factory",
+        "llm"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/llm/factory.py:get_vision_provider",
+      "type": "function",
+      "name": "get_vision_provider",
+      "filePath": "server/app/llm/factory.py",
+      "lineRange": [
+        50,
+        63
+      ],
+      "summary": "Selects and instantiates a vision-capable LLM provider (Gemini vision or Mock fallback) based on configured API keys.",
+      "tags": [
+        "factory",
+        "llm",
+        "vision"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/llm/gemini_provider.py",
+      "type": "file",
+      "name": "gemini_provider.py",
+      "filePath": "server/app/llm/gemini_provider.py",
+      "summary": "LLMProvider and VisionProvider implementations backed by Google Gemini, supporting API key rotation and JSON/text/image completion with fenced-code stripping.",
+      "tags": [
+        "llm",
+        "vision",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/llm/gemini_provider.py:_create_model",
+      "type": "function",
+      "name": "_create_model",
+      "filePath": "server/app/llm/gemini_provider.py",
+      "lineRange": [
+        22,
+        27
+      ],
+      "summary": "Configures the Gemini SDK with an API key and returns a GenerativeModel instance.",
+      "tags": [
+        "utility",
+        "llm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/llm/gemini_provider.py:_strip_fences",
+      "type": "function",
+      "name": "_strip_fences",
+      "filePath": "server/app/llm/gemini_provider.py",
+      "lineRange": [
+        143,
+        149
+      ],
+      "summary": "Strips markdown code fences from raw LLM text output prior to JSON parsing.",
+      "tags": [
+        "utility",
+        "parsing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "type": "class",
+      "name": "GeminiProvider",
+      "filePath": "server/app/llm/gemini_provider.py",
+      "lineRange": [
+        36,
+        76
+      ],
+      "summary": "LLMProvider implementation using Google Gemini text models with API key cycling for rate-limit resilience.",
+      "tags": [
+        "llm",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "type": "class",
+      "name": "GeminiVisionProvider",
+      "filePath": "server/app/llm/gemini_provider.py",
+      "lineRange": [
+        79,
+        140
+      ],
+      "summary": "VisionProvider implementation using Google Gemini's multimodal models to describe images with API key cycling.",
+      "tags": [
+        "llm",
+        "vision",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/llm/groq_provider.py",
+      "type": "file",
+      "name": "groq_provider.py",
+      "filePath": "server/app/llm/groq_provider.py",
+      "summary": "LLMProvider implementation backed by the Groq API, with API key/client rotation, response caching, and JSON/text completion.",
+      "tags": [
+        "llm",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/llm/groq_provider.py:_cache_key",
+      "type": "function",
+      "name": "_cache_key",
+      "filePath": "server/app/llm/groq_provider.py",
+      "lineRange": [
+        29,
+        32
+      ],
+      "summary": "Computes a deterministic SHA-256 cache key from system/user prompt content.",
+      "tags": [
+        "utility",
+        "caching"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "type": "class",
+      "name": "GroqProvider",
+      "filePath": "server/app/llm/groq_provider.py",
+      "lineRange": [
+        35,
+        161
+      ],
+      "summary": "LLMProvider implementation using the Groq chat completions API with client cycling across API keys and cache-backed responses.",
+      "tags": [
+        "llm",
+        "service"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:JobType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:JobStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:SQSPublisher",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "function:server/app/async_jobs/sqs_publisher.py:get_sqs_publisher",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:JobType",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:JobStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:SQSPublisher",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "function:server/app/async_jobs/sqs_publisher.py:get_sqs_publisher",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/async_jobs/sqs_publisher.py:get_sqs_publisher",
+      "target": "class:server/app/async_jobs/sqs_publisher.py:SQSPublisher",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/async_jobs/sqs_publisher.py",
+      "target": "file:server/app/core/logging.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:system_stats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:system_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:_fetch_aws_costs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:cost_breakdown",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:observability_dashboard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:system_stats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:system_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:_fetch_aws_costs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:cost_breakdown",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "function:server/app/controllers/meta.py:observability_dashboard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/controllers/meta.py:system_stats",
+      "target": "function:server/app/middleware/telemetry.py:get_metrics_snapshot",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/controllers/meta.py:cost_breakdown",
+      "target": "function:server/app/controllers/meta.py:_fetch_aws_costs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "file:server/app/middleware/telemetry.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/controllers/meta.py",
+      "target": "file:server/app/controllers/__init__.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:server/app/core/config.py",
+      "target": "class:server/app/core/config.py:Settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/core/config.py",
+      "target": "function:server/app/core/config.py:get_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/core/config.py",
+      "target": "class:server/app/core/config.py:Settings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/core/config.py",
+      "target": "function:server/app/core/config.py:get_settings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/core/config.py:get_settings",
+      "target": "class:server/app/core/config.py:Settings",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/core/logging.py",
+      "target": "function:server/app/core/logging.py:setup_logging",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/core/logging.py",
+      "target": "function:server/app/core/logging.py:get_logger",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/core/logging.py",
+      "target": "function:server/app/core/logging.py:setup_logging",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/core/logging.py",
+      "target": "function:server/app/core/logging.py:get_logger",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/core/logging.py:get_logger",
+      "target": "function:server/app/core/logging.py:setup_logging",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/__init__.py",
+      "target": "file:server/app/llm/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/__init__.py",
+      "target": "file:server/app/llm/factory.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/base.py",
+      "target": "class:server/app/llm/base.py:LLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/base.py",
+      "target": "class:server/app/llm/base.py:VisionProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/base.py",
+      "target": "class:server/app/llm/base.py:LLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/base.py",
+      "target": "class:server/app/llm/base.py:VisionProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "function:server/app/llm/bedrock_provider.py:_cache_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "function:server/app/llm/bedrock_provider.py:_cache_key",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "target": "class:server/app/llm/base.py:LLMProvider",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "target": "function:server/app/llm/bedrock_provider.py:_cache_key",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/bedrock_provider.py",
+      "target": "file:server/app/core/logging.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "function:server/app/llm/factory.py:get_text_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "function:server/app/llm/factory.py:get_vision_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "function:server/app/llm/factory.py:get_text_provider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "function:server/app/llm/factory.py:get_vision_provider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_text_provider",
+      "target": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_text_provider",
+      "target": "class:server/app/llm/bedrock_provider.py:BedrockProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_text_provider",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_text_provider",
+      "target": "class:server/app/llm/mock_provider.py:MockProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_vision_provider",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:server/app/llm/factory.py:get_vision_provider",
+      "target": "class:server/app/llm/mock_provider.py:MockVisionProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "file:server/app/core/logging.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "file:server/app/llm/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/factory.py",
+      "target": "file:server/app/llm/mock_provider.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "function:server/app/llm/gemini_provider.py:_create_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "function:server/app/llm/gemini_provider.py:_strip_fences",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "function:server/app/llm/gemini_provider.py:_create_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "function:server/app/llm/gemini_provider.py:_strip_fences",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "target": "class:server/app/llm/base.py:LLMProvider",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "target": "class:server/app/llm/base.py:VisionProvider",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "target": "function:server/app/llm/gemini_provider.py:_create_model",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiProvider",
+      "target": "function:server/app/llm/gemini_provider.py:_strip_fences",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "target": "function:server/app/llm/gemini_provider.py:_create_model",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/gemini_provider.py:GeminiVisionProvider",
+      "target": "function:server/app/llm/gemini_provider.py:_strip_fences",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/gemini_provider.py",
+      "target": "file:server/app/core/logging.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "function:server/app/llm/groq_provider.py:_cache_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "function:server/app/llm/groq_provider.py:_cache_key",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "target": "class:server/app/llm/base.py:LLMProvider",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:server/app/llm/groq_provider.py:GroqProvider",
+      "target": "function:server/app/llm/groq_provider.py:_cache_key",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "file:server/app/core/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:server/app/llm/groq_provider.py",
+      "target": "file:server/app/core/logging.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

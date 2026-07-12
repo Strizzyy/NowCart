@@ -1,0 +1,903 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".claude/settings.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "sections": [
+        {
+          "heading": "enabledPlugins",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".kiro/specs/user-authentication/.config.kiro",
+      "language": "kiro",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": ".kiro/specs/user-authentication/requirements.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 128,
+      "nonEmptyLines": 95,
+      "sections": [
+        {
+          "heading": "Requirements Document",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Introduction",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Glossary",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Requirement 1: User Signup",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Requirement 2: OTP Verification",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Requirement 3: User Login",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 56
+        },
+        {
+          "heading": "Requirement 4: JWT Token Management",
+          "level": 3,
+          "line": 66
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 70
+        },
+        {
+          "heading": "Requirement 5: Authentication UI (Auth_Window)",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 86
+        },
+        {
+          "heading": "Requirement 6: Session Persistence and Logout",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 104
+        },
+        {
+          "heading": "Requirement 7: User Data Storage",
+          "level": 3,
+          "line": 115
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 4,
+          "line": 119
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 49,
+      "metrics": {}
+    },
+    {
+      "path": "client/capacitor.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 31,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/eslint.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 21,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/gen-icons.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 33,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/nginx.conf",
+      "language": "conf",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 27,
+      "metrics": {}
+    },
+    {
+      "path": "client/src/api/schema.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 868,
+      "nonEmptyLines": 867,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/components/ui/Button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 59,
+      "functions": [
+        {
+          "name": "Button",
+          "startLine": 32,
+          "endLine": 64,
+          "params": [
+            "{\r\n  variant = 'primary',\r\n  size = 'md',\r\n  loading = false,\r\n  leftIcon,\r\n  rightIcon,\r\n  fullWidth,\r\n  className,\r\n  children,\r\n  disabled,\r\n  ...rest\r\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Button",
+          "line": 32,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Button",
+          "callee": "cn",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/components/ui/cn.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "functions": [
+        {
+          "name": "cn",
+          "startLine": 2,
+          "endLine": 4,
+          "params": [
+            "...parts"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "cn",
+          "line": 2,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cn",
+          "callee": "parts.filter(Boolean).join",
+          "lineNumber": 3
+        },
+        {
+          "caller": "cn",
+          "callee": "parts.filter",
+          "lineNumber": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/index.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 140,
+      "nonEmptyLines": 123,
+      "metrics": {}
+    },
+    {
+      "path": "client/src/pages/SosPage.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "functions": [
+        {
+          "name": "SosPage",
+          "startLine": 4,
+          "endLine": 6,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SosPage",
+          "line": 4,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/Card.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 42,
+      "functions": [
+        {
+          "name": "Card",
+          "startLine": 22,
+          "endLine": 45,
+          "params": [
+            "{\r\n  interactive = false,\r\n  padding = 'md',\r\n  className = '',\r\n  children,\r\n  ...rest\r\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Card",
+          "line": 22,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Card",
+          "callee": "[\r\n        'bg-surface border border-border rounded-2xl',\r\n        'shadow-[var(--shadow-card)]',\r\n        PADDING[padding],\r\n        interactive\r\n          ? 'transition-all duration-200 hover:shadow-[var(--shadow-pop)] hover:border-primary/40 cursor-pointer'\r\n          : '',\r\n        className,\r\n      ].join",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/Chip.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "Chip",
+          "startLine": 29,
+          "endLine": 44,
+          "params": [
+            "{ tone = 'neutral', size = 'sm', icon, className = '', children }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Chip",
+          "line": 29,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Chip",
+          "callee": "[\r\n        'inline-flex items-center rounded-full font-semibold whitespace-nowrap',\r\n        sizing,\r\n        TONES[tone],\r\n        className,\r\n      ].join",
+          "lineNumber": 33
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/vite.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 80,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/add_5000_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 231,
+      "nonEmptyLines": 197,
+      "functions": [
+        {
+          "name": "verify_image",
+          "startLine": 86,
+          "endLine": 102,
+          "params": [
+            "item"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "verify_image",
+          "line": 86,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "verify_image",
+          "callee": "str(row[8]).strip",
+          "lineNumber": 89
+        },
+        {
+          "caller": "verify_image",
+          "callee": "str",
+          "lineNumber": 89
+        },
+        {
+          "caller": "verify_image",
+          "callee": "urllib.request.Request",
+          "lineNumber": 91
+        },
+        {
+          "caller": "verify_image",
+          "callee": "req.add_header",
+          "lineNumber": 92
+        },
+        {
+          "caller": "verify_image",
+          "callee": "urllib.request.urlopen",
+          "lineNumber": 93
+        },
+        {
+          "caller": "verify_image",
+          "callee": "int",
+          "lineNumber": 94
+        },
+        {
+          "caller": "verify_image",
+          "callee": "resp.headers.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "verify_image",
+          "callee": "resp.read",
+          "lineNumber": 96
+        },
+        {
+          "caller": "verify_image",
+          "callee": "len",
+          "lineNumber": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/check_cors.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 33,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/check_page2.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 27,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/create_verified_csv.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 213,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "check_image_url",
+          "startLine": 23,
+          "endLine": 31,
+          "params": [
+            "url"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_image_url",
+          "line": 23,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_image_url",
+          "callee": "urllib.request.Request",
+          "lineNumber": 26
+        },
+        {
+          "caller": "check_image_url",
+          "callee": "req.add_header",
+          "lineNumber": 27
+        },
+        {
+          "caller": "check_image_url",
+          "callee": "urllib.request.urlopen",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/find_placeholders.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 51,
+      "functions": [
+        {
+          "name": "check_size",
+          "startLine": 31,
+          "endLine": 40,
+          "params": [
+            "row"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_size",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_size",
+          "callee": "urllib.request.Request",
+          "lineNumber": 34
+        },
+        {
+          "caller": "check_size",
+          "callee": "req.add_header",
+          "lineNumber": 35
+        },
+        {
+          "caller": "check_size",
+          "callee": "urllib.request.urlopen",
+          "lineNumber": 36
+        },
+        {
+          "caller": "check_size",
+          "callee": "int",
+          "lineNumber": 37
+        },
+        {
+          "caller": "check_size",
+          "callee": "resp.headers.get",
+          "lineNumber": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/fix_placeholders.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 118,
+      "nonEmptyLines": 98,
+      "functions": [
+        {
+          "name": "check_real_image",
+          "startLine": 51,
+          "endLine": 65,
+          "params": [
+            "row"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_real_image",
+          "line": 51,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_real_image",
+          "callee": "str(row[8]).strip",
+          "lineNumber": 53
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "str",
+          "lineNumber": 53
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "urllib.request.Request",
+          "lineNumber": 55
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "req.add_header",
+          "lineNumber": 56
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "urllib.request.urlopen",
+          "lineNumber": 57
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "int",
+          "lineNumber": 58
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "resp.headers.get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "resp.read",
+          "lineNumber": 61
+        },
+        {
+          "caller": "check_real_image",
+          "callee": "len",
+          "lineNumber": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/async_jobs/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 12,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/async_jobs/lambda_handlers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 225,
+      "nonEmptyLines": 184,
+      "functions": [
+        {
+          "name": "vision_handler",
+          "startLine": 39,
+          "endLine": 84,
+          "params": [
+            "event",
+            "context"
+          ]
+        },
+        {
+          "name": "share_handler",
+          "startLine": 87,
+          "endLine": 128,
+          "params": [
+            "event",
+            "context"
+          ]
+        },
+        {
+          "name": "outcome_handler",
+          "startLine": 131,
+          "endLine": 174,
+          "params": [
+            "event",
+            "context"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "vision_handler",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "share_handler",
+          "line": 87,
+          "isDefault": false
+        },
+        {
+          "name": "outcome_handler",
+          "line": 131,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "vision_handler",
+          "callee": "event.get",
+          "lineNumber": 52
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "json.loads",
+          "lineNumber": 56
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "logger.info",
+          "lineNumber": 61
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "results.append",
+          "lineNumber": 71
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "logger.error",
+          "lineNumber": 77
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "results.append",
+          "lineNumber": 78
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "str",
+          "lineNumber": 81
+        },
+        {
+          "caller": "vision_handler",
+          "callee": "json.dumps",
+          "lineNumber": 84
+        },
+        {
+          "caller": "share_handler",
+          "callee": "event.get",
+          "lineNumber": 100
+        },
+        {
+          "caller": "share_handler",
+          "callee": "json.loads",
+          "lineNumber": 104
+        },
+        {
+          "caller": "share_handler",
+          "callee": "logger.info",
+          "lineNumber": 108
+        },
+        {
+          "caller": "share_handler",
+          "callee": "results.append",
+          "lineNumber": 115
+        },
+        {
+          "caller": "share_handler",
+          "callee": "logger.error",
+          "lineNumber": 121
+        },
+        {
+          "caller": "share_handler",
+          "callee": "results.append",
+          "lineNumber": 122
+        },
+        {
+          "caller": "share_handler",
+          "callee": "str",
+          "lineNumber": 125
+        },
+        {
+          "caller": "share_handler",
+          "callee": "json.dumps",
+          "lineNumber": 128
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "event.get",
+          "lineNumber": 146
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "json.loads",
+          "lineNumber": 150
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "logger.info",
+          "lineNumber": 154
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "results.append",
+          "lineNumber": 161
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "logger.error",
+          "lineNumber": 167
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "results.append",
+          "lineNumber": 168
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "str",
+          "lineNumber": 171
+        },
+        {
+          "caller": "outcome_handler",
+          "callee": "json.dumps",
+          "lineNumber": 174
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    }
+  ]
+}

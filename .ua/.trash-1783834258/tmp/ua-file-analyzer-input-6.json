@@ -1,0 +1,31 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {"path": "client/src/components/AddressManager.tsx", "language": "typescript", "sizeLines": 390, "fileCategory": "code"},
+    {"path": "client/src/components/Header.tsx", "language": "typescript", "sizeLines": 403, "fileCategory": "code"},
+    {"path": "client/src/components/PwaInstallPrompt.tsx", "language": "typescript", "sizeLines": 97, "fileCategory": "code"},
+    {"path": "client/src/context/LocationContext.tsx", "language": "typescript", "sizeLines": 18, "fileCategory": "code"},
+    {"path": "client/src/hooks/useLocation.ts", "language": "typescript", "sizeLines": 196, "fileCategory": "code"},
+    {"path": "client/src/hooks/usePwaInstall.ts", "language": "typescript", "sizeLines": 78, "fileCategory": "code"}
+  ],
+  "batchImportData": {
+    "client/src/components/AddressManager.tsx": [
+      "client/src/context/LocationContext.tsx",
+      "client/src/hooks/useLocation.ts"
+    ],
+    "client/src/components/Header.tsx": [
+      "client/src/App.tsx",
+      "client/src/components/AddressManager.tsx",
+      "client/src/context/LocationContext.tsx",
+      "client/src/hooks/usePwaInstall.ts"
+    ],
+    "client/src/components/PwaInstallPrompt.tsx": [
+      "client/src/hooks/usePwaInstall.ts"
+    ],
+    "client/src/context/LocationContext.tsx": [
+      "client/src/hooks/useLocation.ts"
+    ],
+    "client/src/hooks/useLocation.ts": [],
+    "client/src/hooks/usePwaInstall.ts": []
+  }
+}

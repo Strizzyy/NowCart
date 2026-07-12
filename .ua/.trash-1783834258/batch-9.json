@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "service:client/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "client/Dockerfile",
+      "summary": "Multi-stage Docker build for the NowCart Vite/React/TypeScript frontend: compiles static assets with Node in a builder stage, then serves them via a hardened Nginx runtime image with SPA routing/API proxy config and a health check.",
+      "tags": ["containerization", "infrastructure", "deployment", "frontend", "nginx"],
+      "complexity": "simple",
+      "languageNotes": "Two-stage build (builder -> runtime) keeps the final image slim by discarding Node/npm and source files, copying only the compiled /app/dist output into the nginx image."
+    },
+    {
+      "id": "service:client/Dockerfile:builder",
+      "type": "service",
+      "name": "builder",
+      "filePath": "client/Dockerfile",
+      "lineRange": [5, 17],
+      "summary": "Build stage based on node:20-alpine that installs npm dependencies with `npm ci` and runs `npm run build` to produce the Vite production bundle.",
+      "tags": ["build-stage", "node", "vite", "containerization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:client/Dockerfile:runtime",
+      "type": "service",
+      "name": "runtime",
+      "filePath": "client/Dockerfile",
+      "lineRange": [18, 35],
+      "summary": "Runtime stage based on nginx:alpine that replaces the default nginx config with a custom SPA-routing/API-proxy config, copies the built assets from the builder stage, exposes port 80, and defines a container health check.",
+      "tags": ["runtime-stage", "nginx", "reverse-proxy", "containerization", "healthcheck"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:client/Dockerfile",
+      "target": "service:client/Dockerfile:builder",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:client/Dockerfile",
+      "target": "service:client/Dockerfile:runtime",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "service:client/Dockerfile:runtime",
+      "target": "service:client/Dockerfile:builder",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

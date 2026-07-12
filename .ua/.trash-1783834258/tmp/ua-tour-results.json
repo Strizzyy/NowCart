@@ -1,0 +1,2851 @@
+{
+  "scriptCompleted": true,
+  "entryPointCandidates": [
+    {
+      "id": "document:README.md",
+      "score": 5,
+      "name": "README.md",
+      "summary": "Project README describing NowCart's purpose, how it works, its architecture, tech stack, local development setup, deployment, and admin access."
+    },
+    {
+      "id": "file:server/app/seed/__main__.py",
+      "score": 4,
+      "name": "__main__.py",
+      "summary": "CLI entry point for `python -m app.seed`; orchestrates loading the catalog, applying stock overrides, seeding mock users/orders, and writing everything into the configured repository and cache."
+    },
+    {
+      "id": "file:client/src/ui/index.ts",
+      "score": 3,
+      "name": "index.ts",
+      "summary": "Barrel file re-exporting shared UI primitives (Button, Card, Chip, Panel, Spinner, EmptyState, ErrorState, Toast provider, animation helpers) used across the client."
+    },
+    {
+      "id": "file:server/app/main.py",
+      "score": 3,
+      "name": "main.py",
+      "summary": "Application entry point wiring up the FastAPI app: lifespan startup seeding data/catalog/semantic index, middleware registration, router inclusion, and exception handlers."
+    },
+    {
+      "id": "file:server/app/controllers/subscribe.py",
+      "score": 2,
+      "name": "subscribe.py",
+      "summary": "Large FastAPI controller for the predictive-restock feature set: subscription management, predicted/due carts, preference insights, recently-ordered items, cart replanning, and counterfactual explanations."
+    }
+  ],
+  "fanInRanking": [
+    {
+      "id": "file:client/src/ui/index.ts",
+      "fanIn": 23,
+      "name": "index.ts"
+    },
+    {
+      "id": "file:client/src/App.tsx",
+      "fanIn": 21,
+      "name": "App.tsx"
+    },
+    {
+      "id": "file:client/src/api/client.ts",
+      "fanIn": 20,
+      "name": "client.ts"
+    },
+    {
+      "id": "function:server/app/repositories/__init__.py:get_repository",
+      "fanIn": 16,
+      "name": "get_repository"
+    },
+    {
+      "id": "file:server/app/core/config.py",
+      "fanIn": 15,
+      "name": "config.py"
+    },
+    {
+      "id": "file:server/app/models/domain/cart.py",
+      "fanIn": 14,
+      "name": "cart.py"
+    },
+    {
+      "id": "file:server/app/repositories/__init__.py",
+      "fanIn": 14,
+      "name": "__init__.py"
+    },
+    {
+      "id": "file:server/app/models/domain/enums.py",
+      "fanIn": 13,
+      "name": "enums.py"
+    },
+    {
+      "id": "function:server/app/repositories/__init__.py:get_cache",
+      "fanIn": 12,
+      "name": "get_cache"
+    },
+    {
+      "id": "file:server/app/models/dto/responses.py",
+      "fanIn": 11,
+      "name": "responses.py"
+    },
+    {
+      "id": "function:server/app/services/catalog_service.py:get_catalog_service",
+      "fanIn": 10,
+      "name": "get_catalog_service"
+    },
+    {
+      "id": "function:server/app/services/subscribe_service.py:get_subscribe_service",
+      "fanIn": 10,
+      "name": "get_subscribe_service"
+    },
+    {
+      "id": "file:server/app/core/logging.py",
+      "fanIn": 8,
+      "name": "logging.py"
+    },
+    {
+      "id": "file:server/app/models/dto/requests.py",
+      "fanIn": 7,
+      "name": "requests.py"
+    },
+    {
+      "id": "function:server/app/services/outcome_service.py:get_outcome_service",
+      "fanIn": 7,
+      "name": "get_outcome_service"
+    },
+    {
+      "id": "file:server/app/models/domain/__init__.py",
+      "fanIn": 7,
+      "name": "__init__.py"
+    },
+    {
+      "id": "file:server/app/services/outcome_service.py",
+      "fanIn": 6,
+      "name": "outcome_service.py"
+    },
+    {
+      "id": "file:server/app/services/catalog_service.py",
+      "fanIn": 6,
+      "name": "catalog_service.py"
+    },
+    {
+      "id": "class:server/app/llm/base.py:LLMProvider",
+      "fanIn": 6,
+      "name": "LLMProvider"
+    },
+    {
+      "id": "file:server/app/models/domain/product.py",
+      "fanIn": 5,
+      "name": "product.py"
+    }
+  ],
+  "fanOutRanking": [
+    {
+      "id": "file:client/src/api/client.ts",
+      "fanOut": 55,
+      "name": "client.ts"
+    },
+    {
+      "id": "file:server/app/controllers/subscribe.py",
+      "fanOut": 34,
+      "name": "subscribe.py"
+    },
+    {
+      "id": "file:client/src/App.tsx",
+      "fanOut": 23,
+      "name": "App.tsx"
+    },
+    {
+      "id": "file:server/app/agents/nodes.py",
+      "fanOut": 20,
+      "name": "nodes.py"
+    },
+    {
+      "id": "file:server/app/controllers/orders.py",
+      "fanOut": 16,
+      "name": "orders.py"
+    },
+    {
+      "id": "file:server/app/models/dto/requests.py",
+      "fanOut": 14,
+      "name": "requests.py"
+    },
+    {
+      "id": "file:server/app/controllers/auth.py",
+      "fanOut": 14,
+      "name": "auth.py"
+    },
+    {
+      "id": "file:server/app/services/subscribe_service.py",
+      "fanOut": 14,
+      "name": "subscribe_service.py"
+    },
+    {
+      "id": "file:server/app/controllers/__init__.py",
+      "fanOut": 13,
+      "name": "__init__.py"
+    },
+    {
+      "id": "file:server/app/controllers/meta.py",
+      "fanOut": 13,
+      "name": "meta.py"
+    },
+    {
+      "id": "file:server/app/services/semantic_search_service.py",
+      "fanOut": 11,
+      "name": "semantic_search_service.py"
+    },
+    {
+      "id": "file:client/src/components/CartDrawer.tsx",
+      "fanOut": 10,
+      "name": "CartDrawer.tsx"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "fanOut": 10,
+      "name": "FrontDoorPanel.tsx"
+    },
+    {
+      "id": "file:client/src/pages/PaymentPage.tsx",
+      "fanOut": 10,
+      "name": "PaymentPage.tsx"
+    },
+    {
+      "id": "file:server/app/models/dto/responses.py",
+      "fanOut": 10,
+      "name": "responses.py"
+    },
+    {
+      "id": "file:server/app/services/share_service.py",
+      "fanOut": 10,
+      "name": "share_service.py"
+    },
+    {
+      "id": "file:server/app/services/catalog_service.py",
+      "fanOut": 10,
+      "name": "catalog_service.py"
+    },
+    {
+      "id": "file:server/app/async_jobs/sqs_publisher.py",
+      "fanOut": 10,
+      "name": "sqs_publisher.py"
+    },
+    {
+      "id": "file:server/app/llm/gemini_provider.py",
+      "fanOut": 10,
+      "name": "gemini_provider.py"
+    },
+    {
+      "id": "file:server/app/controllers/share.py",
+      "fanOut": 9,
+      "name": "share.py"
+    }
+  ],
+  "bfsTraversal": {
+    "startNode": "file:server/app/seed/__main__.py",
+    "order": [
+      "file:server/app/seed/__main__.py",
+      "file:server/app/seed/catalog.py",
+      "file:server/app/seed/mock_data.py",
+      "file:server/app/seed/stock_overrides.py",
+      "file:server/app/models/domain/__init__.py",
+      "file:server/app/models/domain/order.py",
+      "file:server/app/models/domain/product.py",
+      "file:server/app/models/domain/user.py",
+      "file:server/app/models/domain/cart.py",
+      "file:server/app/models/domain/enums.py",
+      "file:server/app/models/domain/need.py"
+    ],
+    "depthMap": {
+      "file:server/app/seed/__main__.py": 0,
+      "file:server/app/seed/catalog.py": 1,
+      "file:server/app/seed/mock_data.py": 1,
+      "file:server/app/seed/stock_overrides.py": 1,
+      "file:server/app/models/domain/__init__.py": 2,
+      "file:server/app/models/domain/order.py": 3,
+      "file:server/app/models/domain/product.py": 3,
+      "file:server/app/models/domain/user.py": 3,
+      "file:server/app/models/domain/cart.py": 3,
+      "file:server/app/models/domain/enums.py": 3,
+      "file:server/app/models/domain/need.py": 3
+    },
+    "byDepth": {
+      "0": [
+        "file:server/app/seed/__main__.py"
+      ],
+      "1": [
+        "file:server/app/seed/catalog.py",
+        "file:server/app/seed/mock_data.py",
+        "file:server/app/seed/stock_overrides.py"
+      ],
+      "2": [
+        "file:server/app/models/domain/__init__.py"
+      ],
+      "3": [
+        "file:server/app/models/domain/order.py",
+        "file:server/app/models/domain/product.py",
+        "file:server/app/models/domain/user.py",
+        "file:server/app/models/domain/cart.py",
+        "file:server/app/models/domain/enums.py",
+        "file:server/app/models/domain/need.py"
+      ]
+    }
+  },
+  "nonCodeFiles": {
+    "documentation": [
+      {
+        "id": "document:APK_BUILD_GUIDE.md",
+        "name": "APK_BUILD_GUIDE.md",
+        "summary": "Step-by-step guide for building, signing, and hosting the NowCart Android APK (Android Studio, Gradle signing config, S3/EC2 hosting) plus notes on the already-live PWA.",
+        "type": "document"
+      },
+      {
+        "id": "document:ARCHITECTURE_DIAGRAM.md",
+        "name": "ARCHITECTURE_DIAGRAM.md",
+        "summary": "High-level visual architecture diagram of NowCart with a one-minute walkthrough of how requests flow through the system.",
+        "type": "document"
+      },
+      {
+        "id": "document:NowCart_Presentation_Script.md",
+        "name": "NowCart_Presentation_Script.md",
+        "summary": "Full slide-by-slide presentation script for a hackathon grand finale pitch, covering the product story, demo voiceover, technical architecture, algorithms, and growth roadmap.",
+        "type": "document"
+      },
+      {
+        "id": "document:README.md",
+        "name": "README.md",
+        "summary": "Project README describing NowCart's purpose, how it works, its architecture, tech stack, local development setup, deployment, and admin access.",
+        "type": "document"
+      },
+      {
+        "id": "document:SYSTEM_ARCHITECTURE.md",
+        "name": "SYSTEM_ARCHITECTURE.md",
+        "summary": "Comprehensive system architecture document detailing the LangGraph Outcome Engine node-by-node (intent, decompose, pantry filter, match/RAG, optimize, substitute, confidence, counterfactual), the Zero Door predictive restock path, data flow diagrams for each entry mode, middleware stack, LLM provider architecture, hybrid retrieval, infrastructure, scaling, observability, and security hardening.",
+        "type": "document"
+      },
+      {
+        "id": "document:archi.md",
+        "name": "archi.md",
+        "summary": "Hybrid system architecture diagram and one-minute presentation script explaining key implementation details behind the diagram.",
+        "type": "document"
+      },
+      {
+        "id": "document:.kiro/specs/nowcart/requirements.md",
+        "name": "requirements.md",
+        "summary": "Kiro spec-driven requirements document for NowCart defining 10 numbered requirements (Outcome Engine, Voice-to-Order, Constraint-First Ordering, Show It/Share It, Comparison Collapse & Confidence Score, Substitution Intelligence, SOS/Emergency Mode, Catalog & Data, Architecture/Scaling/Cost, and Frontend Revamp & Backend Sync) each with acceptance criteria, plus an introduction and glossary.",
+        "type": "document"
+      },
+      {
+        "id": "document:.kiro/specs/nowcart/design.md",
+        "name": "design.md",
+        "summary": "Architecture and design document for NowCart describing the layered backend (controllers/middleware/services/agents/repositories/llm/models), the LangGraph Outcome Engine node pipeline, REST API surface, data models (Product/Cart/Need), storage layout (DynamoDB/Redis), error handling, privacy/scaling strategy, and seven correctness properties that the implementation must satisfy.",
+        "type": "document"
+      },
+      {
+        "id": "document:.kiro/specs/nowcart/tasks.md",
+        "name": "tasks.md",
+        "summary": "Implementation plan for NowCart breaking work into 9 dependency-ordered waves (foundation/LLM providers, data layer + seed, catalog matching, LangGraph Outcome Engine, supporting services, REST API + middleware, React/Vite/TS frontend, frontend revamp & backend sync, verify + deploy), with per-task verification steps and completion checkboxes.",
+        "type": "document"
+      },
+      {
+        "id": "document:client/README.md",
+        "name": "README.md",
+        "summary": "Boilerplate Vite React+TypeScript README describing the default template, React Compiler note, and guidance for expanding the ESLint configuration.",
+        "type": "document"
+      },
+      {
+        "id": "document:.kiro/specs/user-authentication/requirements.md",
+        "name": "requirements.md",
+        "summary": "Requirements document for a user-authentication feature (signup, OTP verification, login, JWT token management, auth UI, session persistence/logout, and user data storage) written in EARS acceptance-criteria format.",
+        "type": "document"
+      }
+    ],
+    "infrastructure": [
+      {
+        "id": "service:client/Dockerfile",
+        "name": "Dockerfile",
+        "summary": "Multi-stage Docker build for the NowCart Vite/React/TypeScript frontend: compiles static assets with Node in a builder stage, then serves them via a hardened Nginx runtime image with SPA routing/API proxy config and a health check.",
+        "type": "service"
+      },
+      {
+        "id": "service:client/Dockerfile:builder",
+        "name": "builder",
+        "summary": "Build stage based on node:20-alpine that installs npm dependencies with `npm ci` and runs `npm run build` to produce the Vite production bundle.",
+        "type": "service"
+      },
+      {
+        "id": "service:client/Dockerfile:runtime",
+        "name": "runtime",
+        "summary": "Runtime stage based on nginx:alpine that replaces the default nginx config with a custom SPA-routing/API-proxy config, copies the built assets from the builder stage, exposes port 80, and defines a container health check.",
+        "type": "service"
+      },
+      {
+        "id": "service:server/Dockerfile",
+        "name": "Dockerfile",
+        "summary": "Multi-stage Docker build for the FastAPI backend: a builder stage installs Python dependencies via uv into a virtualenv, and a slim runtime stage copies the venv plus application code, runs as a non-root user, exposes port 8000, and starts uvicorn with a health check for EC2 deployment.",
+        "type": "service"
+      },
+      {
+        "id": "service:server/Dockerfile:builder",
+        "name": "builder",
+        "summary": "Build stage based on python:3.11-slim that installs the uv package manager and resolves/installs Python dependencies from server/pyproject.toml and server/uv.lock into an isolated virtualenv at /app/.venv.",
+        "type": "service"
+      },
+      {
+        "id": "service:server/Dockerfile:runtime",
+        "name": "runtime",
+        "summary": "Final slim python:3.11-slim runtime image that copies the prebuilt virtualenv and application code, adds the BigBasket.csv data file, drops privileges to a non-root user, exposes port 8000, defines a HEALTHCHECK, and launches the app with uvicorn.",
+        "type": "service"
+      },
+      {
+        "id": "pipeline:.github/workflows/deploy.yml",
+        "name": "deploy.yml",
+        "summary": "GitHub Actions CI/CD workflow that deploys NowCart on every push to master: builds the Vite frontend and syncs it to S3 with CloudFront cache invalidation, then SSHes into the EC2 host to write the production .env, git pull the backend, and restart the systemd nowcart service.",
+        "type": "pipeline"
+      },
+      {
+        "id": "step:.github/workflows/deploy.yml:deploy-frontend",
+        "name": "deploy-frontend",
+        "summary": "Job that checks out the code, installs and builds the client with npm, then syncs the built dist/ folder to the nowcart-frontend-strizzy S3 bucket and invalidates the CloudFront distribution cache.",
+        "type": "resource"
+      },
+      {
+        "id": "step:.github/workflows/deploy.yml:deploy-backend",
+        "name": "deploy-backend",
+        "summary": "Job that runs after deploy-frontend succeeds; SSHes into the production EC2 instance to write environment secrets to /opt/nowcart/server/.env and /etc/nowcart.env, then git pulls the latest master branch and restarts the nowcart systemd service.",
+        "type": "resource"
+      },
+      {
+        "id": "service:docker-compose.yml",
+        "name": "docker-compose.yml",
+        "summary": "Local development Docker Compose stack wiring together the FastAPI backend, nginx-served Vite frontend, Redis (cache/session), and DynamoDB Local (persistence), each with health checks and a shared bridge network.",
+        "type": "service"
+      },
+      {
+        "id": "service:docker-compose.yml:backend",
+        "name": "backend",
+        "summary": "FastAPI backend service built from server/Dockerfile, configured via environment variables for DynamoDB, Redis, Groq/Gemini LLM providers, and CORS; exposes port 8000.",
+        "type": "service"
+      },
+      {
+        "id": "service:docker-compose.yml:frontend",
+        "name": "frontend",
+        "summary": "Nginx-served Vite frontend built from client/Dockerfile, exposed on port 3000 and depending on the backend being healthy.",
+        "type": "service"
+      },
+      {
+        "id": "service:docker-compose.yml:redis",
+        "name": "redis",
+        "summary": "Redis 7 Alpine service providing cart/session state and LLM response caching, with a persistent volume and periodic save policy.",
+        "type": "service"
+      },
+      {
+        "id": "service:docker-compose.yml:dynamodb-local",
+        "name": "dynamodb-local",
+        "summary": "Local DynamoDB emulator service (amazon/dynamodb-local) for product/user/order persistence during development, backed by a persistent volume.",
+        "type": "service"
+      }
+    ],
+    "data": [],
+    "config": [
+      {
+        "id": "config:.dockerignore",
+        "name": ".dockerignore",
+        "summary": "Excludes Python virtualenv/cache dirs, Node modules/build output, IDE/OS artifacts, and .env secret files from Docker build contexts.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/package.json",
+        "name": "package.json",
+        "summary": "NPM manifest for the NowCart React client, defining Vite build/dev scripts, OpenAPI type generation, Capacitor Android packaging, and dependencies including React 19, Tailwind CSS v4, react-router-dom, and lucide-react.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/tsconfig.app.json",
+        "name": "tsconfig.app.json",
+        "summary": "TypeScript compiler configuration for the client application source, setting bundler module resolution and strict type-checking options for files under src/.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/tsconfig.json",
+        "name": "tsconfig.json",
+        "summary": "Root TypeScript project reference file that composes tsconfig.app.json and tsconfig.node.json for the client's split app/tooling build configuration.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/tsconfig.node.json",
+        "name": "tsconfig.node.json",
+        "summary": "TypeScript compiler configuration for Node-context tooling files (e.g. vite.config.ts), enabling strict type-checking with bundler module resolution separate from the app build.",
+        "type": "config"
+      },
+      {
+        "id": "config:.claude/settings.json",
+        "name": "settings.json",
+        "summary": "Claude Code project settings file listing enabled plugins for the local development assistant.",
+        "type": "config"
+      },
+      {
+        "id": "config:.ua/.understandignore",
+        "name": ".understandignore",
+        "summary": "Ignore-pattern list controlling which files and directories the Understand-Anything knowledge graph scanner excludes from analysis.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/capacitor.config.ts",
+        "name": "capacitor.config.ts",
+        "summary": "Capacitor configuration for packaging the NowCart web client as a native mobile app, defining app ID, name, and web directory settings.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/eslint.config.js",
+        "name": "eslint.config.js",
+        "summary": "ESLint flat-config for the client codebase, defining linting rules and plugin setup for TypeScript/React source files.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/nginx.conf",
+        "name": "nginx.conf",
+        "summary": "Nginx server configuration used to serve the built client SPA and proxy API requests in production/container deployment.",
+        "type": "config"
+      },
+      {
+        "id": "config:client/vite.config.ts",
+        "name": "vite.config.ts",
+        "summary": "Vite build configuration for the client app, defining plugins, dev server settings, and build output options.",
+        "type": "config"
+      },
+      {
+        "id": "config:server/pyproject.toml",
+        "name": "pyproject.toml",
+        "summary": "Python project configuration for the nowcart-server package, declaring dependencies (FastAPI, LangGraph, LangChain, Groq, Google Generative AI, boto3/aioboto3, Redis, sentence-transformers, rapidfuzz, httpx, orjson, tenacity), dev/test dependencies, pytest asyncio settings, and the hatchling build backend.",
+        "type": "config"
+      }
+    ]
+  },
+  "clusters": [
+    {
+      "nodes": [
+        "file:client/src/App.tsx",
+        "file:client/src/components/CartDrawer.tsx",
+        "file:client/src/components/Header.tsx",
+        "file:client/src/pages/AdminDashboardPage.tsx",
+        "file:client/src/pages/HomePage.tsx"
+      ],
+      "edgeCount": 8
+    },
+    {
+      "nodes": [
+        "file:client/src/App.tsx",
+        "file:client/src/pages/OrderSuccessPage.tsx",
+        "file:client/src/pages/PaymentPage.tsx",
+        "file:client/src/pages/ProductPage.tsx",
+        "file:client/src/pages/SearchResultsPage.tsx"
+      ],
+      "edgeCount": 8
+    }
+  ],
+  "layers": {
+    "count": 9,
+    "list": [
+      {
+        "id": "layer:frontend-app",
+        "name": "Frontend Application",
+        "description": "The React 19 + TypeScript client UI — pages, cart/frontdoor components, UI primitives, hooks, context, and the API client that talks to the FastAPI backend."
+      },
+      {
+        "id": "layer:frontend-config",
+        "name": "Frontend Build & Tooling",
+        "description": "Vite, TypeScript, Capacitor, ESLint, and Nginx configuration that builds and serves the client PWA/Android app."
+      },
+      {
+        "id": "layer:api",
+        "name": "API Layer",
+        "description": "FastAPI controllers and the app entrypoint that expose HTTP endpoints for cart, catalog, orders, vision, voice, and auth."
+      },
+      {
+        "id": "layer:service",
+        "name": "Service & Agent Layer",
+        "description": "Business logic services plus the LangGraph agent graph/nodes and the LLM provider abstraction (Bedrock, Gemini, Groq, mock) that power intent capture."
+      },
+      {
+        "id": "layer:data",
+        "name": "Data Layer",
+        "description": "Domain models, request/response DTOs, and repository implementations (DynamoDB, cache, in-memory) that persist and shape application data."
+      },
+      {
+        "id": "layer:backend-support",
+        "name": "Backend Cross-Cutting Support",
+        "description": "Middleware (PII redaction, rate limiting, telemetry), core config/logging, async job handlers, and database seeding utilities that support the backend runtime."
+      },
+      {
+        "id": "layer:infrastructure",
+        "name": "Infrastructure & Deployment",
+        "description": "Dockerfiles, docker-compose services, the GitHub Actions deploy pipeline, and project-level tooling config that build, containerize, and ship the app."
+      },
+      {
+        "id": "layer:documentation",
+        "name": "Documentation & Specs",
+        "description": "Project READMEs, architecture write-ups, and Kiro spec-driven-development requirement/design/task documents."
+      },
+      {
+        "id": "layer:utility",
+        "name": "Data Utility Scripts",
+        "description": "Standalone Python scripts for generating, verifying, and fixing catalog/product data outside the main application runtime."
+      }
+    ]
+  },
+  "nodeSummaryIndex": {
+    "file:client/src/App.tsx": {
+      "name": "App.tsx",
+      "type": "file",
+      "summary": "Root React application component that sets up client-side routing, holds top-level user/cart state shared via context, and shows a location-permission prompt on load."
+    },
+    "function:client/src/App.tsx:LocationPrompt": {
+      "name": "LocationPrompt",
+      "type": "function",
+      "summary": "Modal prompting the user to share their location, handling geolocation permission requests and timeout/error states."
+    },
+    "function:client/src/App.tsx:App": {
+      "name": "App",
+      "type": "function",
+      "summary": "Top-level app shell wiring up React Router routes, cart/user state, and the header/footer/cart drawer layout."
+    },
+    "file:client/src/api/client.ts": {
+      "name": "client.ts",
+      "type": "file",
+      "summary": "Central typed fetch wrapper exposing every backend API call used by the client, covering cart operations, catalog search, subscriptions, predictions, checkout and auth."
+    },
+    "function:client/src/api/client.ts:request": {
+      "name": "request",
+      "type": "function",
+      "summary": "Shared low-level fetch helper that issues an HTTP request against the API base URL and parses the JSON response."
+    },
+    "function:client/src/api/client.ts:postOutcome": {
+      "name": "postOutcome",
+      "type": "function",
+      "summary": "Submits free-text shopping intent to build a cart outcome."
+    },
+    "function:client/src/api/client.ts:postVoiceIntent": {
+      "name": "postVoiceIntent",
+      "type": "function",
+      "summary": "Submits a voice transcript to the intent API to build or update a cart."
+    },
+    "function:client/src/api/client.ts:postVisionAnalyze": {
+      "name": "postVisionAnalyze",
+      "type": "function",
+      "summary": "Uploads an image (multipart form) plus optional text to the vision analysis endpoint to build a cart."
+    },
+    "function:client/src/api/client.ts:postShareParse": {
+      "name": "postShareParse",
+      "type": "function",
+      "summary": "Submits a shared link or text to the share-parse endpoint to extract a cart."
+    },
+    "function:client/src/api/client.ts:postConstraint": {
+      "name": "postConstraint",
+      "type": "function",
+      "summary": "Submits budget, servings and optional text constraints to build a budget-aware cart."
+    },
+    "function:client/src/api/client.ts:postCartOp": {
+      "name": "postCartOp",
+      "type": "function",
+      "summary": "Applies a single cart operation (add/remove/update quantity) for a given session."
+    },
+    "function:client/src/api/client.ts:getCart": {
+      "name": "getCart",
+      "type": "function",
+      "summary": "Fetches the current cart state for a session."
+    },
+    "function:client/src/api/client.ts:searchCatalog": {
+      "name": "searchCatalog",
+      "type": "function",
+      "summary": "Searches the product catalog by query, category and result limit."
+    },
+    "function:client/src/api/client.ts:getProduct": {
+      "name": "getProduct",
+      "type": "function",
+      "summary": "Fetches a single product by id."
+    },
+    "function:client/src/api/client.ts:postStockOverride": {
+      "name": "postStockOverride",
+      "type": "function",
+      "summary": "Admin call overriding a product's in-stock status."
+    },
+    "function:client/src/api/client.ts:searchRecommend": {
+      "name": "searchRecommend",
+      "type": "function",
+      "summary": "Fetches recommended products for a search query."
+    },
+    "function:client/src/api/client.ts:getSubscribedCart": {
+      "name": "getSubscribedCart",
+      "type": "function",
+      "summary": "Fetches a cart built from a user's active subscriptions."
+    },
+    "function:client/src/api/client.ts:getPredictionInsights": {
+      "name": "getPredictionInsights",
+      "type": "function",
+      "summary": "Fetches personalized reorder prediction insights for a user."
+    },
+    "function:client/src/api/client.ts:addSubscription": {
+      "name": "addSubscription",
+      "type": "function",
+      "summary": "Creates a new recurring product subscription for a user."
+    },
+    "function:client/src/api/client.ts:removeSubscription": {
+      "name": "removeSubscription",
+      "type": "function",
+      "summary": "Cancels a user's subscription to a product."
+    },
+    "function:client/src/api/client.ts:getUserSubscriptions": {
+      "name": "getUserSubscriptions",
+      "type": "function",
+      "summary": "Fetches all active subscriptions for a user."
+    },
+    "function:client/src/api/client.ts:getDueSubscriptions": {
+      "name": "getDueSubscriptions",
+      "type": "function",
+      "summary": "Fetches subscriptions currently due for reorder."
+    },
+    "function:client/src/api/client.ts:getAllSubscriptionsCart": {
+      "name": "getAllSubscriptionsCart",
+      "type": "function",
+      "summary": "Fetches a combined cart of all of a user's subscribed items."
+    },
+    "function:client/src/api/client.ts:getUserPreferences": {
+      "name": "getUserPreferences",
+      "type": "function",
+      "summary": "Fetches stored shopping preferences for a user."
+    },
+    "function:client/src/api/client.ts:getUserPantry": {
+      "name": "getUserPantry",
+      "type": "function",
+      "summary": "Fetches the inferred pantry/stock state for a user."
+    },
+    "function:client/src/api/client.ts:postReplan": {
+      "name": "postReplan",
+      "type": "function",
+      "summary": "Submits feedback and cart context to replan/adjust an existing cart."
+    },
+    "function:client/src/api/client.ts:postOutcomePersonalized": {
+      "name": "postOutcomePersonalized",
+      "type": "function",
+      "summary": "Builds a personalized cart outcome for a specific user from free-text intent."
+    },
+    "function:client/src/api/client.ts:getCounterfactuals": {
+      "name": "getCounterfactuals",
+      "type": "function",
+      "summary": "Fetches counterfactual/alternative product candidates for a given cart need."
+    },
+    "function:client/src/api/client.ts:placeOrder": {
+      "name": "placeOrder",
+      "type": "function",
+      "summary": "Places an order for a session, user and payment method."
+    },
+    "function:client/src/api/client.ts:getOrderHistory": {
+      "name": "getOrderHistory",
+      "type": "function",
+      "summary": "Fetches a user's past order history."
+    },
+    "function:client/src/api/client.ts:registerUser": {
+      "name": "registerUser",
+      "type": "function",
+      "summary": "Registers a new user account with profile details."
+    },
+    "function:client/src/api/client.ts:loginUser": {
+      "name": "loginUser",
+      "type": "function",
+      "summary": "Authenticates a user with email and password."
+    },
+    "file:client/src/components/CartDrawer.tsx": {
+      "name": "CartDrawer.tsx",
+      "type": "file",
+      "summary": "Slide-out cart panel with recommended/economical tabs, per-item quantity controls, budget summary and a checkout call-to-action."
+    },
+    "function:client/src/components/CartDrawer.tsx:CartDrawer": {
+      "name": "CartDrawer",
+      "type": "function",
+      "summary": "Main cart drawer component rendering recommended/economical tabs, item rows with quantity controls, budget summary and checkout button."
+    },
+    "file:client/src/components/Composer.tsx": {
+      "name": "Composer.tsx",
+      "type": "file",
+      "summary": "Primary multi-mode input composer (text, voice, budget) used on the home page to capture shopping intent and trigger cart building."
+    },
+    "function:client/src/components/Composer.tsx:looksLikeSingleItemSearch": {
+      "name": "looksLikeSingleItemSearch",
+      "type": "function",
+      "summary": "Heuristic that decides whether typed text looks like a single-item search query rather than a full meal/intent request."
+    },
+    "function:client/src/components/Composer.tsx:Composer": {
+      "name": "Composer",
+      "type": "function",
+      "summary": "Multi-mode composer component switching between text, voice and budget input tabs to submit shopping intent."
+    },
+    "file:client/src/components/Footer.tsx": {
+      "name": "Footer.tsx",
+      "type": "file",
+      "summary": "Site footer with newsletter signup, PWA install prompt trigger, and category/legal navigation links."
+    },
+    "function:client/src/components/Footer.tsx:Footer": {
+      "name": "Footer",
+      "type": "function",
+      "summary": "Footer component rendering newsletter signup, PWA install button (with iOS hint), and navigation link groups."
+    },
+    "file:client/src/components/NowCartVerified.tsx": {
+      "name": "NowCartVerified.tsx",
+      "type": "file",
+      "summary": "Small reusable badge component that renders a \"NowCart Verified\" trust signal on product listings."
+    },
+    "function:client/src/components/NowCartVerified.tsx:NowCartVerified": {
+      "name": "NowCartVerified",
+      "type": "function",
+      "summary": "Renders a small \"NowCart Verified\" badge with configurable size."
+    },
+    "file:client/src/components/ProductCard.tsx": {
+      "name": "ProductCard.tsx",
+      "type": "file",
+      "summary": "Reusable product tile showing image, rating stars, pricing and add/remove-from-cart controls, used across shop, search and home pages."
+    },
+    "function:client/src/components/ProductCard.tsx:ProductCard": {
+      "name": "ProductCard",
+      "type": "function",
+      "summary": "Product tile showing rating stars, price, discount and add/remove-from-cart controls."
+    },
+    "file:client/src/components/cart/EngineTrail.tsx": {
+      "name": "EngineTrail.tsx",
+      "type": "file",
+      "summary": "Renders a human-readable \"why this happened\" trail translating the cart-building engine's internal reasoning steps into plain language."
+    },
+    "function:client/src/components/cart/EngineTrail.tsx:humanStep": {
+      "name": "humanStep",
+      "type": "function",
+      "summary": "Translates a raw engine reasoning-trail string into a human-readable label and icon by matching known step patterns."
+    },
+    "function:client/src/components/cart/EngineTrail.tsx:EngineTrail": {
+      "name": "EngineTrail",
+      "type": "function",
+      "summary": "Renders the deduplicated, humanized list of engine reasoning steps in an expandable trail UI."
+    },
+    "file:client/src/components/cart/HitlPrompt.tsx": {
+      "name": "HitlPrompt.tsx",
+      "type": "file",
+      "summary": "Small human-in-the-loop confirmation prompt asking the user to proceed with the current cart or view alternatives."
+    },
+    "function:client/src/components/cart/HitlPrompt.tsx:HitlPrompt": {
+      "name": "HitlPrompt",
+      "type": "function",
+      "summary": "Renders a question with \"proceed\" and \"show alternatives\" action buttons for human-in-the-loop confirmation."
+    },
+    "file:client/src/components/cart/ReplanBar.tsx": {
+      "name": "ReplanBar.tsx",
+      "type": "file",
+      "summary": "Inline chat bar letting users give free-text or quick-chip feedback to swap items or replan the current cart."
+    },
+    "function:client/src/components/cart/ReplanBar.tsx:resolveUserId": {
+      "name": "resolveUserId",
+      "type": "function",
+      "summary": "Derives a stable user id string from a stored user object, falling back to deriving one from the email."
+    },
+    "function:client/src/components/cart/ReplanBar.tsx:ReplanBar": {
+      "name": "ReplanBar",
+      "type": "function",
+      "summary": "Chat-style bar for cart replanning, supporting quick-chip direct swaps and free-text feedback submitted to the replan API."
+    },
+    "file:client/src/components/cart/WhyThisOne.tsx": {
+      "name": "WhyThisOne.tsx",
+      "type": "file",
+      "summary": "Expandable panel that humanizes the engine's reasoning trail and confidence score for why a specific product was chosen."
+    },
+    "function:client/src/components/cart/WhyThisOne.tsx:humaniseReason": {
+      "name": "humaniseReason",
+      "type": "function",
+      "summary": "Converts a raw selection-reason string and confidence score into a human-friendly explanation sentence."
+    },
+    "function:client/src/components/cart/WhyThisOne.tsx:WhyThisOne": {
+      "name": "WhyThisOne",
+      "type": "function",
+      "summary": "Expandable panel showing the humanized reasoning and trail for why a cart item was selected."
+    },
+    "file:client/src/components/frontdoors/FrontDoorPanel.tsx": {
+      "name": "FrontDoorPanel.tsx",
+      "type": "file",
+      "summary": "Modal dispatcher that renders the correct \"front door\" intent-capture panel (constrain/predict/share/show/speak) based on the selected door."
+    },
+    "function:client/src/components/frontdoors/FrontDoorPanel.tsx:FrontDoorPanel": {
+      "name": "FrontDoorPanel",
+      "type": "function",
+      "summary": "Dispatches to the correct panel component (Constrain/Predict/Share/Show/Speak) based on the selected front door id."
+    },
+    "file:client/src/components/frontdoors/PanelResult.tsx": {
+      "name": "PanelResult.tsx",
+      "type": "file",
+      "summary": "Shared result-summary UI (cart preview, item list, totals) rendered after any front-door panel finishes building a cart."
+    },
+    "function:client/src/components/frontdoors/PanelResult.tsx:PanelResult": {
+      "name": "PanelResult",
+      "type": "function",
+      "summary": "Displays a summary of the built cart (items, totals, remaining budget, shortfall) with a caption and view-cart action."
+    },
+    "file:client/src/components/frontdoors/doors.tsx": {
+      "name": "doors.tsx",
+      "type": "file",
+      "summary": "Static configuration array defining the five front-door entry points (constrain, predict, share, show, speak) with their icons and labels."
+    },
+    "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx": {
+      "name": "ConstrainPanel.tsx",
+      "type": "file",
+      "summary": "Front-door panel for capturing a budget and serving size to build a budget-constrained cart via the constraint API."
+    },
+    "function:client/src/components/frontdoors/panels/ConstrainPanel.tsx:ConstrainPanel": {
+      "name": "ConstrainPanel",
+      "type": "function",
+      "summary": "Two-phase panel collecting budget and servings, submitting them to the constraint API, then showing the resulting cart."
+    },
+    "file:client/src/components/frontdoors/panels/PredictPanel.tsx": {
+      "name": "PredictPanel.tsx",
+      "type": "file",
+      "summary": "Front-door panel for subscription-based predictive reordering: manages recurring subscriptions, due-for-reorder carts, pantry tracking and personalized prediction insights."
+    },
+    "function:client/src/components/frontdoors/panels/PredictPanel.tsx:resolveUserId": {
+      "name": "resolveUserId",
+      "type": "function",
+      "summary": "Derives a stable user id from the stored user object for subscription/prediction API calls."
+    },
+    "function:client/src/components/frontdoors/panels/PredictPanel.tsx:BrandPicker": {
+      "name": "BrandPicker",
+      "type": "function",
+      "summary": "Debounced product/brand search picker used to select a product when creating a new subscription."
+    },
+    "function:client/src/components/frontdoors/panels/PredictPanel.tsx:PredictPanel": {
+      "name": "PredictPanel",
+      "type": "function",
+      "summary": "Main predictive-reorder panel managing subscriptions, due-cart, prediction insights and pantry state, and building a subscribed cart."
+    },
+    "file:client/src/components/frontdoors/panels/SharePanel.tsx": {
+      "name": "SharePanel.tsx",
+      "type": "file",
+      "summary": "Front-door panel that accepts a shared recipe/social link or pasted text and parses it into a cart via the share-parse API."
+    },
+    "function:client/src/components/frontdoors/panels/SharePanel.tsx:SharePanel": {
+      "name": "SharePanel",
+      "type": "function",
+      "summary": "Panel accepting a shared link/text, submitting it to the share-parse API, then showing the resulting cart."
+    },
+    "file:client/src/components/frontdoors/panels/ShowPanel.tsx": {
+      "name": "ShowPanel.tsx",
+      "type": "file",
+      "summary": "Front-door panel for image-based intent capture, letting users take a photo or upload an image analyzed by the vision API to build a cart."
+    },
+    "function:client/src/components/frontdoors/panels/ShowPanel.tsx:ShowPanel": {
+      "name": "ShowPanel",
+      "type": "function",
+      "summary": "Panel for capturing an image via camera or gallery upload, submitting it (with optional text) to the vision-analyze API."
+    },
+    "file:client/src/components/frontdoors/panels/SpeakPanel.tsx": {
+      "name": "SpeakPanel.tsx",
+      "type": "file",
+      "summary": "Front-door panel for voice-based intent capture using the Web Speech API, including live transcription, follow-up voice commands, and cart updates."
+    },
+    "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:getRecognition": {
+      "name": "getRecognition",
+      "type": "function",
+      "summary": "Lazily constructs and configures a browser SpeechRecognition instance if available."
+    },
+    "function:client/src/components/frontdoors/panels/SpeakPanel.tsx:SpeakPanel": {
+      "name": "SpeakPanel",
+      "type": "function",
+      "summary": "Voice intent-capture panel managing microphone permission, live transcription via Web Speech API, and follow-up voice commands against the cart."
+    },
+    "file:client/src/main.tsx": {
+      "name": "main.tsx",
+      "type": "file",
+      "summary": "Application bootstrap entry point that mounts the React root and imports global CSS."
+    },
+    "file:client/src/pages/AboutPage.tsx": {
+      "name": "AboutPage.tsx",
+      "type": "file",
+      "summary": "Static \"About Us\" marketing page listing the team and company mission."
+    },
+    "function:client/src/pages/AboutPage.tsx:AboutPage": {
+      "name": "AboutPage",
+      "type": "function",
+      "summary": "Renders the static About page with team member cards and mission copy."
+    },
+    "file:client/src/pages/AdminDashboardPage.tsx": {
+      "name": "AdminDashboardPage.tsx",
+      "type": "file",
+      "summary": "Internal admin dashboard showing usage statistics, scaling info, and LLM/AWS cost breakdowns with periodic auto-refresh."
+    },
+    "function:client/src/pages/AdminDashboardPage.tsx:KpiCard": {
+      "name": "KpiCard",
+      "type": "function",
+      "summary": "Small stat-tile component showing an icon, title, value and sub-label for the admin dashboard KPIs."
+    },
+    "function:client/src/pages/AdminDashboardPage.tsx:MiniBar": {
+      "name": "MiniBar",
+      "type": "function",
+      "summary": "Small horizontal bar-chart component rendering a labeled value against a max scale."
+    },
+    "function:client/src/pages/AdminDashboardPage.tsx:AdminDashboardPage": {
+      "name": "AdminDashboardPage",
+      "type": "function",
+      "summary": "Admin dashboard page fetching and periodically refreshing usage stats, scaling info and LLM/AWS cost data, rendered across tabbed sections."
+    },
+    "file:client/src/pages/DeliveryInfoPage.tsx": {
+      "name": "DeliveryInfoPage.tsx",
+      "type": "file",
+      "summary": "Static page describing delivery zones, timing windows and delivery policies."
+    },
+    "function:client/src/pages/DeliveryInfoPage.tsx:DeliveryInfoPage": {
+      "name": "DeliveryInfoPage",
+      "type": "function",
+      "summary": "Renders the static delivery info page describing zones, timing and policies."
+    },
+    "file:client/src/pages/HomePage.tsx": {
+      "name": "HomePage.tsx",
+      "type": "file",
+      "summary": "Landing page presenting the front-door intent panels and featured/recommended products to start a shopping session."
+    },
+    "function:client/src/pages/HomePage.tsx:HomePage": {
+      "name": "HomePage",
+      "type": "function",
+      "summary": "Landing page rendering the front-door intent panels grid and a featured products section."
+    },
+    "file:client/src/pages/LoginPage.tsx": {
+      "name": "LoginPage.tsx",
+      "type": "file",
+      "summary": "Login and registration page handling user authentication against the backend auth API."
+    },
+    "function:client/src/pages/LoginPage.tsx:LoginPage": {
+      "name": "LoginPage",
+      "type": "function",
+      "summary": "Combined login/registration form page that authenticates against the auth API and stores the session user."
+    },
+    "file:client/src/pages/OrderHistoryPage.tsx": {
+      "name": "OrderHistoryPage.tsx",
+      "type": "file",
+      "summary": "Page listing a signed-in user's past orders fetched from the backend order-history API."
+    },
+    "function:client/src/pages/OrderHistoryPage.tsx:resolveUserId": {
+      "name": "resolveUserId",
+      "type": "function",
+      "summary": "Derives a stable user id from the stored user object for order-history lookups."
+    },
+    "function:client/src/pages/OrderHistoryPage.tsx:OrderHistoryPage": {
+      "name": "OrderHistoryPage",
+      "type": "function",
+      "summary": "Fetches and renders a signed-in user's past orders."
+    },
+    "file:client/src/pages/OrderSuccessPage.tsx": {
+      "name": "OrderSuccessPage.tsx",
+      "type": "file",
+      "summary": "Post-checkout confirmation page summarizing the placed order, payment method and estimated delivery time."
+    },
+    "function:client/src/pages/OrderSuccessPage.tsx:OrderSuccessPage": {
+      "name": "OrderSuccessPage",
+      "type": "function",
+      "summary": "Post-checkout confirmation page summarizing the order, payment method and estimated delivery window."
+    },
+    "file:client/src/pages/PaymentPage.tsx": {
+      "name": "PaymentPage.tsx",
+      "type": "file",
+      "summary": "Checkout page handling delivery address, payment method selection (UPI, cards, wallets) and order placement, with numerous small icon/row sub-components."
+    },
+    "function:client/src/pages/PaymentPage.tsx:resolveUserId": {
+      "name": "resolveUserId",
+      "type": "function",
+      "summary": "Derives a stable user id from the stored user object for placing the order."
+    },
+    "function:client/src/pages/PaymentPage.tsx:methodLabel": {
+      "name": "methodLabel",
+      "type": "function",
+      "summary": "Maps an internal payment method code to its human-readable display label."
+    },
+    "function:client/src/pages/PaymentPage.tsx:Row": {
+      "name": "Row",
+      "type": "function",
+      "summary": "Small labeled key/value row component used in the order summary section."
+    },
+    "function:client/src/pages/PaymentPage.tsx:QrIcon": {
+      "name": "QrIcon",
+      "type": "function",
+      "summary": "Renders the QR-code payment method icon (inline SVG)."
+    },
+    "function:client/src/pages/PaymentPage.tsx:PaymentPage": {
+      "name": "PaymentPage",
+      "type": "function",
+      "summary": "Checkout page managing delivery address, payment method selection and order placement against the backend."
+    },
+    "file:client/src/pages/PrivacyPolicyPage.tsx": {
+      "name": "PrivacyPolicyPage.tsx",
+      "type": "file",
+      "summary": "Static privacy policy legal page."
+    },
+    "function:client/src/pages/PrivacyPolicyPage.tsx:PrivacyPolicyPage": {
+      "name": "PrivacyPolicyPage",
+      "type": "function",
+      "summary": "Renders the static privacy policy legal page."
+    },
+    "file:client/src/pages/ProductPage.tsx": {
+      "name": "ProductPage.tsx",
+      "type": "file",
+      "summary": "Single product detail page with pricing, description and add/remove-from-cart actions."
+    },
+    "function:client/src/pages/ProductPage.tsx:ProductPage": {
+      "name": "ProductPage",
+      "type": "function",
+      "summary": "Product detail page showing full product info with add/remove-from-cart controls."
+    },
+    "file:client/src/pages/SearchResultsPage.tsx": {
+      "name": "SearchResultsPage.tsx",
+      "type": "file",
+      "summary": "Search results page rendering products matching a catalog search query."
+    },
+    "function:client/src/pages/SearchResultsPage.tsx:ProductResultCard": {
+      "name": "ProductResultCard",
+      "type": "function",
+      "summary": "Search-result variant of the product card, showing match relevance alongside standard product details."
+    },
+    "function:client/src/pages/SearchResultsPage.tsx:SearchResultsPage": {
+      "name": "SearchResultsPage",
+      "type": "function",
+      "summary": "Page rendering catalog search results for a query, including empty and loading states."
+    },
+    "file:client/src/pages/ShopPage.tsx": {
+      "name": "ShopPage.tsx",
+      "type": "file",
+      "summary": "Category browsing page listing products with filtering by category and search term."
+    },
+    "function:client/src/pages/ShopPage.tsx:ShopPage": {
+      "name": "ShopPage",
+      "type": "function",
+      "summary": "Category browsing page listing and filtering products by category and search term."
+    },
+    "file:client/src/pages/SubscriptionsPage.tsx": {
+      "name": "SubscriptionsPage.tsx",
+      "type": "file",
+      "summary": "Page for managing recurring product subscriptions, including adding new subscriptions via brand search and adjusting frequency."
+    },
+    "function:client/src/pages/SubscriptionsPage.tsx:resolveUserId": {
+      "name": "resolveUserId",
+      "type": "function",
+      "summary": "Derives a stable user id from the stored user object for subscription management calls."
+    },
+    "function:client/src/pages/SubscriptionsPage.tsx:BrandPicker": {
+      "name": "BrandPicker",
+      "type": "function",
+      "summary": "Debounced product/brand search picker used to add a new subscription from this page."
+    },
+    "function:client/src/pages/SubscriptionsPage.tsx:SubscriptionsPage": {
+      "name": "SubscriptionsPage",
+      "type": "function",
+      "summary": "Page for viewing and managing all of a user's recurring subscriptions, including adding, removing and adjusting frequency."
+    },
+    "file:client/src/pages/TermsPage.tsx": {
+      "name": "TermsPage.tsx",
+      "type": "file",
+      "summary": "Static terms & conditions legal page."
+    },
+    "function:client/src/pages/TermsPage.tsx:TermsPage": {
+      "name": "TermsPage",
+      "type": "function",
+      "summary": "Renders the static terms & conditions legal page."
+    },
+    "file:client/src/ui/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Barrel file re-exporting shared UI primitives (Button, Card, Chip, Panel, Spinner, EmptyState, ErrorState, Toast provider, animation helpers) used across the client."
+    },
+    "file:server/app/agents/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package init for the agents module that re-exports the LangGraph pipeline builder, node functions, and shared agent state for use by the outcome service."
+    },
+    "file:server/app/agents/graph.py": {
+      "name": "graph.py",
+      "type": "file",
+      "summary": "Builds the LangGraph StateGraph wiring together intent, decompose, match, confidence, counterfactual, and replan nodes with conditional routing edges for the Outcome Engine pipeline."
+    },
+    "file:server/app/agents/nodes.py": {
+      "name": "nodes.py",
+      "type": "file",
+      "summary": "Implements the core LangGraph node functions (intent, decompose, match, confidence, counterfactual, replan) that make up the Decompose -> Match -> Optimize -> Confidence outcome pipeline, including LLM prompt construction and catalog matching logic."
+    },
+    "file:server/app/agents/state.py": {
+      "name": "state.py",
+      "type": "file",
+      "summary": "Defines the AgentState schema shared across all LangGraph nodes, carrying raw input, needs, candidates, cart, confidence, and conversation context through the pipeline."
+    },
+    "file:server/app/controllers/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Aggregates and re-exports all FastAPI controller routers (admin, cart, catalog, auth, orders, outcome, share, vision, voice, etc.) for registration with the main app."
+    },
+    "file:server/app/controllers/admin.py": {
+      "name": "admin.py",
+      "type": "file",
+      "summary": "Admin-only FastAPI endpoints for overriding product stock status and triggering badge recomputation."
+    },
+    "file:server/app/controllers/cart.py": {
+      "name": "cart.py",
+      "type": "file",
+      "summary": "FastAPI endpoints for cart mutation operations (add/remove/update/clear items) and cart retrieval, delegating to CartOpsService."
+    },
+    "file:server/app/controllers/constraint.py": {
+      "name": "constraint.py",
+      "type": "file",
+      "summary": "FastAPI endpoint that builds a budget-constrained cart by delegating to BudgetService."
+    },
+    "file:server/app/controllers/health.py": {
+      "name": "health.py",
+      "type": "file",
+      "summary": "Simple health-check endpoint returning service status for uptime monitoring."
+    },
+    "file:server/app/controllers/outcome.py": {
+      "name": "outcome.py",
+      "type": "file",
+      "summary": "FastAPI endpoint that accepts free-text intent requests and routes them through OutcomeService to produce a cart."
+    },
+    "file:server/app/controllers/share.py": {
+      "name": "share.py",
+      "type": "file",
+      "summary": "FastAPI endpoint for parsing shared content (URLs or text) into a cart, including a demo-mode cart builder used when DEMO_ENABLED is set."
+    },
+    "file:server/app/controllers/vision.py": {
+      "name": "vision.py",
+      "type": "file",
+      "summary": "FastAPI endpoint that analyzes an uploaded image (or runs in demo mode) to extract a shopping cart via VisionService."
+    },
+    "function:server/app/agents/nodes.py:_normalize_quantity_to_packs": {
+      "name": "_normalize_quantity_to_packs",
+      "type": "function",
+      "summary": "Normalizes a free-form quantity and unit string into a pack count, handling units like kg, g, l, ml, and pieces."
+    },
+    "function:server/app/agents/nodes.py:intent_node": {
+      "name": "intent_node",
+      "type": "function",
+      "summary": "First LangGraph node that parses raw user input to detect intent mode (e.g., dinner-party, restock) and serving size before decomposition."
+    },
+    "function:server/app/agents/nodes.py:decompose_node": {
+      "name": "decompose_node",
+      "type": "function",
+      "summary": "Core decomposition node that uses an LLM to break a raw intent into structured shopping needs (items, quantities, constraints), producing the Need list consumed by matching."
+    },
+    "function:server/app/agents/nodes.py:match_node": {
+      "name": "match_node",
+      "type": "function",
+      "summary": "Matches decomposed needs against the product catalog using hybrid semantic search and fuzzy matching, building cart items and economical alternatives concurrently via asyncio.gather."
+    },
+    "function:server/app/agents/nodes.py:confidence_node": {
+      "name": "confidence_node",
+      "type": "function",
+      "summary": "Computes an overall confidence score for the assembled cart and flags low-confidence items needing clarification."
+    },
+    "function:server/app/agents/nodes.py:counterfactual_node": {
+      "name": "counterfactual_node",
+      "type": "function",
+      "summary": "Generates \"what-if\" counterfactual alternatives for cart items using the counterfactual service, used to explain substitution reasoning."
+    },
+    "function:server/app/agents/nodes.py:replan_node": {
+      "name": "replan_node",
+      "type": "function",
+      "summary": "Reprocesses a cart based on user feedback text, extracting new constraints (dietary, swaps, exclusions) and re-running matching to produce an updated cart."
+    },
+    "class:server/app/agents/state.py:AgentState": {
+      "name": "AgentState",
+      "type": "class",
+      "summary": "State object threaded through every LangGraph node, holding raw input, needs, candidates, cart, confidence, user context, and replanning fields."
+    },
+    "function:server/app/controllers/admin.py:stock_override": {
+      "name": "stock_override",
+      "type": "function",
+      "summary": "Admin endpoint that overrides a product's stock status in both the cache and the repository."
+    },
+    "function:server/app/controllers/admin.py:recompute_badges": {
+      "name": "recompute_badges",
+      "type": "function",
+      "summary": "Admin endpoint that triggers recomputation of product badges via BadgeService."
+    },
+    "function:server/app/controllers/cart.py:cart_operation": {
+      "name": "cart_operation",
+      "type": "function",
+      "summary": "Dispatches cart mutation operations (add, remove, update, clear, total) to CartOpsService based on the requested op string."
+    },
+    "function:server/app/controllers/cart.py:get_cart": {
+      "name": "get_cart",
+      "type": "function",
+      "summary": "Retrieves the current cart for a session via CartOpsService."
+    },
+    "function:server/app/controllers/constraint.py:constraint_cart": {
+      "name": "constraint_cart",
+      "type": "function",
+      "summary": "Endpoint that builds a budget-constrained cart using BudgetService and returns it as a CartResponse."
+    },
+    "function:server/app/controllers/outcome.py:create_outcome": {
+      "name": "create_outcome",
+      "type": "function",
+      "summary": "Endpoint that submits free-text intent to OutcomeService and returns the resulting cart."
+    },
+    "function:server/app/controllers/share.py:_build_demo_share_cart": {
+      "name": "_build_demo_share_cart",
+      "type": "function",
+      "summary": "Builds a hardcoded demo cart used when share parsing runs in demo mode, bypassing the real LLM pipeline."
+    },
+    "function:server/app/controllers/share.py:parse_share": {
+      "name": "parse_share",
+      "type": "function",
+      "summary": "Endpoint that parses shared URL or text content into a cart, either via the demo cart builder or ShareService.parse_shared_content."
+    },
+    "function:server/app/controllers/vision.py:_build_demo_vision_cart": {
+      "name": "_build_demo_vision_cart",
+      "type": "function",
+      "summary": "Builds a hardcoded demo cart used when image analysis runs in demo mode."
+    },
+    "function:server/app/controllers/vision.py:analyze_image": {
+      "name": "analyze_image",
+      "type": "function",
+      "summary": "Endpoint that accepts an uploaded image (or demo mode) and returns a cart derived via VisionService.analyze_image."
+    },
+    "file:server/app/controllers/voice.py": {
+      "name": "voice.py",
+      "type": "file",
+      "summary": "FastAPI endpoint that handles voice transcript intents (or runs in demo mode) and routes them through OutcomeService to produce a cart."
+    },
+    "file:server/app/models/domain/cart.py": {
+      "name": "cart.py",
+      "type": "file",
+      "summary": "Domain models for Cart, CartItem, and Substitution representing the core shopping cart entity manipulated throughout the outcome pipeline."
+    },
+    "file:server/app/models/domain/enums.py": {
+      "name": "enums.py",
+      "type": "file",
+      "summary": "Defines core domain enumerations IntentMode and NeedStatus used to classify user intent and need resolution state."
+    },
+    "file:server/app/models/domain/need.py": {
+      "name": "need.py",
+      "type": "file",
+      "summary": "Domain model representing a single decomposed shopping need (name, quantity, unit, matched product) produced by the decompose node."
+    },
+    "file:server/app/models/dto/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package init that re-exports request and response DTO classes for use by controllers."
+    },
+    "file:server/app/models/dto/requests.py": {
+      "name": "requests.py",
+      "type": "file",
+      "summary": "Pydantic request DTOs (OutcomeRequest, VoiceIntentRequest, ConstraintRequest, ShareRequest, CartOpRequest, SosRequest, StockOverrideRequest) defining the API's inbound payload contracts."
+    },
+    "file:server/app/models/dto/responses.py": {
+      "name": "responses.py",
+      "type": "file",
+      "summary": "Pydantic response DTOs (HealthResponse, ProductResponse, CartResponse, etc.) with from_domain factory methods converting domain models into API-facing shapes."
+    },
+    "file:server/app/services/budget_service.py": {
+      "name": "budget_service.py",
+      "type": "file",
+      "summary": "Service that builds and trims a shopping cart to fit within a user-specified budget by iteratively dropping lowest-priority items."
+    },
+    "file:server/app/services/outcome_service.py": {
+      "name": "outcome_service.py",
+      "type": "file",
+      "summary": "Central orchestration service that injects user context (profile, preferences, recent orders) and invokes the LangGraph outcome graph to turn intent into a cart; also supports feedback-driven replanning."
+    },
+    "file:server/app/services/share_service.py": {
+      "name": "share_service.py",
+      "type": "file",
+      "summary": "Service that fetches and parses shared URLs or text (stripping HTML) and uses an LLM to extract shopping intent, then delegates to OutcomeService to build a cart."
+    },
+    "file:server/app/services/vision_service.py": {
+      "name": "vision_service.py",
+      "type": "file",
+      "summary": "Service that sends an uploaded image to a vision LLM provider to extract grocery items and quantities, then builds a cart via OutcomeService."
+    },
+    "function:server/app/controllers/voice.py:_build_demo_cart": {
+      "name": "_build_demo_cart",
+      "type": "function",
+      "summary": "Builds a hardcoded demo cart used when voice intent processing runs in demo mode."
+    },
+    "function:server/app/controllers/voice.py:voice_intent": {
+      "name": "voice_intent",
+      "type": "function",
+      "summary": "Endpoint that processes a voice transcript (or demo query) and returns a cart via OutcomeService."
+    },
+    "class:server/app/models/domain/cart.py:Substitution": {
+      "name": "Substitution",
+      "type": "class",
+      "summary": "Domain model recording a single product substitution with original and replacement product details and the reason for the swap."
+    },
+    "class:server/app/models/domain/cart.py:CartItem": {
+      "name": "CartItem",
+      "type": "class",
+      "summary": "Domain model for a single cart line item including price, quantity, confidence, and substitution/out-of-stock metadata, with a computed line_total."
+    },
+    "class:server/app/models/domain/cart.py:Cart": {
+      "name": "Cart",
+      "type": "class",
+      "summary": "Domain model for the full shopping cart including items, economical alternatives, totals, budget/shortfall tracking, and reasoning trail, with a recompute_total method."
+    },
+    "class:server/app/models/domain/enums.py:IntentMode": {
+      "name": "IntentMode",
+      "type": "class",
+      "summary": "Enumeration of supported intent modes (e.g., quick-restock, dinner-party) used to steer decomposition and matching behavior."
+    },
+    "class:server/app/models/domain/enums.py:NeedStatus": {
+      "name": "NeedStatus",
+      "type": "class",
+      "summary": "Enumeration of resolution states for a decomposed need (e.g., matched, unmatched, clarification-needed)."
+    },
+    "class:server/app/models/domain/need.py:Need": {
+      "name": "Need",
+      "type": "class",
+      "summary": "Domain model representing a single decomposed shopping need with name, quantity, unit, category hint, and matched product id."
+    },
+    "class:server/app/models/dto/requests.py:OutcomeRequest": {
+      "name": "OutcomeRequest",
+      "type": "class",
+      "summary": "Request payload for submitting free-text or structured intent to the outcome engine."
+    },
+    "class:server/app/models/dto/requests.py:VoiceIntentRequest": {
+      "name": "VoiceIntentRequest",
+      "type": "class",
+      "summary": "Request payload carrying a voice transcript and session id."
+    },
+    "class:server/app/models/dto/requests.py:ConstraintRequest": {
+      "name": "ConstraintRequest",
+      "type": "class",
+      "summary": "Request payload for budget-constrained cart building (budget, servings, text)."
+    },
+    "class:server/app/models/dto/requests.py:ShareRequest": {
+      "name": "ShareRequest",
+      "type": "class",
+      "summary": "Request payload for parsing shared URL or text content into a cart."
+    },
+    "class:server/app/models/dto/requests.py:CartOpRequest": {
+      "name": "CartOpRequest",
+      "type": "class",
+      "summary": "Request payload for cart mutation operations (op, entity, quantity)."
+    },
+    "class:server/app/models/dto/requests.py:SosRequest": {
+      "name": "SosRequest",
+      "type": "class",
+      "summary": "Request payload for emergency/SOS situation requests."
+    },
+    "class:server/app/models/dto/requests.py:StockOverrideRequest": {
+      "name": "StockOverrideRequest",
+      "type": "class",
+      "summary": "Request payload for admin stock override operations on a product."
+    },
+    "class:server/app/models/dto/responses.py:ProductResponse": {
+      "name": "ProductResponse",
+      "type": "class",
+      "summary": "Response DTO exposing catalog product fields with a from_domain factory converting the Product domain model."
+    },
+    "class:server/app/models/dto/responses.py:SubstitutionResponse": {
+      "name": "SubstitutionResponse",
+      "type": "class",
+      "summary": "Response DTO for a product substitution with a from_domain factory."
+    },
+    "class:server/app/models/dto/responses.py:CartItemResponse": {
+      "name": "CartItemResponse",
+      "type": "class",
+      "summary": "Response DTO for a single cart line item with a from_domain factory."
+    },
+    "class:server/app/models/dto/responses.py:CartResponse": {
+      "name": "CartResponse",
+      "type": "class",
+      "summary": "Top-level response DTO for a full cart, assembling items, substitutions, and totals via from_domain."
+    },
+    "class:server/app/services/budget_service.py:BudgetService": {
+      "name": "BudgetService",
+      "type": "class",
+      "summary": "Encapsulates budget-constrained cart building, iteratively trimming lowest-priority items until the cart fits the budget."
+    },
+    "function:server/app/services/budget_service.py:get_budget_service": {
+      "name": "get_budget_service",
+      "type": "function",
+      "summary": "Factory/singleton accessor returning a shared BudgetService instance."
+    },
+    "class:server/app/services/outcome_service.py:OutcomeService": {
+      "name": "OutcomeService",
+      "type": "class",
+      "summary": "Orchestrates the full outcome pipeline: injects user context, invokes the LangGraph outcome graph, handles errors, caches the resulting cart, and supports feedback-driven replanning."
+    },
+    "function:server/app/services/outcome_service.py:get_outcome_service": {
+      "name": "get_outcome_service",
+      "type": "function",
+      "summary": "Factory/singleton accessor returning a shared OutcomeService instance."
+    },
+    "function:server/app/services/share_service.py:_extract_text_from_html": {
+      "name": "_extract_text_from_html",
+      "type": "function",
+      "summary": "Strips HTML tags/scripts/styles and decodes common entities to produce plain text for LLM parsing."
+    },
+    "function:server/app/services/share_service.py:_fetch_url_content": {
+      "name": "_fetch_url_content",
+      "type": "function",
+      "summary": "Fetches a shared URL over HTTP and extracts readable text content for downstream LLM parsing."
+    },
+    "class:server/app/services/share_service.py:ShareService": {
+      "name": "ShareService",
+      "type": "class",
+      "summary": "Parses shared URLs or text using an LLM to extract shopping intent, then delegates to OutcomeService to build a cart."
+    },
+    "function:server/app/services/share_service.py:get_share_service": {
+      "name": "get_share_service",
+      "type": "function",
+      "summary": "Factory/singleton accessor returning a shared ShareService instance."
+    },
+    "class:server/app/services/vision_service.py:VisionService": {
+      "name": "VisionService",
+      "type": "class",
+      "summary": "Sends an uploaded image to a vision LLM provider to extract grocery items and quantities, then builds a cart via OutcomeService."
+    },
+    "function:server/app/services/vision_service.py:get_vision_service": {
+      "name": "get_vision_service",
+      "type": "function",
+      "summary": "Factory/singleton accessor returning a shared VisionService instance."
+    },
+    "file:server/app/controllers/auth.py": {
+      "name": "auth.py",
+      "type": "file",
+      "summary": "FastAPI controller exposing registration, login, and profile-lookup endpoints; hashes passwords, assigns roles by email heuristic, and reads/writes users via the repository layer."
+    },
+    "class:server/app/controllers/auth.py:RegisterRequest": {
+      "name": "RegisterRequest",
+      "type": "class",
+      "summary": "Pydantic request schema for the registration endpoint capturing name, email, password, preferences, and location fields."
+    },
+    "class:server/app/controllers/auth.py:LoginRequest": {
+      "name": "LoginRequest",
+      "type": "class",
+      "summary": "Pydantic request schema holding email and password for the login endpoint."
+    },
+    "class:server/app/controllers/auth.py:AuthResponse": {
+      "name": "AuthResponse",
+      "type": "class",
+      "summary": "Pydantic response schema returned by register/login containing user id, name, role, preferences, and demographic fields."
+    },
+    "function:server/app/controllers/auth.py:register": {
+      "name": "register",
+      "type": "function",
+      "summary": "Registers a new user, generating a user id from the email, hashing the password, storing the user via the repository, and returning an AuthResponse."
+    },
+    "function:server/app/controllers/auth.py:login": {
+      "name": "login",
+      "type": "function",
+      "summary": "Authenticates a user by email/password against stored records and returns an AuthResponse on success, raising HTTPException on failure."
+    },
+    "function:server/app/controllers/auth.py:get_user_profile": {
+      "name": "get_user_profile",
+      "type": "function",
+      "summary": "Fetches and returns a user's profile data by user id, raising a 404 if not found."
+    },
+    "file:server/app/controllers/catalog.py": {
+      "name": "catalog.py",
+      "type": "file",
+      "summary": "FastAPI controller exposing product search, recommendation, and single-product lookup endpoints backed by the catalog service and repository."
+    },
+    "function:server/app/controllers/catalog.py:search_products": {
+      "name": "search_products",
+      "type": "function",
+      "summary": "Search endpoint that delegates to CatalogService.search_products with query, category, and limit filters."
+    },
+    "function:server/app/controllers/catalog.py:recommend_products": {
+      "name": "recommend_products",
+      "type": "function",
+      "summary": "Recommendation endpoint that returns a best-match product plus alternatives via CatalogService.recommend_products."
+    },
+    "function:server/app/controllers/catalog.py:get_product": {
+      "name": "get_product",
+      "type": "function",
+      "summary": "Retrieves a single product by id from the repository, raising 404 if not found."
+    },
+    "file:server/app/controllers/orders.py": {
+      "name": "orders.py",
+      "type": "file",
+      "summary": "FastAPI controller handling order placement, item rating submission, and order-history retrieval, coordinating cart cache, repository, and badge service."
+    },
+    "class:server/app/controllers/orders.py:PlaceOrderRequest": {
+      "name": "PlaceOrderRequest",
+      "type": "class",
+      "summary": "Request schema for placing an order, carrying session id, user id, and payment method."
+    },
+    "class:server/app/controllers/orders.py:OrderResponse": {
+      "name": "OrderResponse",
+      "type": "class",
+      "summary": "Response schema describing a placed order including items, total, status, and payment status."
+    },
+    "class:server/app/controllers/orders.py:ItemRating": {
+      "name": "ItemRating",
+      "type": "class",
+      "summary": "Schema pairing a product id with a numeric rating value used in order-rating requests."
+    },
+    "class:server/app/controllers/orders.py:RateOrderRequest": {
+      "name": "RateOrderRequest",
+      "type": "class",
+      "summary": "Request schema wrapping a list of ItemRating entries for the order-rating endpoint."
+    },
+    "function:server/app/controllers/orders.py:place_order": {
+      "name": "place_order",
+      "type": "function",
+      "summary": "Places an order from the user's active cart, persists it via the repository, clears the cached cart, and returns an OrderResponse."
+    },
+    "function:server/app/controllers/orders.py:rate_order_items": {
+      "name": "rate_order_items",
+      "type": "function",
+      "summary": "Records per-item ratings for a placed order via the badge service and returns the recorded results."
+    },
+    "function:server/app/controllers/orders.py:get_order_history": {
+      "name": "get_order_history",
+      "type": "function",
+      "summary": "Returns a user's historical orders sorted by date via the repository."
+    },
+    "file:server/app/controllers/subscribe.py": {
+      "name": "subscribe.py",
+      "type": "file",
+      "summary": "Large FastAPI controller for the predictive-restock feature set: subscription management, predicted/due carts, preference insights, recently-ordered items, cart replanning, and counterfactual explanations."
+    },
+    "class:server/app/controllers/subscribe.py:ReplanRequest": {
+      "name": "ReplanRequest",
+      "type": "class",
+      "summary": "Request schema for replanning a cart based on free-text feedback, servings, and current cart items."
+    },
+    "class:server/app/controllers/subscribe.py:CounterfactualRequest": {
+      "name": "CounterfactualRequest",
+      "type": "class",
+      "summary": "Request schema identifying a cart need, the selected product, and rejected candidates for counterfactual explanation."
+    },
+    "class:server/app/controllers/subscribe.py:SubscriptionRequest": {
+      "name": "SubscriptionRequest",
+      "type": "class",
+      "summary": "Request schema for creating a recurring product subscription with a frequency."
+    },
+    "function:server/app/controllers/subscribe.py:get_prediction_insights": {
+      "name": "get_prediction_insights",
+      "type": "function",
+      "summary": "Returns restock-prediction insight statistics for a user via the subscribe service."
+    },
+    "function:server/app/controllers/subscribe.py:add_subscription": {
+      "name": "add_subscription",
+      "type": "function",
+      "summary": "Creates a recurring subscription for a product via the subscribe service."
+    },
+    "function:server/app/controllers/subscribe.py:remove_subscription": {
+      "name": "remove_subscription",
+      "type": "function",
+      "summary": "Cancels an existing subscription for a user/product pair, raising 404 if not found."
+    },
+    "function:server/app/controllers/subscribe.py:get_subscriptions": {
+      "name": "get_subscriptions",
+      "type": "function",
+      "summary": "Lists all active subscriptions for a user."
+    },
+    "function:server/app/controllers/subscribe.py:get_all_subscriptions_cart": {
+      "name": "get_all_subscriptions_cart",
+      "type": "function",
+      "summary": "Builds a cart containing all of a user's subscribed products, matching each against the catalog and caching the resulting cart."
+    },
+    "function:server/app/controllers/subscribe.py:get_due_subscriptions": {
+      "name": "get_due_subscriptions",
+      "type": "function",
+      "summary": "Returns subscriptions currently due for reorder along with a pre-built cart of those items."
+    },
+    "function:server/app/controllers/subscribe.py:get_predicted_cart": {
+      "name": "get_predicted_cart",
+      "type": "function",
+      "summary": "Returns a predicted restock cart for a user based on order-history pattern analysis."
+    },
+    "function:server/app/controllers/subscribe.py:get_user_preferences": {
+      "name": "get_user_preferences",
+      "type": "function",
+      "summary": "Returns a computed preference profile (brand affinity, category frequency, etc.) for a user."
+    },
+    "function:server/app/controllers/subscribe.py:get_recently_ordered": {
+      "name": "get_recently_ordered",
+      "type": "function",
+      "summary": "Builds a list of recently-ordered and pantry-staple products for a user, falling back to random catalog picks when history is sparse."
+    },
+    "function:server/app/controllers/subscribe.py:replan_cart": {
+      "name": "replan_cart",
+      "type": "function",
+      "summary": "Re-plans a user's cart based on free-text feedback using the outcome service and returns the updated cart."
+    },
+    "function:server/app/controllers/subscribe.py:get_counterfactuals": {
+      "name": "get_counterfactuals",
+      "type": "function",
+      "summary": "Returns explanations for why candidate products were rejected in favor of the selected cart item."
+    },
+    "file:server/app/models/domain/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package barrel re-exporting the domain model classes (Cart, CartItem, Substitution, IntentMode, NeedStatus, Need, Order, Product, User, UserLocation) for convenient importing."
+    },
+    "file:server/app/models/domain/order.py": {
+      "name": "order.py",
+      "type": "file",
+      "summary": "Defines the Order domain model representing a placed order with items, total, status, and payment details."
+    },
+    "class:server/app/models/domain/order.py:Order": {
+      "name": "Order",
+      "type": "class",
+      "summary": "Domain model for a persisted order: id, user, date, items, total, status, and payment method/status."
+    },
+    "file:server/app/models/domain/product.py": {
+      "name": "product.py",
+      "type": "file",
+      "summary": "Defines the Product domain model representing a catalog item with pricing, stock, rating, and tag metadata."
+    },
+    "class:server/app/models/domain/product.py:Product": {
+      "name": "Product",
+      "type": "class",
+      "summary": "Domain model for a catalog product including pricing, brand, category, stock, delivery ETA, and a price-per-unit helper property."
+    },
+    "file:server/app/models/domain/user.py": {
+      "name": "user.py",
+      "type": "file",
+      "summary": "Defines the User and UserLocation domain models representing account and location/demographic data."
+    },
+    "class:server/app/models/domain/user.py:UserLocation": {
+      "name": "UserLocation",
+      "type": "class",
+      "summary": "Domain model holding a user's city, state, and region."
+    },
+    "class:server/app/models/domain/user.py:User": {
+      "name": "User",
+      "type": "class",
+      "summary": "Domain model for a user account including preferences, dietary tags, price tier, location, age, and gender."
+    },
+    "file:server/app/repositories/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Repository/cache factory module providing get_repository() and get_cache() singletons, selecting DynamoDB or in-memory repository based on configuration."
+    },
+    "function:server/app/repositories/__init__.py:get_repository": {
+      "name": "get_repository",
+      "type": "function",
+      "summary": "Returns a memoized Repository instance, choosing DynamoDBRepository or MemoryRepository based on settings."
+    },
+    "function:server/app/repositories/__init__.py:get_cache": {
+      "name": "get_cache",
+      "type": "function",
+      "summary": "Returns a memoized CacheLayer singleton instance."
+    },
+    "file:server/app/repositories/base.py": {
+      "name": "base.py",
+      "type": "file",
+      "summary": "Defines the abstract Repository interface with methods for product and user CRUD and order storage, implemented by concrete repositories."
+    },
+    "class:server/app/repositories/base.py:Repository": {
+      "name": "Repository",
+      "type": "class",
+      "summary": "Abstract base class declaring the repository contract: get/list/upsert product, get/upsert user, get/upsert orders."
+    },
+    "file:server/app/repositories/cache.py": {
+      "name": "cache.py",
+      "type": "file",
+      "summary": "Cache abstraction layer with an in-process fallback and an optional Redis-backed store, used to cache carts, stock overrides, and generic responses."
+    },
+    "class:server/app/repositories/cache.py:_MemoryCache": {
+      "name": "_MemoryCache",
+      "type": "class",
+      "summary": "Simple in-process TTL cache used as a fallback when Redis is unavailable, backed by dictionaries for values and expirations."
+    },
+    "class:server/app/repositories/cache.py:CacheLayer": {
+      "name": "CacheLayer",
+      "type": "class",
+      "summary": "Facade over Redis (with in-memory fallback) exposing typed helpers for cart storage, stock overrides, and generic cached-response get/set operations."
+    },
+    "file:server/app/repositories/memory.py": {
+      "name": "memory.py",
+      "type": "file",
+      "summary": "In-memory implementation of the Repository interface storing products, users, and orders in plain dictionaries; used for local development/testing."
+    },
+    "class:server/app/repositories/memory.py:MemoryRepository": {
+      "name": "MemoryRepository",
+      "type": "class",
+      "summary": "Dictionary-backed Repository implementation providing product search/list, user get/upsert, and order get/upsert without external storage."
+    },
+    "file:server/app/services/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Services package barrel that lazily proxies attribute access to catalog_service to preserve backward-compatible imports."
+    },
+    "function:server/app/services/__init__.py:__getattr__": {
+      "name": "__getattr__",
+      "type": "function",
+      "summary": "Module-level __getattr__ hook that lazily forwards unresolved attribute lookups to the catalog_service submodule, raising AttributeError otherwise."
+    },
+    "file:server/app/services/badge_service.py": {
+      "name": "badge_service.py",
+      "type": "file",
+      "summary": "Computes and persists product 'badges' (e.g. bestseller, trending) from order history and stores per-item ratings submitted by users."
+    },
+    "class:server/app/services/badge_service.py:BadgeService": {
+      "name": "BadgeService",
+      "type": "class",
+      "summary": "Service that recomputes product badges from aggregated order counts per user/category and records individual item ratings against products."
+    },
+    "function:server/app/services/badge_service.py:get_badge_service": {
+      "name": "get_badge_service",
+      "type": "function",
+      "summary": "Returns a memoized BadgeService singleton instance."
+    },
+    "file:server/app/services/cart_ops_service.py": {
+      "name": "cart_ops_service.py",
+      "type": "file",
+      "summary": "Core cart-mutation service providing get/save/add/remove/update/clear operations on a user's cached cart, including economical-alternative substitution logic."
+    },
+    "function:server/app/services/cart_ops_service.py:_find_economical_alternative": {
+      "name": "_find_economical_alternative",
+      "type": "function",
+      "summary": "Searches the catalog for a cheaper in-stock alternative to a requested item and builds a substitute CartItem if one is found."
+    },
+    "class:server/app/services/cart_ops_service.py:CartOpsService": {
+      "name": "CartOpsService",
+      "type": "class",
+      "summary": "Service encapsulating cart CRUD operations (get, save, add item, remove item, update quantity, get total, clear) backed by the cache layer and catalog service."
+    },
+    "function:server/app/services/cart_ops_service.py:get_cart_ops_service": {
+      "name": "get_cart_ops_service",
+      "type": "function",
+      "summary": "Returns a memoized CartOpsService singleton instance."
+    },
+    "file:server/app/services/catalog_service.py": {
+      "name": "catalog_service.py",
+      "type": "file",
+      "summary": "Central catalog service implementing product search, relevance scoring, recommendations, availability checks, and fuzzy need-to-product matching used throughout the intent-capture pipeline."
+    },
+    "function:server/app/services/catalog_service.py:_compute_relevance_score": {
+      "name": "_compute_relevance_score",
+      "type": "function",
+      "summary": "Computes a heuristic relevance score between a search query and a product using token overlap, brand/category boosts, and normalized product-name matching."
+    },
+    "class:server/app/services/catalog_service.py:CatalogService": {
+      "name": "CatalogService",
+      "type": "class",
+      "summary": "Service providing product retrieval, search, category browsing, recommendations, stock/availability checks, and fuzzy need-matching against the product catalog, backed by the repository and cache."
+    },
+    "function:server/app/services/catalog_service.py:get_catalog_service": {
+      "name": "get_catalog_service",
+      "type": "function",
+      "summary": "Returns a memoized CatalogService singleton instance."
+    },
+    "file:server/app/services/counterfactual_service.py": {
+      "name": "counterfactual_service.py",
+      "type": "file",
+      "summary": "Generates human-readable explanations for why alternative products were rejected in favor of a selected cart item, based on price, rating, and preference signals."
+    },
+    "class:server/app/services/counterfactual_service.py:RejectedAlternative": {
+      "name": "RejectedAlternative",
+      "type": "class",
+      "summary": "Value object describing a rejected candidate product with its price, score, rejection reasons, and a to_dict serializer."
+    },
+    "class:server/app/services/counterfactual_service.py:CounterfactualService": {
+      "name": "CounterfactualService",
+      "type": "class",
+      "summary": "Service that compares a selected product against rejected candidates and generates ranked rejection reasons (price, rating, brand affinity) for cart-item explanations."
+    },
+    "function:server/app/services/counterfactual_service.py:get_counterfactual_service": {
+      "name": "get_counterfactual_service",
+      "type": "function",
+      "summary": "Returns a memoized CounterfactualService singleton instance."
+    },
+    "file:server/app/services/pantry_service.py": {
+      "name": "pantry_service.py",
+      "type": "file",
+      "summary": "Derives a user's recently-ordered/pantry-staple products from order history with days-since-last-order metadata."
+    },
+    "class:server/app/services/pantry_service.py:PantryService": {
+      "name": "PantryService",
+      "type": "class",
+      "summary": "Service that aggregates a user's order history into a deduplicated, recency-sorted list of previously purchased items."
+    },
+    "function:server/app/services/pantry_service.py:get_pantry_service": {
+      "name": "get_pantry_service",
+      "type": "function",
+      "summary": "Returns a memoized PantryService singleton instance."
+    },
+    "file:server/app/services/preference_service.py": {
+      "name": "preference_service.py",
+      "type": "file",
+      "summary": "Computes and caches a user's shopping-preference profile (brand affinity, category frequency, price tier, product loyalty) from order history for personalization."
+    },
+    "class:server/app/services/preference_service.py:UserPreference": {
+      "name": "UserPreference",
+      "type": "class",
+      "summary": "Data model representing a computed user preference profile with brand affinity, category frequency, price tier, and top products/brands."
+    },
+    "class:server/app/services/preference_service.py:PreferenceService": {
+      "name": "PreferenceService",
+      "type": "class",
+      "summary": "Service that computes, caches, and applies UserPreference profiles, including a preference-boost scorer and personalized reasoning text generator."
+    },
+    "function:server/app/services/preference_service.py:get_preference_service": {
+      "name": "get_preference_service",
+      "type": "function",
+      "summary": "Returns a memoized PreferenceService singleton instance."
+    },
+    "file:server/app/services/subscribe_service.py": {
+      "name": "subscribe_service.py",
+      "type": "file",
+      "summary": "Largest service in the batch: predicts restock needs from order-history patterns, builds starter carts for new users, and manages recurring product subscriptions (add/remove/due/build-cart)."
+    },
+    "class:server/app/services/subscribe_service.py:PredictedNeed": {
+      "name": "PredictedNeed",
+      "type": "class",
+      "summary": "Value object representing a predicted restock need for a product, including confidence and days-until-needed."
+    },
+    "class:server/app/services/subscribe_service.py:SubscribeService": {
+      "name": "SubscribeService",
+      "type": "class",
+      "summary": "Service implementing restock prediction from purchase-interval analysis, new-user starter carts, subscription CRUD, and due-cart building, persisting subscriptions via the cache layer."
+    },
+    "function:server/app/services/subscribe_service.py:get_subscribe_service": {
+      "name": "get_subscribe_service",
+      "type": "function",
+      "summary": "Returns a memoized SubscribeService singleton instance."
+    },
+    "function:server/app/services/subscribe_service.py:get_predictive_service": {
+      "name": "get_predictive_service",
+      "type": "function",
+      "summary": "Alias factory that returns the same singleton as get_subscribe_service for backward-compatible naming."
+    },
+    "file:server/app/async_jobs/sqs_publisher.py": {
+      "name": "sqs_publisher.py",
+      "type": "file",
+      "summary": "Wraps AWS SQS to publish asynchronous job messages (e.g. background tasks) with job type/status enums and a singleton publisher accessor."
+    },
+    "class:server/app/async_jobs/sqs_publisher.py:JobType": {
+      "name": "JobType",
+      "type": "class",
+      "summary": "Enum of supported async job types processed via SQS."
+    },
+    "class:server/app/async_jobs/sqs_publisher.py:JobStatus": {
+      "name": "JobStatus",
+      "type": "class",
+      "summary": "Enum of possible statuses for an async job's lifecycle."
+    },
+    "class:server/app/async_jobs/sqs_publisher.py:SQSPublisher": {
+      "name": "SQSPublisher",
+      "type": "class",
+      "summary": "Publishes job messages to an AWS SQS queue, lazily creating a boto3 client and serializing payloads for downstream workers."
+    },
+    "function:server/app/async_jobs/sqs_publisher.py:get_sqs_publisher": {
+      "name": "get_sqs_publisher",
+      "type": "function",
+      "summary": "Factory function returning a singleton SQSPublisher instance."
+    },
+    "file:server/app/controllers/meta.py": {
+      "name": "meta.py",
+      "type": "file",
+      "summary": "FastAPI controller exposing operational/meta endpoints: system stats, system info, AWS cost breakdown, and an observability dashboard for monitoring the deployed service."
+    },
+    "function:server/app/controllers/meta.py:system_stats": {
+      "name": "system_stats",
+      "type": "function",
+      "summary": "Endpoint handler returning a live metrics snapshot of the running application."
+    },
+    "function:server/app/controllers/meta.py:system_info": {
+      "name": "system_info",
+      "type": "function",
+      "summary": "Endpoint handler returning system/environment info such as configuration and runtime details."
+    },
+    "function:server/app/controllers/meta.py:_fetch_aws_costs": {
+      "name": "_fetch_aws_costs",
+      "type": "function",
+      "summary": "Queries AWS Cost Explorer via boto3 to compute service-level cost breakdown for a recent date range."
+    },
+    "function:server/app/controllers/meta.py:cost_breakdown": {
+      "name": "cost_breakdown",
+      "type": "function",
+      "summary": "Endpoint handler exposing AWS cost breakdown data fetched via _fetch_aws_costs."
+    },
+    "function:server/app/controllers/meta.py:observability_dashboard": {
+      "name": "observability_dashboard",
+      "type": "function",
+      "summary": "Endpoint handler serving an observability dashboard view combining metrics and cost data."
+    },
+    "file:server/app/core/config.py": {
+      "name": "config.py",
+      "type": "file",
+      "summary": "Central application settings (Pydantic Settings) covering environment, LLM provider selection and API keys, data backend, caching, and semantic search/prediction tuning, exposed via a cached get_settings() accessor."
+    },
+    "class:server/app/core/config.py:Settings": {
+      "name": "Settings",
+      "type": "class",
+      "summary": "Pydantic settings model defining all configurable application parameters, including LLM provider keys and feature flags, with helper properties for parsing comma-separated lists."
+    },
+    "function:server/app/core/config.py:get_settings": {
+      "name": "get_settings",
+      "type": "function",
+      "summary": "Cached accessor returning the singleton Settings instance for use across the app."
+    },
+    "file:server/app/core/logging.py": {
+      "name": "logging.py",
+      "type": "file",
+      "summary": "Configures the application's root logging handler/formatter and provides a get_logger helper for module-scoped loggers."
+    },
+    "function:server/app/core/logging.py:setup_logging": {
+      "name": "setup_logging",
+      "type": "function",
+      "summary": "Initializes root logger with a stream handler and standard formatter at the given level."
+    },
+    "function:server/app/core/logging.py:get_logger": {
+      "name": "get_logger",
+      "type": "function",
+      "summary": "Returns a named logger instance, ensuring setup_logging has run first."
+    },
+    "file:server/app/llm/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package barrel for the llm module, re-exporting the base provider interfaces and factory functions."
+    },
+    "file:server/app/llm/base.py": {
+      "name": "base.py",
+      "type": "file",
+      "summary": "Defines abstract base interfaces LLMProvider and VisionProvider that concrete LLM/vision providers (Groq, Gemini, Bedrock, Mock) implement."
+    },
+    "class:server/app/llm/base.py:LLMProvider": {
+      "name": "LLMProvider",
+      "type": "class",
+      "summary": "Abstract interface for text LLM providers, declaring complete_json and complete_text methods."
+    },
+    "class:server/app/llm/base.py:VisionProvider": {
+      "name": "VisionProvider",
+      "type": "class",
+      "summary": "Abstract interface for vision-capable LLM providers, declaring a describe_image method."
+    },
+    "file:server/app/llm/bedrock_provider.py": {
+      "name": "bedrock_provider.py",
+      "type": "file",
+      "summary": "LLMProvider implementation backed by AWS Bedrock's converse API, with response caching and JSON/text completion methods."
+    },
+    "function:server/app/llm/bedrock_provider.py:_cache_key": {
+      "name": "_cache_key",
+      "type": "function",
+      "summary": "Computes a deterministic SHA-256 cache key from system/user prompt content."
+    },
+    "class:server/app/llm/bedrock_provider.py:BedrockProvider": {
+      "name": "BedrockProvider",
+      "type": "class",
+      "summary": "LLMProvider implementation using AWS Bedrock's converse API with cache-backed JSON and text completion."
+    },
+    "file:server/app/llm/factory.py": {
+      "name": "factory.py",
+      "type": "file",
+      "summary": "Factory selecting the active text and vision LLM providers (Groq, Bedrock, Gemini, or Mock) based on application settings."
+    },
+    "function:server/app/llm/factory.py:get_text_provider": {
+      "name": "get_text_provider",
+      "type": "function",
+      "summary": "Selects and instantiates a text LLM provider (Groq, Bedrock, Gemini, or Mock fallback) based on configured API keys."
+    },
+    "function:server/app/llm/factory.py:get_vision_provider": {
+      "name": "get_vision_provider",
+      "type": "function",
+      "summary": "Selects and instantiates a vision-capable LLM provider (Gemini vision or Mock fallback) based on configured API keys."
+    },
+    "file:server/app/llm/gemini_provider.py": {
+      "name": "gemini_provider.py",
+      "type": "file",
+      "summary": "LLMProvider and VisionProvider implementations backed by Google Gemini, supporting API key rotation and JSON/text/image completion with fenced-code stripping."
+    },
+    "function:server/app/llm/gemini_provider.py:_create_model": {
+      "name": "_create_model",
+      "type": "function",
+      "summary": "Configures the Gemini SDK with an API key and returns a GenerativeModel instance."
+    },
+    "function:server/app/llm/gemini_provider.py:_strip_fences": {
+      "name": "_strip_fences",
+      "type": "function",
+      "summary": "Strips markdown code fences from raw LLM text output prior to JSON parsing."
+    },
+    "class:server/app/llm/gemini_provider.py:GeminiProvider": {
+      "name": "GeminiProvider",
+      "type": "class",
+      "summary": "LLMProvider implementation using Google Gemini text models with API key cycling for rate-limit resilience."
+    },
+    "class:server/app/llm/gemini_provider.py:GeminiVisionProvider": {
+      "name": "GeminiVisionProvider",
+      "type": "class",
+      "summary": "VisionProvider implementation using Google Gemini's multimodal models to describe images with API key cycling."
+    },
+    "file:server/app/llm/groq_provider.py": {
+      "name": "groq_provider.py",
+      "type": "file",
+      "summary": "LLMProvider implementation backed by the Groq API, with API key/client rotation, response caching, and JSON/text completion."
+    },
+    "function:server/app/llm/groq_provider.py:_cache_key": {
+      "name": "_cache_key",
+      "type": "function",
+      "summary": "Computes a deterministic SHA-256 cache key from system/user prompt content."
+    },
+    "class:server/app/llm/groq_provider.py:GroqProvider": {
+      "name": "GroqProvider",
+      "type": "class",
+      "summary": "LLMProvider implementation using the Groq chat completions API with client cycling across API keys and cache-backed responses."
+    },
+    "file:server/app/llm/mock_provider.py": {
+      "name": "mock_provider.py",
+      "type": "file",
+      "summary": "Deterministic mock LLM/vision providers used as fallbacks or for local development/testing when no real LLM API key is configured."
+    },
+    "class:server/app/llm/mock_provider.py:MockProvider": {
+      "name": "MockProvider",
+      "type": "class",
+      "summary": "Mock LLMProvider returning canned responses from a goal/recipe book for offline development and testing."
+    },
+    "class:server/app/llm/mock_provider.py:MockVisionProvider": {
+      "name": "MockVisionProvider",
+      "type": "class",
+      "summary": "Mock VisionProvider returning a canned image description for offline development and testing."
+    },
+    "file:server/app/main.py": {
+      "name": "main.py",
+      "type": "file",
+      "summary": "Application entry point wiring up the FastAPI app: lifespan startup seeding data/catalog/semantic index, middleware registration, router inclusion, and exception handlers."
+    },
+    "function:server/app/main.py:lifespan": {
+      "name": "lifespan",
+      "type": "function",
+      "summary": "FastAPI lifespan context manager that seeds repository data, builds the product catalog, mock users/orders, and the semantic search index on startup."
+    },
+    "function:server/app/main.py:create_app": {
+      "name": "create_app",
+      "type": "function",
+      "summary": "Constructs and configures the FastAPI application instance, registering middleware, routers, and exception handlers."
+    },
+    "file:server/app/middleware/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package barrel re-exporting the PII redaction, rate limiting, request ID, and telemetry middleware classes."
+    },
+    "file:server/app/middleware/pii_redaction.py": {
+      "name": "pii_redaction.py",
+      "type": "file",
+      "summary": "Middleware and regex-based helper that redacts emails and phone numbers from request bodies before logging for privacy compliance."
+    },
+    "function:server/app/middleware/pii_redaction.py:redact_pii": {
+      "name": "redact_pii",
+      "type": "function",
+      "summary": "Applies email and phone number regex substitutions to redact PII from a text string."
+    },
+    "class:server/app/middleware/pii_redaction.py:PiiRedactionMiddleware": {
+      "name": "PiiRedactionMiddleware",
+      "type": "class",
+      "summary": "Starlette middleware that redacts PII from incoming request bodies before they are logged."
+    },
+    "file:server/app/middleware/rate_limit.py": {
+      "name": "rate_limit.py",
+      "type": "file",
+      "summary": "Token-bucket based rate limiting middleware that throttles requests per client, protecting the API from abuse."
+    },
+    "class:server/app/middleware/rate_limit.py:_TokenBucket": {
+      "name": "_TokenBucket",
+      "type": "class",
+      "summary": "Token bucket algorithm implementation tracking consumption and refill rate for rate limiting."
+    },
+    "class:server/app/middleware/rate_limit.py:RateLimitMiddleware": {
+      "name": "RateLimitMiddleware",
+      "type": "class",
+      "summary": "Starlette middleware enforcing per-client rate limits using per-client token buckets, returning 429 responses when exceeded."
+    },
+    "file:server/app/middleware/request_id.py": {
+      "name": "request_id.py",
+      "type": "file",
+      "summary": "Middleware that assigns or propagates a request correlation ID for tracing requests across logs."
+    },
+    "class:server/app/middleware/request_id.py:RequestIdMiddleware": {
+      "name": "RequestIdMiddleware",
+      "type": "class",
+      "summary": "Starlette middleware that generates or forwards a unique request ID header for each request."
+    },
+    "file:server/app/middleware/telemetry.py": {
+      "name": "telemetry.py",
+      "type": "file",
+      "summary": "Middleware that records per-request latency, error, and cart metrics into an in-process metrics store, exposing get_metrics_snapshot for the meta/observability endpoints."
+    },
+    "function:server/app/middleware/telemetry.py:get_metrics_snapshot": {
+      "name": "get_metrics_snapshot",
+      "type": "function",
+      "summary": "Computes and returns a snapshot dict of aggregated request metrics (latency percentiles, error rates, cache hit rate, per-path counts) for observability endpoints."
+    },
+    "class:server/app/middleware/telemetry.py:RequestMetrics": {
+      "name": "RequestMetrics",
+      "type": "class",
+      "summary": "Data container holding aggregate request/latency/cache/LLM metrics accumulated across the app's lifetime."
+    },
+    "class:server/app/middleware/telemetry.py:TelemetryMiddleware": {
+      "name": "TelemetryMiddleware",
+      "type": "class",
+      "summary": "Starlette middleware that times each request and updates the shared RequestMetrics store with latency, status, and cart-related statistics."
+    },
+    "file:server/app/services/confidence_service.py": {
+      "name": "confidence_service.py",
+      "type": "file",
+      "summary": "Scores confidence of matched cart items and flags low-confidence items or ambiguous matches that need user clarification."
+    },
+    "class:server/app/services/confidence_service.py:ConfidenceService": {
+      "name": "ConfidenceService",
+      "type": "class",
+      "summary": "Computes overall and per-item confidence scores for a cart and determines whether clarification is needed from the user."
+    },
+    "function:server/app/services/confidence_service.py:get_confidence_service": {
+      "name": "get_confidence_service",
+      "type": "function",
+      "summary": "Factory function returning a singleton ConfidenceService instance."
+    },
+    "file:server/app/services/semantic_search_service.py": {
+      "name": "semantic_search_service.py",
+      "type": "file",
+      "summary": "Hybrid product retrieval service combining bi-encoder embedding search, cross-encoder reranking, and RapidFuzz fallback to match user query text against the product catalog, with embedding caching to disk."
+    },
+    "function:server/app/services/semantic_search_service.py:_expand_with_synonyms": {
+      "name": "_expand_with_synonyms",
+      "type": "function",
+      "summary": "Expands a search query with known synonyms to improve match recall."
+    },
+    "function:server/app/services/semantic_search_service.py:_build_product_text": {
+      "name": "_build_product_text",
+      "type": "function",
+      "summary": "Builds a synonym-expanded text representation of a product for embedding/indexing."
+    },
+    "function:server/app/services/semantic_search_service.py:_cache_key": {
+      "name": "_cache_key",
+      "type": "function",
+      "summary": "Computes a deterministic cache key from a query and candidate product IDs."
+    },
+    "function:server/app/services/semantic_search_service.py:get_semantic_search_service": {
+      "name": "get_semantic_search_service",
+      "type": "function",
+      "summary": "Factory function returning a singleton HybridRetrievalService instance."
+    },
+    "class:server/app/services/semantic_search_service.py:HybridRetrievalService": {
+      "name": "HybridRetrievalService",
+      "type": "class",
+      "summary": "Core retrieval engine that loads bi-encoder/cross-encoder models, builds and caches product embeddings, and performs hybrid semantic + fuzzy search with reranking for product matching."
+    },
+    "file:server/app/repositories/dynamodb.py": {
+      "name": "dynamodb.py",
+      "type": "file",
+      "summary": "DynamoDB repository implementing the primary datastore access layer: table provisioning and CRUD operations for products, users, and orders via aioboto3, with helpers to convert between Python floats and DynamoDB Decimal types."
+    },
+    "file:server/app/seed/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package init for the seed module that re-exports catalog loading, mock data generation, and stock override helpers as the public seed API."
+    },
+    "file:server/app/seed/__main__.py": {
+      "name": "__main__.py",
+      "type": "file",
+      "summary": "CLI entry point for `python -m app.seed`; orchestrates loading the catalog, applying stock overrides, seeding mock users/orders, and writing everything into the configured repository and cache."
+    },
+    "file:server/app/seed/catalog.py": {
+      "name": "catalog.py",
+      "type": "file",
+      "summary": "Loads and normalizes the product catalog from CSV or XLSX datasets into domain Product models, generating stable product IDs, parsing units, tags, ratings, and descriptions."
+    },
+    "file:server/app/seed/mock_data.py": {
+      "name": "mock_data.py",
+      "type": "file",
+      "summary": "Generates hardcoded mock User and Order domain objects used to seed the demo/dev environment with realistic sample data."
+    },
+    "file:server/app/seed/seed_dynamodb.py": {
+      "name": "seed_dynamodb.py",
+      "type": "file",
+      "summary": "High-level seeding routine that provisions DynamoDB tables and bulk-loads catalog, stock override, mock user, and mock order data into DynamoDB, plus a helper to check whether seeding already occurred."
+    },
+    "file:server/app/seed/stock_overrides.py": {
+      "name": "stock_overrides.py",
+      "type": "file",
+      "summary": "Derives a deterministic subset of product IDs to be marked as out-of-stock/overridden for demo purposes, based on a hash of the full product ID set."
+    },
+    "function:server/app/repositories/dynamodb.py:_session_kwargs": {
+      "name": "_session_kwargs",
+      "type": "function",
+      "summary": "Builds the keyword arguments (endpoint, region, credentials) used to construct the aioboto3 DynamoDB resource session, called by nearly every repository method."
+    },
+    "class:server/app/repositories/dynamodb.py:DynamoDBRepository": {
+      "name": "DynamoDBRepository",
+      "type": "class",
+      "summary": "Primary datastore repository providing async table creation and CRUD operations (get/list/upsert) for products, users, and orders against DynamoDB."
+    },
+    "function:server/app/seed/__main__.py:_run_seed": {
+      "name": "_run_seed",
+      "type": "function",
+      "summary": "Async driver that loads the catalog, computes stock overrides, bulk-upserts products, seeds mock users and orders into the repository/cache, and prints a summary report with timing."
+    },
+    "function:server/app/seed/__main__.py:main": {
+      "name": "main",
+      "type": "function",
+      "summary": "Synchronous CLI entry point that runs `_run_seed` via asyncio and exits with a non-zero status on failure."
+    },
+    "function:server/app/seed/catalog.py:_safe_float": {
+      "name": "_safe_float",
+      "type": "function",
+      "summary": "Safely coerces a raw dataset cell value to a float, falling back to a default when the value is blank or unparsable."
+    },
+    "function:server/app/seed/catalog.py:_parse_unit_from_name": {
+      "name": "_parse_unit_from_name",
+      "type": "function",
+      "summary": "Extracts a quantity and unit (e.g. '500 ml') from a product name string using a regular expression."
+    },
+    "function:server/app/seed/catalog.py:load_catalog": {
+      "name": "load_catalog",
+      "type": "function",
+      "summary": "Reads the product dataset (CSV or XLSX), normalizes each row into a domain Product with generated IDs, tags, units, ratings, and descriptions, and returns the full product list."
+    },
+    "function:server/app/seed/catalog.py:_read_xlsx": {
+      "name": "_read_xlsx",
+      "type": "function",
+      "summary": "Reads rows from an XLSX dataset file into a list of row values using openpyxl."
+    },
+    "function:server/app/seed/mock_data.py:create_mock_users": {
+      "name": "create_mock_users",
+      "type": "function",
+      "summary": "Builds a fixed list of sample User domain objects used for local development and demo seeding."
+    },
+    "function:server/app/seed/mock_data.py:create_mock_orders": {
+      "name": "create_mock_orders",
+      "type": "function",
+      "summary": "Generates a large fixed list of sample Order domain objects referencing given product IDs, covering varied order states and timelines for demo seeding."
+    },
+    "function:server/app/seed/seed_dynamodb.py:seed_dynamodb": {
+      "name": "seed_dynamodb",
+      "type": "function",
+      "summary": "Ensures DynamoDB tables exist and, if not already populated (or forced), loads the catalog and mock data and bulk-writes products, users, and orders into DynamoDB."
+    },
+    "function:server/app/seed/seed_dynamodb.py:is_dynamodb_seeded": {
+      "name": "is_dynamodb_seeded",
+      "type": "function",
+      "summary": "Checks whether DynamoDB already contains seeded product data by creating tables if needed and querying the product list."
+    },
+    "function:server/app/seed/stock_overrides.py:get_override_product_ids": {
+      "name": "get_override_product_ids",
+      "type": "function",
+      "summary": "Deterministically selects a subset of the given product IDs to treat as stock overrides, ensuring consistent demo behavior across runs."
+    },
+    "file:client/src/components/AddressManager.tsx": {
+      "name": "AddressManager.tsx",
+      "type": "file",
+      "summary": "Modal/sheet UI component for managing saved delivery addresses, letting users detect their location via GPS reverse-geocoding or add/edit addresses manually with labels (Home/Work/Other)."
+    },
+    "function:client/src/components/AddressManager.tsx:AddressManager": {
+      "name": "AddressManager",
+      "type": "function",
+      "summary": "Default-exported React component rendering the address management sheet: lists saved addresses, handles GPS detection, manual address entry, activation, and deletion."
+    },
+    "file:client/src/components/Header.tsx": {
+      "name": "Header.tsx",
+      "type": "file",
+      "summary": "Site header component with search bar (animated placeholder), navigation category links, cart button, user menu, PWA install trigger, and the delivery address selector that opens AddressManager."
+    },
+    "function:client/src/components/Header.tsx:useAnimatedPlaceholder": {
+      "name": "useAnimatedPlaceholder",
+      "type": "function",
+      "summary": "Local hook that cycles through placeholder search phrases with a typewriter-style typing/erasing animation using timed setTimeout callbacks."
+    },
+    "function:client/src/components/Header.tsx:Header": {
+      "name": "Header",
+      "type": "function",
+      "summary": "Default-exported React component rendering the app header: search, category navigation, cart summary, user menu, address selector, and iOS PWA install instructions."
+    },
+    "file:client/src/components/PwaInstallPrompt.tsx": {
+      "name": "PwaInstallPrompt.tsx",
+      "type": "file",
+      "summary": "Dismissible toast/banner component that prompts eligible users to install the PWA after a delay, persisting dismissal state to localStorage."
+    },
+    "function:client/src/components/PwaInstallPrompt.tsx:PwaInstallPrompt": {
+      "name": "PwaInstallPrompt",
+      "type": "function",
+      "summary": "Default-exported component that shows a delayed install prompt using usePwaInstall, and lets the user install or dismiss (with localStorage-backed persistence)."
+    },
+    "file:client/src/context/LocationContext.tsx": {
+      "name": "LocationContext.tsx",
+      "type": "file",
+      "summary": "React context that wraps the useDeliveryLocation hook so delivery-location state is shared app-wide via a single provider instance, exposing a useLocation() accessor hook."
+    },
+    "function:client/src/context/LocationContext.tsx:LocationProvider": {
+      "name": "LocationProvider",
+      "type": "function",
+      "summary": "Provider component that instantiates useDeliveryLocation once and exposes its value to descendants via LocationContext."
+    },
+    "function:client/src/context/LocationContext.tsx:useLocation": {
+      "name": "useLocation",
+      "type": "function",
+      "summary": "Consumer hook that reads the LocationContext value, throwing if used outside a LocationProvider; the recommended way for components to access delivery-location state."
+    },
+    "file:client/src/hooks/useLocation.ts": {
+      "name": "useLocation.ts",
+      "type": "file",
+      "summary": "Core delivery-location logic: localStorage-backed saved addresses, Nominatim reverse-geocoding for GPS coordinates, and the useDeliveryLocation hook exposing address CRUD, active-address selection, and GPS detection."
+    },
+    "function:client/src/hooks/useLocation.ts:loadAddresses": {
+      "name": "loadAddresses",
+      "type": "function",
+      "summary": "Reads and JSON-parses the saved addresses list from localStorage, returning an empty array on failure."
+    },
+    "function:client/src/hooks/useLocation.ts:saveAddresses": {
+      "name": "saveAddresses",
+      "type": "function",
+      "summary": "Serializes and writes the addresses list to localStorage."
+    },
+    "function:client/src/hooks/useLocation.ts:reverseGeocode": {
+      "name": "reverseGeocode",
+      "type": "function",
+      "summary": "Reverse-geocodes GPS latitude/longitude via the Nominatim API and derives a readable block/area string from the returned address components."
+    },
+    "function:client/src/hooks/useLocation.ts:useDeliveryLocation": {
+      "name": "useDeliveryLocation",
+      "type": "function",
+      "summary": "Exported hook managing delivery-location state: saved addresses, active address id, GPS-based detection with fallback accuracy handling, add/remove/update address, all persisted to localStorage."
+    },
+    "file:client/src/hooks/usePwaInstall.ts": {
+      "name": "usePwaInstall.ts",
+      "type": "file",
+      "summary": "Hook that detects PWA install eligibility across platforms (standalone mode detection, iOS Safari heuristics, beforeinstallprompt capture) and exposes a triggerInstall function."
+    },
+    "function:client/src/hooks/usePwaInstall.ts:isRunningAsInstalledPwa": {
+      "name": "isRunningAsInstalledPwa",
+      "type": "function",
+      "summary": "Detects whether the app is currently running in standalone/installed PWA mode via matchMedia checks."
+    },
+    "function:client/src/hooks/usePwaInstall.ts:usePwaInstall": {
+      "name": "usePwaInstall",
+      "type": "function",
+      "summary": "Exported hook tracking PWA install state (installed, installable, iOS-safari) by listening for the beforeinstallprompt event and exposing a triggerInstall action."
+    },
+    "file:client/src/ui/Button.tsx": {
+      "name": "Button.tsx",
+      "type": "file",
+      "summary": "Shared button UI primitive with variant (primary/secondary/accent/outline/ghost) and size styling, a built-in loading spinner state, and left/right icon slots used across the client app."
+    },
+    "function:client/src/ui/Button.tsx:Button": {
+      "name": "Button",
+      "type": "function",
+      "summary": "Default-exported React component that renders a styled <button> combining variant/size class maps, disables itself while loading, and swaps in a Spinner when the loading prop is true."
+    },
+    "file:client/src/ui/Spinner.tsx": {
+      "name": "Spinner.tsx",
+      "type": "file",
+      "summary": "Small reusable SVG loading spinner component with configurable size, className, and accessible label, used inside Button and other async UI states."
+    },
+    "function:client/src/ui/Spinner.tsx:Spinner": {
+      "name": "Spinner",
+      "type": "function",
+      "summary": "Default-exported React component rendering an animated spinner icon sized and styled via props, with an accessible loading label."
+    },
+    "file:client/src/ui/States.tsx": {
+      "name": "States.tsx",
+      "type": "file",
+      "summary": "UI primitives for common empty and error states, each accepting an icon/title/description and an optional retry/action Button, used to give consistent feedback screens across the app."
+    },
+    "function:client/src/ui/States.tsx:EmptyState": {
+      "name": "EmptyState",
+      "type": "function",
+      "summary": "Named-exported component that renders a centered empty-state layout with icon, title, description, and an optional action element."
+    },
+    "function:client/src/ui/States.tsx:ErrorState": {
+      "name": "ErrorState",
+      "type": "function",
+      "summary": "Named-exported component that renders an error message with a default title/description and an optional retry Button wired to an onRetry callback."
+    },
+    "file:client/src/ui/Panel.tsx": {
+      "name": "Panel.tsx",
+      "type": "file",
+      "summary": "Accessible modal/bottom-sheet UI primitive used by the app's front doors — traps focus, locks body scroll, and closes on Escape or backdrop click, rendering as a bottom sheet on mobile and centered dialog on larger screens."
+    },
+    "function:client/src/ui/Panel.tsx:Panel": {
+      "name": "Panel",
+      "type": "function",
+      "summary": "Default-exported React component rendering an accessible dialog/bottom-sheet with header (icon, title, subtitle, close button), scrollable body, and optional footer; handles focus trapping and Escape-to-close."
+    },
+    "file:client/src/ui/Toast.tsx": {
+      "name": "Toast.tsx",
+      "type": "file",
+      "summary": "Toast notification system providing a React context provider and hook for showing dismissible, auto-expiring toast messages across the app."
+    },
+    "function:client/src/ui/Toast.tsx:ToastItem": {
+      "name": "ToastItem",
+      "type": "function",
+      "summary": "Renders a single toast notification and auto-dismisses it after a timeout, clearing the timer on unmount."
+    },
+    "function:client/src/ui/Toast.tsx:ToastProvider": {
+      "name": "ToastProvider",
+      "type": "function",
+      "summary": "Context provider component that maintains toast state and exposes add/dismiss callbacks to descendant components, rendering the active toast list."
+    },
+    "function:client/src/ui/Toast.tsx:useToast": {
+      "name": "useToast",
+      "type": "function",
+      "summary": "Custom hook that reads the toast context, giving consumers access to the toast list and dispatch functions."
+    },
+    "file:client/src/ui/Transition.tsx": {
+      "name": "Transition.tsx",
+      "type": "file",
+      "summary": "Lightweight animation wrapper components (fade and pop-in entrance transitions) reused by other UI primitives like Panel."
+    },
+    "function:client/src/ui/Transition.tsx:FadeIn": {
+      "name": "FadeIn",
+      "type": "function",
+      "summary": "Wraps children in a div that applies a fade-in entrance animation, supporting an optional delay and pass-through className/style/props."
+    },
+    "function:client/src/ui/Transition.tsx:PopIn": {
+      "name": "PopIn",
+      "type": "function",
+      "summary": "Wraps children in a div that applies a pop/scale-in entrance animation, supporting an optional delay and pass-through className/style/props; used by Panel for dialog entrance."
+    },
+    "service:client/Dockerfile": {
+      "name": "Dockerfile",
+      "type": "service",
+      "summary": "Multi-stage Docker build for the NowCart Vite/React/TypeScript frontend: compiles static assets with Node in a builder stage, then serves them via a hardened Nginx runtime image with SPA routing/API proxy config and a health check."
+    },
+    "service:client/Dockerfile:builder": {
+      "name": "builder",
+      "type": "service",
+      "summary": "Build stage based on node:20-alpine that installs npm dependencies with `npm ci` and runs `npm run build` to produce the Vite production bundle."
+    },
+    "service:client/Dockerfile:runtime": {
+      "name": "runtime",
+      "type": "service",
+      "summary": "Runtime stage based on nginx:alpine that replaces the default nginx config with a custom SPA-routing/API-proxy config, copies the built assets from the builder stage, exposes port 80, and defines a container health check."
+    },
+    "service:server/Dockerfile": {
+      "name": "Dockerfile",
+      "type": "service",
+      "summary": "Multi-stage Docker build for the FastAPI backend: a builder stage installs Python dependencies via uv into a virtualenv, and a slim runtime stage copies the venv plus application code, runs as a non-root user, exposes port 8000, and starts uvicorn with a health check for EC2 deployment."
+    },
+    "service:server/Dockerfile:builder": {
+      "name": "builder",
+      "type": "service",
+      "summary": "Build stage based on python:3.11-slim that installs the uv package manager and resolves/installs Python dependencies from server/pyproject.toml and server/uv.lock into an isolated virtualenv at /app/.venv."
+    },
+    "service:server/Dockerfile:runtime": {
+      "name": "runtime",
+      "type": "service",
+      "summary": "Final slim python:3.11-slim runtime image that copies the prebuilt virtualenv and application code, adds the BigBasket.csv data file, drops privileges to a non-root user, exposes port 8000, defines a HEALTHCHECK, and launches the app with uvicorn."
+    },
+    "pipeline:.github/workflows/deploy.yml": {
+      "name": "deploy.yml",
+      "type": "pipeline",
+      "summary": "GitHub Actions CI/CD workflow that deploys NowCart on every push to master: builds the Vite frontend and syncs it to S3 with CloudFront cache invalidation, then SSHes into the EC2 host to write the production .env, git pull the backend, and restart the systemd nowcart service."
+    },
+    "step:.github/workflows/deploy.yml:deploy-frontend": {
+      "name": "deploy-frontend",
+      "type": "resource",
+      "summary": "Job that checks out the code, installs and builds the client with npm, then syncs the built dist/ folder to the nowcart-frontend-strizzy S3 bucket and invalidates the CloudFront distribution cache."
+    },
+    "step:.github/workflows/deploy.yml:deploy-backend": {
+      "name": "deploy-backend",
+      "type": "resource",
+      "summary": "Job that runs after deploy-frontend succeeds; SSHes into the production EC2 instance to write environment secrets to /opt/nowcart/server/.env and /etc/nowcart.env, then git pulls the latest master branch and restarts the nowcart systemd service."
+    },
+    "config:.dockerignore": {
+      "name": ".dockerignore",
+      "type": "config",
+      "summary": "Excludes Python virtualenv/cache dirs, Node modules/build output, IDE/OS artifacts, and .env secret files from Docker build contexts."
+    },
+    "document:APK_BUILD_GUIDE.md": {
+      "name": "APK_BUILD_GUIDE.md",
+      "type": "document",
+      "summary": "Step-by-step guide for building, signing, and hosting the NowCart Android APK (Android Studio, Gradle signing config, S3/EC2 hosting) plus notes on the already-live PWA."
+    },
+    "document:ARCHITECTURE_DIAGRAM.md": {
+      "name": "ARCHITECTURE_DIAGRAM.md",
+      "type": "document",
+      "summary": "High-level visual architecture diagram of NowCart with a one-minute walkthrough of how requests flow through the system."
+    },
+    "document:NowCart_Presentation_Script.md": {
+      "name": "NowCart_Presentation_Script.md",
+      "type": "document",
+      "summary": "Full slide-by-slide presentation script for a hackathon grand finale pitch, covering the product story, demo voiceover, technical architecture, algorithms, and growth roadmap."
+    },
+    "document:README.md": {
+      "name": "README.md",
+      "type": "document",
+      "summary": "Project README describing NowCart's purpose, how it works, its architecture, tech stack, local development setup, deployment, and admin access."
+    },
+    "document:SYSTEM_ARCHITECTURE.md": {
+      "name": "SYSTEM_ARCHITECTURE.md",
+      "type": "document",
+      "summary": "Comprehensive system architecture document detailing the LangGraph Outcome Engine node-by-node (intent, decompose, pantry filter, match/RAG, optimize, substitute, confidence, counterfactual), the Zero Door predictive restock path, data flow diagrams for each entry mode, middleware stack, LLM provider architecture, hybrid retrieval, infrastructure, scaling, observability, and security hardening."
+    },
+    "document:archi.md": {
+      "name": "archi.md",
+      "type": "document",
+      "summary": "Hybrid system architecture diagram and one-minute presentation script explaining key implementation details behind the diagram."
+    },
+    "file:deploy.bat": {
+      "name": "deploy.bat",
+      "type": "file",
+      "summary": "Windows batch script that builds the frontend, syncs the build to an S3 bucket, invalidates the CloudFront distribution, and reminds the operator to SSH into EC2 to restart the backend service."
+    },
+    "service:docker-compose.yml": {
+      "name": "docker-compose.yml",
+      "type": "service",
+      "summary": "Local development Docker Compose stack wiring together the FastAPI backend, nginx-served Vite frontend, Redis (cache/session), and DynamoDB Local (persistence), each with health checks and a shared bridge network."
+    },
+    "service:docker-compose.yml:backend": {
+      "name": "backend",
+      "type": "service",
+      "summary": "FastAPI backend service built from server/Dockerfile, configured via environment variables for DynamoDB, Redis, Groq/Gemini LLM providers, and CORS; exposes port 8000."
+    },
+    "service:docker-compose.yml:frontend": {
+      "name": "frontend",
+      "type": "service",
+      "summary": "Nginx-served Vite frontend built from client/Dockerfile, exposed on port 3000 and depending on the backend being healthy."
+    },
+    "service:docker-compose.yml:redis": {
+      "name": "redis",
+      "type": "service",
+      "summary": "Redis 7 Alpine service providing cart/session state and LLM response caching, with a persistent volume and periodic save policy."
+    },
+    "service:docker-compose.yml:dynamodb-local": {
+      "name": "dynamodb-local",
+      "type": "service",
+      "summary": "Local DynamoDB emulator service (amazon/dynamodb-local) for product/user/order persistence during development, backed by a persistent volume."
+    },
+    "document:.kiro/specs/nowcart/requirements.md": {
+      "name": "requirements.md",
+      "type": "document",
+      "summary": "Kiro spec-driven requirements document for NowCart defining 10 numbered requirements (Outcome Engine, Voice-to-Order, Constraint-First Ordering, Show It/Share It, Comparison Collapse & Confidence Score, Substitution Intelligence, SOS/Emergency Mode, Catalog & Data, Architecture/Scaling/Cost, and Frontend Revamp & Backend Sync) each with acceptance criteria, plus an introduction and glossary."
+    },
+    "document:.kiro/specs/nowcart/design.md": {
+      "name": "design.md",
+      "type": "document",
+      "summary": "Architecture and design document for NowCart describing the layered backend (controllers/middleware/services/agents/repositories/llm/models), the LangGraph Outcome Engine node pipeline, REST API surface, data models (Product/Cart/Need), storage layout (DynamoDB/Redis), error handling, privacy/scaling strategy, and seven correctness properties that the implementation must satisfy."
+    },
+    "document:.kiro/specs/nowcart/tasks.md": {
+      "name": "tasks.md",
+      "type": "document",
+      "summary": "Implementation plan for NowCart breaking work into 9 dependency-ordered waves (foundation/LLM providers, data layer + seed, catalog matching, LangGraph Outcome Engine, supporting services, REST API + middleware, React/Vite/TS frontend, frontend revamp & backend sync, verify + deploy), with per-task verification steps and completion checkboxes."
+    },
+    "document:client/README.md": {
+      "name": "README.md",
+      "type": "document",
+      "summary": "Boilerplate Vite React+TypeScript README describing the default template, React Compiler note, and guidance for expanding the ESLint configuration."
+    },
+    "file:client/index.html": {
+      "name": "index.html",
+      "type": "file",
+      "summary": "Vite entry HTML for the NowCart PWA client, wiring PWA meta tags, Apple touch icons, Google Fonts, and mounting the React app via src/main.tsx."
+    },
+    "config:client/package.json": {
+      "name": "package.json",
+      "type": "config",
+      "summary": "NPM manifest for the NowCart React client, defining Vite build/dev scripts, OpenAPI type generation, Capacitor Android packaging, and dependencies including React 19, Tailwind CSS v4, react-router-dom, and lucide-react."
+    },
+    "config:client/tsconfig.app.json": {
+      "name": "tsconfig.app.json",
+      "type": "config",
+      "summary": "TypeScript compiler configuration for the client application source, setting bundler module resolution and strict type-checking options for files under src/."
+    },
+    "config:client/tsconfig.json": {
+      "name": "tsconfig.json",
+      "type": "config",
+      "summary": "Root TypeScript project reference file that composes tsconfig.app.json and tsconfig.node.json for the client's split app/tooling build configuration."
+    },
+    "config:client/tsconfig.node.json": {
+      "name": "tsconfig.node.json",
+      "type": "config",
+      "summary": "TypeScript compiler configuration for Node-context tooling files (e.g. vite.config.ts), enabling strict type-checking with bundler module resolution separate from the app build."
+    },
+    "config:.claude/settings.json": {
+      "name": "settings.json",
+      "type": "config",
+      "summary": "Claude Code project settings file listing enabled plugins for the local development assistant."
+    },
+    "file:.kiro/specs/user-authentication/.config.kiro": {
+      "name": ".config.kiro",
+      "type": "file",
+      "summary": "Marker/config file for the Kiro spec-driven development tool tied to the user-authentication feature spec."
+    },
+    "document:.kiro/specs/user-authentication/requirements.md": {
+      "name": "requirements.md",
+      "type": "document",
+      "summary": "Requirements document for a user-authentication feature (signup, OTP verification, login, JWT token management, auth UI, session persistence/logout, and user data storage) written in EARS acceptance-criteria format."
+    },
+    "config:.ua/.understandignore": {
+      "name": ".understandignore",
+      "type": "config",
+      "summary": "Ignore-pattern list controlling which files and directories the Understand-Anything knowledge graph scanner excludes from analysis."
+    },
+    "config:client/capacitor.config.ts": {
+      "name": "capacitor.config.ts",
+      "type": "config",
+      "summary": "Capacitor configuration for packaging the NowCart web client as a native mobile app, defining app ID, name, and web directory settings."
+    },
+    "config:client/eslint.config.js": {
+      "name": "eslint.config.js",
+      "type": "config",
+      "summary": "ESLint flat-config for the client codebase, defining linting rules and plugin setup for TypeScript/React source files."
+    },
+    "file:client/gen-icons.mjs": {
+      "name": "gen-icons.mjs",
+      "type": "file",
+      "summary": "Node build script that generates app icon assets (favicons/mobile icons) for the client from a source image."
+    },
+    "config:client/nginx.conf": {
+      "name": "nginx.conf",
+      "type": "config",
+      "summary": "Nginx server configuration used to serve the built client SPA and proxy API requests in production/container deployment."
+    },
+    "file:client/src/api/schema.d.ts": {
+      "name": "schema.d.ts",
+      "type": "file",
+      "summary": "Auto-generated TypeScript type definitions describing the backend API's request/response schema, used for typed API client calls."
+    },
+    "file:client/src/components/ui/Button.tsx": {
+      "name": "Button.tsx",
+      "type": "file",
+      "summary": "Reusable styled Button UI component supporting variants, sizes, loading state, and icon slots."
+    },
+    "function:client/src/components/ui/Button.tsx:Button": {
+      "name": "Button",
+      "type": "function",
+      "summary": "React functional component rendering a button element with variant/size/loading/icon props, composing class names via the cn utility."
+    },
+    "file:client/src/components/ui/cn.ts": {
+      "name": "cn.ts",
+      "type": "file",
+      "summary": "Tiny utility module exporting a class-name concatenation helper used across UI components."
+    },
+    "function:client/src/components/ui/cn.ts:cn": {
+      "name": "cn",
+      "type": "function",
+      "summary": "Joins truthy class name fragments into a single space-separated string, similar to the classnames/clsx pattern."
+    },
+    "file:client/src/index.css": {
+      "name": "index.css",
+      "type": "file",
+      "summary": "Global stylesheet defining base styles, CSS custom properties (design tokens like shadows/colors), and Tailwind layer imports for the client app."
+    },
+    "file:client/src/pages/SosPage.tsx": {
+      "name": "SosPage.tsx",
+      "type": "file",
+      "summary": "Minimal placeholder page component for an SOS/emergency-help route in the client app."
+    },
+    "function:client/src/pages/SosPage.tsx:SosPage": {
+      "name": "SosPage",
+      "type": "function",
+      "summary": "Trivial React page component stub for the SOS page route."
+    },
+    "file:client/src/ui/Card.tsx": {
+      "name": "Card.tsx",
+      "type": "file",
+      "summary": "Reusable Card UI component providing surface styling, padding variants, and optional interactive hover states."
+    },
+    "function:client/src/ui/Card.tsx:Card": {
+      "name": "Card",
+      "type": "function",
+      "summary": "React functional component rendering a styled card container with configurable padding and interactive hover/shadow behavior."
+    },
+    "file:client/src/ui/Chip.tsx": {
+      "name": "Chip.tsx",
+      "type": "file",
+      "summary": "Reusable Chip/badge UI component with tone and size variants, optionally rendering a leading icon."
+    },
+    "function:client/src/ui/Chip.tsx:Chip": {
+      "name": "Chip",
+      "type": "function",
+      "summary": "React functional component rendering a pill-shaped chip with tone-based coloring and optional icon."
+    },
+    "config:client/vite.config.ts": {
+      "name": "vite.config.ts",
+      "type": "config",
+      "summary": "Vite build configuration for the client app, defining plugins, dev server settings, and build output options."
+    },
+    "file:scripts/add_5000_more.py": {
+      "name": "add_5000_more.py",
+      "type": "file",
+      "summary": "Data-generation utility script that appends roughly 5000 additional product/catalog records, verifying associated image URLs before inclusion."
+    },
+    "function:scripts/add_5000_more.py:verify_image": {
+      "name": "verify_image",
+      "type": "function",
+      "summary": "Validates that a catalog row's image URL is reachable and returns a real image by issuing an HTTP request and checking content length/headers."
+    },
+    "file:scripts/check_cors.py": {
+      "name": "check_cors.py",
+      "type": "file",
+      "summary": "Diagnostic script for verifying CORS headers/behavior of the NowCart backend API."
+    },
+    "file:scripts/check_page2.py": {
+      "name": "check_page2.py",
+      "type": "file",
+      "summary": "Small ad-hoc script for inspecting/testing a second page of paginated data or results, likely used during catalog debugging."
+    },
+    "file:scripts/create_verified_csv.py": {
+      "name": "create_verified_csv.py",
+      "type": "file",
+      "summary": "Data-pipeline script that builds a CSV of catalog records after verifying each entry's image URL is valid and reachable."
+    },
+    "function:scripts/create_verified_csv.py:check_image_url": {
+      "name": "check_image_url",
+      "type": "function",
+      "summary": "Checks whether a given image URL responds successfully via an HTTP HEAD/GET-style request before a row is written to the verified CSV."
+    },
+    "file:scripts/find_placeholders.py": {
+      "name": "find_placeholders.py",
+      "type": "file",
+      "summary": "Scans catalog data rows to detect placeholder or invalid product images by comparing downloaded content size against expected thresholds."
+    },
+    "function:scripts/find_placeholders.py:check_size": {
+      "name": "check_size",
+      "type": "function",
+      "summary": "Fetches a row's image URL and inspects the response content-length header to flag likely placeholder images."
+    },
+    "file:scripts/fix_placeholders.py": {
+      "name": "fix_placeholders.py",
+      "type": "file",
+      "summary": "Remediation script that re-checks and replaces placeholder/broken product images identified in the catalog data."
+    },
+    "function:scripts/fix_placeholders.py:check_real_image": {
+      "name": "check_real_image",
+      "type": "function",
+      "summary": "Verifies whether a catalog row's image URL points to a genuine (non-placeholder) image by inspecting HTTP response size and headers."
+    },
+    "file:server/app/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Empty package marker file establishing the server.app Python package."
+    },
+    "file:server/app/async_jobs/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package docstring/init module describing the async_jobs architecture: API endpoint to SQS queue to Lambda function to DynamoDB result, with frontend polling for completion, used to offload heavy operations like vision analysis and cart decomposition."
+    },
+    "file:server/app/async_jobs/lambda_handlers.py": {
+      "name": "lambda_handlers.py",
+      "type": "file",
+      "summary": "AWS Lambda handler stubs for offloaded async jobs — vision analysis, share/decomposition, and outcome processing — invoked via SQS to scale heavy operations outside the main API process."
+    },
+    "function:server/app/async_jobs/lambda_handlers.py:vision_handler": {
+      "name": "vision_handler",
+      "type": "function",
+      "summary": "Lambda entry point that processes vision-analysis job events from SQS, parses payloads, runs analysis, and returns/logs results with error handling per item."
+    },
+    "function:server/app/async_jobs/lambda_handlers.py:share_handler": {
+      "name": "share_handler",
+      "type": "function",
+      "summary": "Lambda entry point handling share/cart-decomposition job events from SQS, parsing payloads and aggregating per-item results with error handling."
+    },
+    "function:server/app/async_jobs/lambda_handlers.py:outcome_handler": {
+      "name": "outcome_handler",
+      "type": "function",
+      "summary": "Lambda entry point processing outcome-tracking job events from SQS, parsing payloads and recording per-item success/failure results."
+    },
+    "file:server/app/core/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Empty package marker file that makes server/app/core a Python package for core cross-cutting concerns (config, settings, shared infrastructure)."
+    },
+    "file:server/app/models/__init__.py": {
+      "name": "__init__.py",
+      "type": "file",
+      "summary": "Package marker for server/app/models with a docstring documenting the two subpackages — `domain` for internal models (e.g. Cart, Product) and `dto` for wire contracts (e.g. CartResponse, OutcomeRequest) — instructing consumers to import directly from the subpackages rather than this barrel."
+    },
+    "config:server/pyproject.toml": {
+      "name": "pyproject.toml",
+      "type": "config",
+      "summary": "Python project configuration for the nowcart-server package, declaring dependencies (FastAPI, LangGraph, LangChain, Groq, Google Generative AI, boto3/aioboto3, Redis, sentence-transformers, rapidfuzz, httpx, orjson, tenacity), dev/test dependencies, pytest asyncio settings, and the hatchling build backend."
+    }
+  },
+  "totalNodes": 451,
+  "totalEdges": 992
+}

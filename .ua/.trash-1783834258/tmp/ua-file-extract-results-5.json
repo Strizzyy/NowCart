@@ -1,0 +1,2313 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 7,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "server/app/repositories/dynamodb.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 270,
+      "nonEmptyLines": 229,
+      "functions": [
+        {
+          "name": "_session_kwargs",
+          "startLine": 30,
+          "endLine": 39,
+          "params": []
+        },
+        {
+          "name": "_convert_floats",
+          "startLine": 42,
+          "endLine": 50,
+          "params": [
+            "obj"
+          ]
+        },
+        {
+          "name": "_convert_decimals",
+          "startLine": 53,
+          "endLine": 61,
+          "params": [
+            "obj"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "DynamoDBRepository",
+          "startLine": 64,
+          "endLine": 270,
+          "methods": [
+            "__init__",
+            "_get_resource",
+            "create_tables_if_not_exist",
+            "get_product",
+            "list_products",
+            "upsert_product",
+            "bulk_upsert_products",
+            "get_user",
+            "upsert_user",
+            "get_orders",
+            "upsert_order"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_session_kwargs",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "_convert_floats",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "_convert_decimals",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "DynamoDBRepository",
+          "line": 64,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_convert_floats",
+          "callee": "isinstance",
+          "lineNumber": 44
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "Decimal",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "str",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "isinstance",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "_convert_floats",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "obj.items",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "isinstance",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_convert_floats",
+          "callee": "_convert_floats",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "isinstance",
+          "lineNumber": 55
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "float",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "isinstance",
+          "lineNumber": 57
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "_convert_decimals",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "obj.items",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "isinstance",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_convert_decimals",
+          "callee": "_convert_decimals",
+          "lineNumber": 60
+        },
+        {
+          "caller": "__init__",
+          "callee": "aioboto3.Session",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_get_resource",
+          "callee": "self._session.resource",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_get_resource",
+          "callee": "_session_kwargs",
+          "lineNumber": 73
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "self._session.resource",
+          "lineNumber": 82
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "_session_kwargs",
+          "lineNumber": 82
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "ddb.tables.all",
+          "lineNumber": 83
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "ddb.create_table",
+          "lineNumber": 87
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "tables_created.append",
+          "lineNumber": 103
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "logger.info",
+          "lineNumber": 104
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "ddb.create_table",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "tables_created.append",
+          "lineNumber": 115
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "logger.info",
+          "lineNumber": 116
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "ddb.create_table",
+          "lineNumber": 119
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "tables_created.append",
+          "lineNumber": 131
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "logger.info",
+          "lineNumber": 132
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "logger.info",
+          "lineNumber": 136
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "range",
+          "lineNumber": 139
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "ddb.Table",
+          "lineNumber": 141
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "table.load",
+          "lineNumber": 142
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "asyncio.sleep",
+          "lineNumber": 148
+        },
+        {
+          "caller": "create_tables_if_not_exist",
+          "callee": "logger.info",
+          "lineNumber": 149
+        },
+        {
+          "caller": "get_product",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 156
+        },
+        {
+          "caller": "get_product",
+          "callee": "self._session.resource",
+          "lineNumber": 157
+        },
+        {
+          "caller": "get_product",
+          "callee": "_session_kwargs",
+          "lineNumber": 157
+        },
+        {
+          "caller": "get_product",
+          "callee": "ddb.Table",
+          "lineNumber": 158
+        },
+        {
+          "caller": "get_product",
+          "callee": "table.get_item",
+          "lineNumber": 159
+        },
+        {
+          "caller": "get_product",
+          "callee": "resp.get",
+          "lineNumber": 160
+        },
+        {
+          "caller": "get_product",
+          "callee": "Product",
+          "lineNumber": 163
+        },
+        {
+          "caller": "get_product",
+          "callee": "_convert_decimals",
+          "lineNumber": 163
+        },
+        {
+          "caller": "list_products",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 170
+        },
+        {
+          "caller": "list_products",
+          "callee": "self._session.resource",
+          "lineNumber": 171
+        },
+        {
+          "caller": "list_products",
+          "callee": "_session_kwargs",
+          "lineNumber": 171
+        },
+        {
+          "caller": "list_products",
+          "callee": "ddb.Table",
+          "lineNumber": 172
+        },
+        {
+          "caller": "list_products",
+          "callee": "table.query",
+          "lineNumber": 176
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "list_products",
+          "callee": "table.query",
+          "lineNumber": 184
+        },
+        {
+          "caller": "list_products",
+          "callee": "items.extend",
+          "lineNumber": 190
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 190
+        },
+        {
+          "caller": "list_products",
+          "callee": "table.scan",
+          "lineNumber": 193
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 194
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 195
+        },
+        {
+          "caller": "list_products",
+          "callee": "table.scan",
+          "lineNumber": 196
+        },
+        {
+          "caller": "list_products",
+          "callee": "items.extend",
+          "lineNumber": 197
+        },
+        {
+          "caller": "list_products",
+          "callee": "resp.get",
+          "lineNumber": 197
+        },
+        {
+          "caller": "list_products",
+          "callee": "Product",
+          "lineNumber": 199
+        },
+        {
+          "caller": "list_products",
+          "callee": "_convert_decimals",
+          "lineNumber": 199
+        },
+        {
+          "caller": "list_products",
+          "callee": "search.lower",
+          "lineNumber": 202
+        },
+        {
+          "caller": "list_products",
+          "callee": "p.name.lower",
+          "lineNumber": 205
+        },
+        {
+          "caller": "list_products",
+          "callee": "p.category.lower",
+          "lineNumber": 206
+        },
+        {
+          "caller": "list_products",
+          "callee": "p.brand.lower",
+          "lineNumber": 207
+        },
+        {
+          "caller": "list_products",
+          "callee": "p.sub_category.lower",
+          "lineNumber": 208
+        },
+        {
+          "caller": "list_products",
+          "callee": "category.lower",
+          "lineNumber": 212
+        },
+        {
+          "caller": "list_products",
+          "callee": "p.category.lower",
+          "lineNumber": 213
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 218
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "self._session.resource",
+          "lineNumber": 219
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "_session_kwargs",
+          "lineNumber": 219
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "ddb.Table",
+          "lineNumber": 220
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "table.put_item",
+          "lineNumber": 221
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "_convert_floats",
+          "lineNumber": 221
+        },
+        {
+          "caller": "upsert_product",
+          "callee": "product.model_dump",
+          "lineNumber": 221
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 224
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "self._session.resource",
+          "lineNumber": 225
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "_session_kwargs",
+          "lineNumber": 225
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "ddb.Table",
+          "lineNumber": 226
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "len",
+          "lineNumber": 227
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "table.batch_writer",
+          "lineNumber": 228
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "enumerate",
+          "lineNumber": 229
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "batch.put_item",
+          "lineNumber": 230
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "_convert_floats",
+          "lineNumber": 230
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "product.model_dump",
+          "lineNumber": 230
+        },
+        {
+          "caller": "bulk_upsert_products",
+          "callee": "logger.info",
+          "lineNumber": 232
+        },
+        {
+          "caller": "get_user",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 237
+        },
+        {
+          "caller": "get_user",
+          "callee": "self._session.resource",
+          "lineNumber": 238
+        },
+        {
+          "caller": "get_user",
+          "callee": "_session_kwargs",
+          "lineNumber": 238
+        },
+        {
+          "caller": "get_user",
+          "callee": "ddb.Table",
+          "lineNumber": 239
+        },
+        {
+          "caller": "get_user",
+          "callee": "table.get_item",
+          "lineNumber": 240
+        },
+        {
+          "caller": "get_user",
+          "callee": "resp.get",
+          "lineNumber": 241
+        },
+        {
+          "caller": "get_user",
+          "callee": "User",
+          "lineNumber": 244
+        },
+        {
+          "caller": "get_user",
+          "callee": "_convert_decimals",
+          "lineNumber": 244
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 247
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "self._session.resource",
+          "lineNumber": 248
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "_session_kwargs",
+          "lineNumber": 248
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "ddb.Table",
+          "lineNumber": 249
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "table.put_item",
+          "lineNumber": 250
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "_convert_floats",
+          "lineNumber": 250
+        },
+        {
+          "caller": "upsert_user",
+          "callee": "user.model_dump",
+          "lineNumber": 250
+        },
+        {
+          "caller": "get_orders",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 255
+        },
+        {
+          "caller": "get_orders",
+          "callee": "self._session.resource",
+          "lineNumber": 256
+        },
+        {
+          "caller": "get_orders",
+          "callee": "_session_kwargs",
+          "lineNumber": 256
+        },
+        {
+          "caller": "get_orders",
+          "callee": "ddb.Table",
+          "lineNumber": 257
+        },
+        {
+          "caller": "get_orders",
+          "callee": "table.query",
+          "lineNumber": 258
+        },
+        {
+          "caller": "get_orders",
+          "callee": "resp.get",
+          "lineNumber": 263
+        },
+        {
+          "caller": "get_orders",
+          "callee": "Order",
+          "lineNumber": 264
+        },
+        {
+          "caller": "get_orders",
+          "callee": "_convert_decimals",
+          "lineNumber": 264
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "self.create_tables_if_not_exist",
+          "lineNumber": 267
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "self._session.resource",
+          "lineNumber": 268
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "_session_kwargs",
+          "lineNumber": 268
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "ddb.Table",
+          "lineNumber": 269
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "table.put_item",
+          "lineNumber": 270
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "_convert_floats",
+          "lineNumber": 270
+        },
+        {
+          "caller": "upsert_order",
+          "callee": "order.model_dump",
+          "lineNumber": 270
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "server/app/seed/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/seed/__main__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 105,
+      "nonEmptyLines": 80,
+      "functions": [
+        {
+          "name": "_run_seed",
+          "startLine": 27,
+          "endLine": 90,
+          "params": []
+        },
+        {
+          "name": "main",
+          "startLine": 93,
+          "endLine": 101,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_run_seed",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 93,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_run_seed",
+          "callee": "get_repository",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "get_cache",
+          "lineNumber": 32
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "time.perf_counter",
+          "lineNumber": 34
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "load_catalog",
+          "lineNumber": 38
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "get_override_product_ids",
+          "lineNumber": 44
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "set",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "repo.bulk_upsert_products",
+          "lineNumber": 55
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "cache.set_stock_override",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "create_mock_users",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "repo.upsert_user",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 69
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 69
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "create_mock_orders",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "repo.upsert_order",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "logger.info",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "time.perf_counter",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "len",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "type",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_run_seed",
+          "callee": "print",
+          "lineNumber": 90
+        },
+        {
+          "caller": "main",
+          "callee": "asyncio.run",
+          "lineNumber": 96
+        },
+        {
+          "caller": "main",
+          "callee": "_run_seed",
+          "lineNumber": 96
+        },
+        {
+          "caller": "main",
+          "callee": "logger.error",
+          "lineNumber": 98
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 99
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 101
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/seed/catalog.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 296,
+      "nonEmptyLines": 246,
+      "functions": [
+        {
+          "name": "_get_default_dataset_path",
+          "startLine": 29,
+          "endLine": 36,
+          "params": []
+        },
+        {
+          "name": "_safe_float",
+          "startLine": 39,
+          "endLine": 49,
+          "params": [
+            "value",
+            "default"
+          ]
+        },
+        {
+          "name": "_safe_str",
+          "startLine": 52,
+          "endLine": 56,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "_generate_product_id",
+          "startLine": 59,
+          "endLine": 62,
+          "params": [
+            "index",
+            "name"
+          ]
+        },
+        {
+          "name": "_parse_unit_from_name",
+          "startLine": 65,
+          "endLine": 74,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "_build_tags",
+          "startLine": 77,
+          "endLine": 83,
+          "params": [
+            "category",
+            "sub_category"
+          ]
+        },
+        {
+          "name": "_random_rating",
+          "startLine": 179,
+          "endLine": 182,
+          "params": [
+            "seed"
+          ]
+        },
+        {
+          "name": "_random_description",
+          "startLine": 185,
+          "endLine": 189,
+          "params": [
+            "seed",
+            "category"
+          ]
+        },
+        {
+          "name": "load_catalog",
+          "startLine": 192,
+          "endLine": 272,
+          "params": [
+            "dataset_path"
+          ]
+        },
+        {
+          "name": "_read_csv",
+          "startLine": 275,
+          "endLine": 283,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "_read_xlsx",
+          "startLine": 286,
+          "endLine": 296,
+          "params": [
+            "path"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_get_default_dataset_path",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "_safe_float",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "_safe_str",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "_generate_product_id",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "_parse_unit_from_name",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "_build_tags",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "_random_rating",
+          "line": 179,
+          "isDefault": false
+        },
+        {
+          "name": "_random_description",
+          "line": 185,
+          "isDefault": false
+        },
+        {
+          "name": "load_catalog",
+          "line": 192,
+          "isDefault": false
+        },
+        {
+          "name": "_read_csv",
+          "line": 275,
+          "isDefault": false
+        },
+        {
+          "name": "_read_xlsx",
+          "line": 286,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_get_default_dataset_path",
+          "callee": "_DEFAULT_CSV_PATH.exists",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_get_default_dataset_path",
+          "callee": "_DEFAULT_XLSX_PATH.exists",
+          "lineNumber": 33
+        },
+        {
+          "caller": "_safe_float",
+          "callee": "str(value).strip",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_safe_float",
+          "callee": "str",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_safe_float",
+          "callee": "float",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_safe_str",
+          "callee": "str(value).strip",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_safe_str",
+          "callee": "str",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_generate_product_id",
+          "callee": "hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_generate_product_id",
+          "callee": "hashlib.md5",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_generate_product_id",
+          "callee": "raw.encode",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_parse_unit_from_name",
+          "callee": "re.search",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_parse_unit_from_name",
+          "callee": "match.group",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_parse_unit_from_name",
+          "callee": "match.group(2).lower",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_parse_unit_from_name",
+          "callee": "match.group",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_build_tags",
+          "callee": "tags.append",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_build_tags",
+          "callee": "val.lower",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_random_rating",
+          "callee": "random.Random",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_random_rating",
+          "callee": "rng.choice",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_random_description",
+          "callee": "random.Random",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_random_description",
+          "callee": "_DESCRIPTIONS.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_random_description",
+          "callee": "category.lower",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_random_description",
+          "callee": "rng.choice",
+          "lineNumber": 189
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "Path",
+          "lineNumber": 204
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_get_default_dataset_path",
+          "lineNumber": 204
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "path.exists",
+          "lineNumber": 206
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "FileNotFoundError",
+          "lineNumber": 207
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "logger.info",
+          "lineNumber": 209
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "path.suffix.lower",
+          "lineNumber": 211
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_read_csv",
+          "lineNumber": 212
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_read_xlsx",
+          "lineNumber": 214
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "enumerate",
+          "lineNumber": 219
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 220
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "int",
+          "lineNumber": 228
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_generate_product_id",
+          "lineNumber": 232
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 234
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 235
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 236
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 237
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_str",
+          "lineNumber": 238
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "len",
+          "lineNumber": 238
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_float",
+          "lineNumber": 240
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_safe_float",
+          "lineNumber": 241
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_parse_unit_from_name",
+          "lineNumber": 244
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_build_tags",
+          "lineNumber": 246
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "Product",
+          "lineNumber": 248
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_random_rating",
+          "lineNumber": 257
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "_random_description",
+          "lineNumber": 263
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "products.append",
+          "lineNumber": 265
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "logger.info",
+          "lineNumber": 267
+        },
+        {
+          "caller": "load_catalog",
+          "callee": "len",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_read_csv",
+          "callee": "open",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_read_csv",
+          "callee": "csv.reader",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_read_csv",
+          "callee": "next",
+          "lineNumber": 280
+        },
+        {
+          "caller": "_read_csv",
+          "callee": "rows.append",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_read_xlsx",
+          "callee": "openpyxl.load_workbook",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_read_xlsx",
+          "callee": "ws.iter_rows",
+          "lineNumber": 293
+        },
+        {
+          "caller": "_read_xlsx",
+          "callee": "rows.append",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_read_xlsx",
+          "callee": "list",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_read_xlsx",
+          "callee": "wb.close",
+          "lineNumber": 295
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 11,
+        "functionCount": 11,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/seed/mock_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 341,
+      "nonEmptyLines": 324,
+      "functions": [
+        {
+          "name": "_recent_date",
+          "startLine": 13,
+          "endLine": 15,
+          "params": [
+            "days_ago"
+          ]
+        },
+        {
+          "name": "create_mock_users",
+          "startLine": 18,
+          "endLine": 64,
+          "params": []
+        },
+        {
+          "name": "create_mock_orders",
+          "startLine": 67,
+          "endLine": 341,
+          "params": [
+            "product_ids"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_recent_date",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "create_mock_users",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "create_mock_orders",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_recent_date",
+          "callee": "(datetime.now() - timedelta(days=days_ago)).strftime",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_recent_date",
+          "callee": "datetime.now",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_recent_date",
+          "callee": "timedelta",
+          "lineNumber": 15
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 27
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 33
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 39
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 45
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 51
+        },
+        {
+          "caller": "create_mock_users",
+          "callee": "User",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_pid",
+          "callee": "len",
+          "lineNumber": 83
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 90
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 93
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 95
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 96
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 97
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 98
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 99
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 104
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 109
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 110
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 111
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 112
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 113
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 118
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 121
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 123
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 124
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 125
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 126
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 127
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 128
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 133
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 136
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 138
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 139
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 140
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 141
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 142
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 143
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 148
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 151
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 153
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 154
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 155
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 156
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 157
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 166
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 169
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 171
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 172
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 173
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 178
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 181
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 183
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 184
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 185
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 186
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 191
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 194
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 196
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 197
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 198
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 199
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 204
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 207
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 209
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 210
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 211
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 220
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 223
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 225
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 226
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 227
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 228
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 233
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 236
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 238
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 239
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 240
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 241
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 246
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 249
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 251
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 252
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 253
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 254
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 263
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 266
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 268
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 269
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 274
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 277
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 279
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 280
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 281
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 282
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 287
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 290
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 292
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 293
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 302
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 305
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 307
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 308
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 309
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 310
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 315
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 318
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 320
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 321
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 322
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 323
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "Order",
+          "lineNumber": 328
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_recent_date",
+          "lineNumber": 331
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 333
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 334
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 335
+        },
+        {
+          "caller": "create_mock_orders",
+          "callee": "_pid",
+          "lineNumber": 336
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/seed/seed_dynamodb.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "seed_dynamodb",
+          "startLine": 28,
+          "endLine": 72,
+          "params": [
+            "force"
+          ]
+        },
+        {
+          "name": "is_dynamodb_seeded",
+          "startLine": 75,
+          "endLine": 83,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_dynamodb",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "is_dynamodb_seeded",
+          "line": 75,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_dynamodb",
+          "callee": "DynamoDBRepository",
+          "lineNumber": 34
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "repo.create_tables_if_not_exist",
+          "lineNumber": 35
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "repo.list_products",
+          "lineNumber": 39
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 41
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "len",
+          "lineNumber": 41
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 45
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "load_catalog",
+          "lineNumber": 46
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "get_override_product_ids",
+          "lineNumber": 49
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "set",
+          "lineNumber": 50
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 56
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "len",
+          "lineNumber": 56
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "repo.bulk_upsert_products",
+          "lineNumber": 57
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 58
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "create_mock_users",
+          "lineNumber": 61
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "repo.upsert_user",
+          "lineNumber": 63
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 64
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "len",
+          "lineNumber": 64
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "create_mock_orders",
+          "lineNumber": 67
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "repo.upsert_order",
+          "lineNumber": 69
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 70
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "len",
+          "lineNumber": 70
+        },
+        {
+          "caller": "seed_dynamodb",
+          "callee": "logger.info",
+          "lineNumber": 72
+        },
+        {
+          "caller": "is_dynamodb_seeded",
+          "callee": "DynamoDBRepository",
+          "lineNumber": 78
+        },
+        {
+          "caller": "is_dynamodb_seeded",
+          "callee": "repo.create_tables_if_not_exist",
+          "lineNumber": 79
+        },
+        {
+          "caller": "is_dynamodb_seeded",
+          "callee": "repo.list_products",
+          "lineNumber": 80
+        },
+        {
+          "caller": "is_dynamodb_seeded",
+          "callee": "len",
+          "lineNumber": 81
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server/app/seed/stock_overrides.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "get_override_product_ids",
+          "startLine": 28,
+          "endLine": 41,
+          "params": [
+            "all_product_ids"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_override_product_ids",
+          "line": 28,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_override_product_ids",
+          "callee": "len",
+          "lineNumber": 39
+        },
+        {
+          "caller": "get_override_product_ids",
+          "callee": "override_ids.append",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

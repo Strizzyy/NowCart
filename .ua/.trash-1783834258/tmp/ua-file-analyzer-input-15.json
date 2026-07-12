@@ -1,0 +1,184 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {
+      "path": ".claude/settings.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/specs/user-authentication/.config.kiro",
+      "language": "kiro",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".kiro/specs/user-authentication/requirements.md",
+      "language": "markdown",
+      "sizeLines": 128,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/capacitor.config.ts",
+      "language": "typescript",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/eslint.config.js",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/gen-icons.mjs",
+      "language": "javascript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/nginx.conf",
+      "language": "conf",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/api/schema.d.ts",
+      "language": "typescript",
+      "sizeLines": 868,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ui/Button.tsx",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/ui/cn.ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/index.css",
+      "language": "css",
+      "sizeLines": 140,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "client/src/pages/SosPage.tsx",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Card.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/ui/Chip.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/add_5000_more.py",
+      "language": "python",
+      "sizeLines": 231,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/check_cors.py",
+      "language": "python",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/check_page2.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/create_verified_csv.py",
+      "language": "python",
+      "sizeLines": 213,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/find_placeholders.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/fix_placeholders.py",
+      "language": "python",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/async_jobs/__init__.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/async_jobs/lambda_handlers.py",
+      "language": "python",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    ".claude/settings.json": [],
+    ".kiro/specs/user-authentication/.config.kiro": [],
+    ".kiro/specs/user-authentication/requirements.md": [],
+    ".ua/.understandignore": [],
+    "client/capacitor.config.ts": [],
+    "client/eslint.config.js": [],
+    "client/gen-icons.mjs": [],
+    "client/nginx.conf": [],
+    "client/src/api/schema.d.ts": [],
+    "client/src/components/ui/Button.tsx": [
+      "client/src/components/ui/cn.ts"
+    ],
+    "client/src/components/ui/cn.ts": [],
+    "client/src/index.css": [],
+    "client/src/pages/SosPage.tsx": [],
+    "client/src/ui/Card.tsx": [],
+    "client/src/ui/Chip.tsx": [],
+    "client/vite.config.ts": [],
+    "scripts/add_5000_more.py": [],
+    "scripts/check_cors.py": [],
+    "scripts/check_page2.py": [],
+    "scripts/create_verified_csv.py": [],
+    "scripts/find_placeholders.py": [],
+    "scripts/fix_placeholders.py": [],
+    "server/app/__init__.py": [],
+    "server/app/async_jobs/__init__.py": [],
+    "server/app/async_jobs/lambda_handlers.py": []
+  }
+}

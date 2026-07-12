@@ -1,0 +1,7 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {"path": "server/Dockerfile", "language": "dockerfile", "sizeLines": 54, "fileCategory": "infra"}
+  ],
+  "batchImportData": {"server/Dockerfile": []}
+}

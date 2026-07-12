@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "id": "document:.kiro/specs/nowcart/requirements.md",
+      "type": "document",
+      "name": "requirements.md",
+      "filePath": ".kiro/specs/nowcart/requirements.md",
+      "summary": "Kiro spec-driven requirements document for NowCart defining 10 numbered requirements (Outcome Engine, Voice-to-Order, Constraint-First Ordering, Show It/Share It, Comparison Collapse & Confidence Score, Substitution Intelligence, SOS/Emergency Mode, Catalog & Data, Architecture/Scaling/Cost, and Frontend Revamp & Backend Sync) each with acceptance criteria, plus an introduction and glossary.",
+      "tags": ["documentation", "requirements", "spec-driven-development", "planning"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.kiro/specs/nowcart/design.md",
+      "type": "document",
+      "name": "design.md",
+      "filePath": ".kiro/specs/nowcart/design.md",
+      "summary": "Architecture and design document for NowCart describing the layered backend (controllers/middleware/services/agents/repositories/llm/models), the LangGraph Outcome Engine node pipeline, REST API surface, data models (Product/Cart/Need), storage layout (DynamoDB/Redis), error handling, privacy/scaling strategy, and seven correctness properties that the implementation must satisfy.",
+      "tags": ["documentation", "architecture", "spec-driven-development", "design"],
+      "complexity": "moderate",
+      "languageNotes": "Documents an intent-capture engine where multiple input front doors (voice/text/budget/photo/share-link) normalize into a shared AgentState and flow through a LangGraph multi-agent pipeline (intent -> decompose -> match -> optimize -> substitute -> confidence -> HITL)."
+    },
+    {
+      "id": "document:.kiro/specs/nowcart/tasks.md",
+      "type": "document",
+      "name": "tasks.md",
+      "filePath": ".kiro/specs/nowcart/tasks.md",
+      "summary": "Implementation plan for NowCart breaking work into 9 dependency-ordered waves (foundation/LLM providers, data layer + seed, catalog matching, LangGraph Outcome Engine, supporting services, REST API + middleware, React/Vite/TS frontend, frontend revamp & backend sync, verify + deploy), with per-task verification steps and completion checkboxes.",
+      "tags": ["documentation", "planning", "spec-driven-development", "task-tracking"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:.kiro/specs/nowcart/requirements.md",
+      "target": "document:.kiro/specs/nowcart/design.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:.kiro/specs/nowcart/design.md",
+      "target": "document:.kiro/specs/nowcart/tasks.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:.kiro/specs/nowcart/tasks.md",
+      "target": "document:.kiro/specs/nowcart/requirements.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

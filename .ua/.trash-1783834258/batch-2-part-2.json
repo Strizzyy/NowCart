@@ -1,0 +1,497 @@
+{
+  "nodes": [
+    {
+      "id": "file:server/app/controllers/voice.py",
+      "type": "file",
+      "name": "voice.py",
+      "filePath": "server/app/controllers/voice.py",
+      "summary": "FastAPI endpoint that handles voice transcript intents (or runs in demo mode) and routes them through OutcomeService to produce a cart.",
+      "tags": ["api-handler", "controller", "voice", "demo-mode"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/models/domain/cart.py",
+      "type": "file",
+      "name": "cart.py",
+      "filePath": "server/app/models/domain/cart.py",
+      "summary": "Domain models for Cart, CartItem, and Substitution representing the core shopping cart entity manipulated throughout the outcome pipeline.",
+      "tags": ["data-model", "domain", "cart"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/models/domain/enums.py",
+      "type": "file",
+      "name": "enums.py",
+      "filePath": "server/app/models/domain/enums.py",
+      "summary": "Defines core domain enumerations IntentMode and NeedStatus used to classify user intent and need resolution state.",
+      "tags": ["data-model", "enum", "type-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/models/domain/need.py",
+      "type": "file",
+      "name": "need.py",
+      "filePath": "server/app/models/domain/need.py",
+      "summary": "Domain model representing a single decomposed shopping need (name, quantity, unit, matched product) produced by the decompose node.",
+      "tags": ["data-model", "domain"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/models/dto/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/models/dto/__init__.py",
+      "summary": "Package init that re-exports request and response DTO classes for use by controllers.",
+      "tags": ["entry-point", "barrel", "data-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/models/dto/requests.py",
+      "type": "file",
+      "name": "requests.py",
+      "filePath": "server/app/models/dto/requests.py",
+      "summary": "Pydantic request DTOs (OutcomeRequest, VoiceIntentRequest, ConstraintRequest, ShareRequest, CartOpRequest, SosRequest, StockOverrideRequest) defining the API's inbound payload contracts.",
+      "tags": ["data-model", "validation", "api-schema", "dto"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/models/dto/responses.py",
+      "type": "file",
+      "name": "responses.py",
+      "filePath": "server/app/models/dto/responses.py",
+      "summary": "Pydantic response DTOs (HealthResponse, ProductResponse, CartResponse, etc.) with from_domain factory methods converting domain models into API-facing shapes.",
+      "tags": ["data-model", "serialization", "api-schema", "dto"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/services/budget_service.py",
+      "type": "file",
+      "name": "budget_service.py",
+      "filePath": "server/app/services/budget_service.py",
+      "summary": "Service that builds and trims a shopping cart to fit within a user-specified budget by iteratively dropping lowest-priority items.",
+      "tags": ["service", "business-logic", "budget"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/services/outcome_service.py",
+      "type": "file",
+      "name": "outcome_service.py",
+      "filePath": "server/app/services/outcome_service.py",
+      "summary": "Central orchestration service that injects user context (profile, preferences, recent orders) and invokes the LangGraph outcome graph to turn intent into a cart; also supports feedback-driven replanning.",
+      "tags": ["service", "business-logic", "orchestration", "outcome-engine"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:server/app/services/share_service.py",
+      "type": "file",
+      "name": "share_service.py",
+      "filePath": "server/app/services/share_service.py",
+      "summary": "Service that fetches and parses shared URLs or text (stripping HTML) and uses an LLM to extract shopping intent, then delegates to OutcomeService to build a cart.",
+      "tags": ["service", "business-logic", "llm", "share", "web-scraping"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:server/app/services/vision_service.py",
+      "type": "file",
+      "name": "vision_service.py",
+      "filePath": "server/app/services/vision_service.py",
+      "summary": "Service that sends an uploaded image to a vision LLM provider to extract grocery items and quantities, then builds a cart via OutcomeService.",
+      "tags": ["service", "business-logic", "llm", "vision"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/voice.py:_build_demo_cart",
+      "type": "function",
+      "name": "_build_demo_cart",
+      "filePath": "server/app/controllers/voice.py",
+      "lineRange": [25, 177],
+      "summary": "Builds a hardcoded demo cart used when voice intent processing runs in demo mode.",
+      "tags": ["demo-mode", "fixture", "voice"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/controllers/voice.py:voice_intent",
+      "type": "function",
+      "name": "voice_intent",
+      "filePath": "server/app/controllers/voice.py",
+      "lineRange": [186, 209],
+      "summary": "Endpoint that processes a voice transcript (or demo query) and returns a cart via OutcomeService.",
+      "tags": ["api-handler", "voice"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/models/domain/cart.py:Substitution",
+      "type": "class",
+      "name": "Substitution",
+      "filePath": "server/app/models/domain/cart.py",
+      "lineRange": [7, 14],
+      "summary": "Domain model recording a single product substitution with original and replacement product details and the reason for the swap.",
+      "tags": ["data-model", "domain", "substitution"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/domain/cart.py:CartItem",
+      "type": "class",
+      "name": "CartItem",
+      "filePath": "server/app/models/domain/cart.py",
+      "lineRange": [17, 40],
+      "summary": "Domain model for a single cart line item including price, quantity, confidence, and substitution/out-of-stock metadata, with a computed line_total.",
+      "tags": ["data-model", "domain", "cart"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/domain/cart.py:Cart",
+      "type": "class",
+      "name": "Cart",
+      "filePath": "server/app/models/domain/cart.py",
+      "lineRange": [43, 70],
+      "summary": "Domain model for the full shopping cart including items, economical alternatives, totals, budget/shortfall tracking, and reasoning trail, with a recompute_total method.",
+      "tags": ["data-model", "domain", "cart"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/models/domain/enums.py:IntentMode",
+      "type": "class",
+      "name": "IntentMode",
+      "filePath": "server/app/models/domain/enums.py",
+      "lineRange": [5, 15],
+      "summary": "Enumeration of supported intent modes (e.g., quick-restock, dinner-party) used to steer decomposition and matching behavior.",
+      "tags": ["data-model", "enum"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/domain/enums.py:NeedStatus",
+      "type": "class",
+      "name": "NeedStatus",
+      "filePath": "server/app/models/domain/enums.py",
+      "lineRange": [18, 25],
+      "summary": "Enumeration of resolution states for a decomposed need (e.g., matched, unmatched, clarification-needed).",
+      "tags": ["data-model", "enum"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/domain/need.py:Need",
+      "type": "class",
+      "name": "Need",
+      "filePath": "server/app/models/domain/need.py",
+      "lineRange": [7, 20],
+      "summary": "Domain model representing a single decomposed shopping need with name, quantity, unit, category hint, and matched product id.",
+      "tags": ["data-model", "domain"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:OutcomeRequest",
+      "type": "class",
+      "name": "OutcomeRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [5, 11],
+      "summary": "Request payload for submitting free-text or structured intent to the outcome engine.",
+      "tags": ["dto", "validation", "api-schema"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:VoiceIntentRequest",
+      "type": "class",
+      "name": "VoiceIntentRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [14, 18],
+      "summary": "Request payload carrying a voice transcript and session id.",
+      "tags": ["dto", "validation", "voice"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:ConstraintRequest",
+      "type": "class",
+      "name": "ConstraintRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [21, 27],
+      "summary": "Request payload for budget-constrained cart building (budget, servings, text).",
+      "tags": ["dto", "validation", "budget"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:ShareRequest",
+      "type": "class",
+      "name": "ShareRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [30, 35],
+      "summary": "Request payload for parsing shared URL or text content into a cart.",
+      "tags": ["dto", "validation", "share"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:CartOpRequest",
+      "type": "class",
+      "name": "CartOpRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [38, 44],
+      "summary": "Request payload for cart mutation operations (op, entity, quantity).",
+      "tags": ["dto", "validation", "cart"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:SosRequest",
+      "type": "class",
+      "name": "SosRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [47, 51],
+      "summary": "Request payload for emergency/SOS situation requests.",
+      "tags": ["dto", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/requests.py:StockOverrideRequest",
+      "type": "class",
+      "name": "StockOverrideRequest",
+      "filePath": "server/app/models/dto/requests.py",
+      "lineRange": [54, 58],
+      "summary": "Request payload for admin stock override operations on a product.",
+      "tags": ["dto", "validation", "admin"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/responses.py:ProductResponse",
+      "type": "class",
+      "name": "ProductResponse",
+      "filePath": "server/app/models/dto/responses.py",
+      "lineRange": [34, 69],
+      "summary": "Response DTO exposing catalog product fields with a from_domain factory converting the Product domain model.",
+      "tags": ["dto", "serialization", "api-schema"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/models/dto/responses.py:SubstitutionResponse",
+      "type": "class",
+      "name": "SubstitutionResponse",
+      "filePath": "server/app/models/dto/responses.py",
+      "lineRange": [72, 81],
+      "summary": "Response DTO for a product substitution with a from_domain factory.",
+      "tags": ["dto", "serialization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/responses.py:CartItemResponse",
+      "type": "class",
+      "name": "CartItemResponse",
+      "filePath": "server/app/models/dto/responses.py",
+      "lineRange": [84, 117],
+      "summary": "Response DTO for a single cart line item with a from_domain factory.",
+      "tags": ["dto", "serialization", "cart"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/models/dto/responses.py:CartResponse",
+      "type": "class",
+      "name": "CartResponse",
+      "filePath": "server/app/models/dto/responses.py",
+      "lineRange": [120, 162],
+      "summary": "Top-level response DTO for a full cart, assembling items, substitutions, and totals via from_domain.",
+      "tags": ["dto", "serialization", "cart"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:server/app/services/budget_service.py:BudgetService",
+      "type": "class",
+      "name": "BudgetService",
+      "filePath": "server/app/services/budget_service.py",
+      "lineRange": [15, 100],
+      "summary": "Encapsulates budget-constrained cart building, iteratively trimming lowest-priority items until the cart fits the budget.",
+      "tags": ["service", "business-logic", "budget"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/services/budget_service.py:get_budget_service",
+      "type": "function",
+      "name": "get_budget_service",
+      "filePath": "server/app/services/budget_service.py",
+      "lineRange": [106, 111],
+      "summary": "Factory/singleton accessor returning a shared BudgetService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/services/outcome_service.py:OutcomeService",
+      "type": "class",
+      "name": "OutcomeService",
+      "filePath": "server/app/services/outcome_service.py",
+      "lineRange": [35, 260],
+      "summary": "Orchestrates the full outcome pipeline: injects user context, invokes the LangGraph outcome graph, handles errors, caches the resulting cart, and supports feedback-driven replanning.",
+      "tags": ["service", "orchestration", "outcome-engine"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:server/app/services/outcome_service.py:get_outcome_service",
+      "type": "function",
+      "name": "get_outcome_service",
+      "filePath": "server/app/services/outcome_service.py",
+      "lineRange": [264, 266],
+      "summary": "Factory/singleton accessor returning a shared OutcomeService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/services/share_service.py:_extract_text_from_html",
+      "type": "function",
+      "name": "_extract_text_from_html",
+      "filePath": "server/app/services/share_service.py",
+      "lineRange": [38, 55],
+      "summary": "Strips HTML tags/scripts/styles and decodes common entities to produce plain text for LLM parsing.",
+      "tags": ["utility", "html-parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:server/app/services/share_service.py:_fetch_url_content",
+      "type": "function",
+      "name": "_fetch_url_content",
+      "filePath": "server/app/services/share_service.py",
+      "lineRange": [58, 77],
+      "summary": "Fetches a shared URL over HTTP and extracts readable text content for downstream LLM parsing.",
+      "tags": ["utility", "http", "web-scraping"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/services/share_service.py:ShareService",
+      "type": "class",
+      "name": "ShareService",
+      "filePath": "server/app/services/share_service.py",
+      "lineRange": [80, 157],
+      "summary": "Parses shared URLs or text using an LLM to extract shopping intent, then delegates to OutcomeService to build a cart.",
+      "tags": ["service", "llm", "share"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/services/share_service.py:get_share_service",
+      "type": "function",
+      "name": "get_share_service",
+      "filePath": "server/app/services/share_service.py",
+      "lineRange": [163, 168],
+      "summary": "Factory/singleton accessor returning a shared ShareService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:server/app/services/vision_service.py:VisionService",
+      "type": "class",
+      "name": "VisionService",
+      "filePath": "server/app/services/vision_service.py",
+      "lineRange": [19, 106],
+      "summary": "Sends an uploaded image to a vision LLM provider to extract grocery items and quantities, then builds a cart via OutcomeService.",
+      "tags": ["service", "llm", "vision"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/services/vision_service.py:get_vision_service",
+      "type": "function",
+      "name": "get_vision_service",
+      "filePath": "server/app/services/vision_service.py",
+      "lineRange": [112, 117],
+      "summary": "Factory/singleton accessor returning a shared VisionService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    { "source": "file:server/app/controllers/voice.py", "target": "function:server/app/controllers/voice.py:_build_demo_cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/controllers/voice.py", "target": "function:server/app/controllers/voice.py:voice_intent", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:Substitution", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:CartItem", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:Cart", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/enums.py", "target": "class:server/app/models/domain/enums.py:IntentMode", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/enums.py", "target": "class:server/app/models/domain/enums.py:NeedStatus", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/domain/need.py", "target": "class:server/app/models/domain/need.py:Need", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:OutcomeRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:VoiceIntentRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:ConstraintRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:ShareRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:CartOpRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:SosRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:StockOverrideRequest", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:ProductResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:SubstitutionResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:CartItemResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:CartResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/budget_service.py", "target": "class:server/app/services/budget_service.py:BudgetService", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/budget_service.py", "target": "function:server/app/services/budget_service.py:get_budget_service", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "class:server/app/services/outcome_service.py:OutcomeService", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/share_service.py", "target": "function:server/app/services/share_service.py:_extract_text_from_html", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/share_service.py", "target": "function:server/app/services/share_service.py:_fetch_url_content", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/share_service.py", "target": "class:server/app/services/share_service.py:ShareService", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/share_service.py", "target": "function:server/app/services/share_service.py:get_share_service", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/vision_service.py", "target": "class:server/app/services/vision_service.py:VisionService", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:server/app/services/vision_service.py", "target": "function:server/app/services/vision_service.py:get_vision_service", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:server/app/controllers/voice.py", "target": "function:server/app/controllers/voice.py:voice_intent", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:Substitution", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:CartItem", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/cart.py", "target": "class:server/app/models/domain/cart.py:Cart", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/enums.py", "target": "class:server/app/models/domain/enums.py:IntentMode", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/enums.py", "target": "class:server/app/models/domain/enums.py:NeedStatus", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/domain/need.py", "target": "class:server/app/models/domain/need.py:Need", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:OutcomeRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:VoiceIntentRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:ConstraintRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:ShareRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:CartOpRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:SosRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/requests.py", "target": "class:server/app/models/dto/requests.py:StockOverrideRequest", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:ProductResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:SubstitutionResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:CartItemResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "class:server/app/models/dto/responses.py:CartResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/budget_service.py", "target": "class:server/app/services/budget_service.py:BudgetService", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/budget_service.py", "target": "function:server/app/services/budget_service.py:get_budget_service", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "class:server/app/services/outcome_service.py:OutcomeService", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/share_service.py", "target": "class:server/app/services/share_service.py:ShareService", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/share_service.py", "target": "function:server/app/services/share_service.py:get_share_service", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/vision_service.py", "target": "class:server/app/services/vision_service.py:VisionService", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:server/app/services/vision_service.py", "target": "function:server/app/services/vision_service.py:get_vision_service", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/repositories/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/controllers/voice.py", "target": "file:server/app/services/outcome_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/models/domain/cart.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/models/domain/need.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/models/dto/__init__.py", "target": "file:server/app/models/dto/requests.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/models/dto/__init__.py", "target": "file:server/app/models/dto/responses.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/models/dto/responses.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/models/dto/responses.py", "target": "file:server/app/models/domain/product.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/services/budget_service.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/budget_service.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/budget_service.py", "target": "file:server/app/services/outcome_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/services/outcome_service.py", "target": "file:server/app/agents/graph.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "file:server/app/agents/state.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/outcome_service.py", "target": "file:server/app/repositories/__init__.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/services/share_service.py", "target": "file:server/app/llm/factory.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/share_service.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/share_service.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/share_service.py", "target": "file:server/app/services/outcome_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:server/app/services/vision_service.py", "target": "file:server/app/llm/factory.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/vision_service.py", "target": "file:server/app/models/domain/cart.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/vision_service.py", "target": "file:server/app/models/domain/enums.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:server/app/services/vision_service.py", "target": "file:server/app/services/outcome_service.py", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "function:server/app/controllers/voice.py:voice_intent", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:server/app/controllers/voice.py:voice_intent", "target": "function:server/app/repositories/__init__.py:get_cache", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/budget_service.py:BudgetService", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/outcome_service.py:OutcomeService", "target": "function:server/app/repositories/__init__.py:get_repository", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/share_service.py:ShareService", "target": "function:server/app/llm/factory.py:get_text_provider", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/share_service.py:ShareService", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/vision_service.py:VisionService", "target": "function:server/app/llm/factory.py:get_vision_provider", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "class:server/app/services/vision_service.py:VisionService", "target": "function:server/app/services/outcome_service.py:get_outcome_service", "type": "calls", "direction": "forward", "weight": 0.8 }
+  ]
+}

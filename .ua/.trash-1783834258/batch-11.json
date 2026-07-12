@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    {
+      "id": "pipeline:.github/workflows/deploy.yml",
+      "type": "pipeline",
+      "name": "deploy.yml",
+      "filePath": ".github/workflows/deploy.yml",
+      "summary": "GitHub Actions CI/CD workflow that deploys NowCart on every push to master: builds the Vite frontend and syncs it to S3 with CloudFront cache invalidation, then SSHes into the EC2 host to write the production .env, git pull the backend, and restart the systemd nowcart service.",
+      "tags": ["ci-cd", "deployment", "infrastructure", "automation"],
+      "complexity": "moderate",
+      "languageNotes": "Two-job GitHub Actions pipeline with a `needs` dependency ensuring the backend job only runs after the frontend deploy succeeds; secrets are injected via appleboy/ssh-action to write both an app-local .env and a systemd EnvironmentFile."
+    },
+    {
+      "id": "step:.github/workflows/deploy.yml:deploy-frontend",
+      "type": "resource",
+      "name": "deploy-frontend",
+      "filePath": ".github/workflows/deploy.yml",
+      "lineRange": [10, 48],
+      "summary": "Job that checks out the code, installs and builds the client with npm, then syncs the built dist/ folder to the nowcart-frontend-strizzy S3 bucket and invalidates the CloudFront distribution cache.",
+      "tags": ["ci-cd", "frontend", "deployment", "aws"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "step:.github/workflows/deploy.yml:deploy-backend",
+      "type": "resource",
+      "name": "deploy-backend",
+      "filePath": ".github/workflows/deploy.yml",
+      "lineRange": [51, 100],
+      "summary": "Job that runs after deploy-frontend succeeds; SSHes into the production EC2 instance to write environment secrets to /opt/nowcart/server/.env and /etc/nowcart.env, then git pulls the latest master branch and restarts the nowcart systemd service.",
+      "tags": ["ci-cd", "backend", "deployment", "ssh", "systemd"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "pipeline:.github/workflows/deploy.yml",
+      "target": "step:.github/workflows/deploy.yml:deploy-frontend",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "pipeline:.github/workflows/deploy.yml",
+      "target": "step:.github/workflows/deploy.yml:deploy-backend",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "step:.github/workflows/deploy.yml:deploy-frontend",
+      "target": "step:.github/workflows/deploy.yml:deploy-backend",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "pipeline:.github/workflows/deploy.yml",
+      "target": "config:client/package.json",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "pipeline:.github/workflows/deploy.yml",
+      "target": "file:server/app/main.py",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

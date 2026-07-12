@@ -1,0 +1,34 @@
+{
+  "nodes": [
+    {
+      "id": "file:server/app/core/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/core/__init__.py",
+      "summary": "Empty package marker file that makes server/app/core a Python package for core cross-cutting concerns (config, settings, shared infrastructure).",
+      "tags": ["entry-point", "package-init", "empty"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/models/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/models/__init__.py",
+      "summary": "Package marker for server/app/models with a docstring documenting the two subpackages — `domain` for internal models (e.g. Cart, Product) and `dto` for wire contracts (e.g. CartResponse, OutcomeRequest) — instructing consumers to import directly from the subpackages rather than this barrel.",
+      "tags": ["entry-point", "package-init", "data-model", "documentation"],
+      "complexity": "simple",
+      "languageNotes": "Deliberately does not re-export symbols; the docstring directs callers to import from app.models.domain and app.models.dto directly, so this is not a barrel despite being an __init__.py."
+    },
+    {
+      "id": "config:server/pyproject.toml",
+      "type": "config",
+      "name": "pyproject.toml",
+      "filePath": "server/pyproject.toml",
+      "summary": "Python project configuration for the nowcart-server package, declaring dependencies (FastAPI, LangGraph, LangChain, Groq, Google Generative AI, boto3/aioboto3, Redis, sentence-transformers, rapidfuzz, httpx, orjson, tenacity), dev/test dependencies, pytest asyncio settings, and the hatchling build backend.",
+      "tags": ["configuration", "build-system", "dependencies", "python"],
+      "complexity": "moderate",
+      "languageNotes": "Uses hatchling as the build backend and pytest-asyncio in auto mode, reflecting the async FastAPI + LangGraph architecture; combines web framework, LLM/agent, and AWS/data dependencies in one manifest."
+    }
+  ],
+  "edges": []
+}

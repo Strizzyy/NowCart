@@ -1,0 +1,107 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 1,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "client/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra",
+      "totalLines": 34,
+      "nonEmptyLines": 23,
+      "services": [
+        {
+          "name": "builder",
+          "image": "node:20-alpine",
+          "ports": [],
+          "startLine": 5,
+          "endLine": 17
+        },
+        {
+          "name": "runtime",
+          "image": "nginx:alpine",
+          "ports": [
+            80
+          ],
+          "startLine": 18,
+          "endLine": 35
+        }
+      ],
+      "steps": [
+        {
+          "name": "FROM node:20-alpine AS builder",
+          "startLine": 5,
+          "endLine": 5
+        },
+        {
+          "name": "WORKDIR /app",
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "COPY package.json package-lock.json ./",
+          "startLine": 10,
+          "endLine": 10
+        },
+        {
+          "name": "RUN npm ci",
+          "startLine": 11,
+          "endLine": 11
+        },
+        {
+          "name": "COPY . .",
+          "startLine": 14,
+          "endLine": 14
+        },
+        {
+          "name": "RUN npm run build",
+          "startLine": 15,
+          "endLine": 15
+        },
+        {
+          "name": "FROM nginx:alpine AS runtime",
+          "startLine": 18,
+          "endLine": 18
+        },
+        {
+          "name": "RUN rm /etc/nginx/conf.d/default.conf",
+          "startLine": 21,
+          "endLine": 21
+        },
+        {
+          "name": "COPY nginx.conf /etc/nginx/conf.d/default.conf",
+          "startLine": 24,
+          "endLine": 24
+        },
+        {
+          "name": "COPY --from=builder /app/dist /usr/share/nginx/html",
+          "startLine": 27,
+          "endLine": 27
+        },
+        {
+          "name": "EXPOSE 80",
+          "startLine": 29,
+          "endLine": 29
+        },
+        {
+          "name": "HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\",
+          "startLine": 31,
+          "endLine": 31
+        },
+        {
+          "name": "CMD [\"nginx\", \"-g\", \"daemon off;\"]",
+          "startLine": 34,
+          "endLine": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 2,
+        "stepCount": 13
+      }
+    }
+  ]
+}

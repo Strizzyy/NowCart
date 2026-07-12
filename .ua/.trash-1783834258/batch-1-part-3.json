@@ -1,0 +1,817 @@
+{
+  "nodes": [
+    {
+      "id": "file:client/src/pages/LoginPage.tsx",
+      "type": "file",
+      "name": "LoginPage.tsx",
+      "filePath": "client/src/pages/LoginPage.tsx",
+      "summary": "Login and registration page handling user authentication against the backend auth API.",
+      "tags": [
+        "page",
+        "auth",
+        "form"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/LoginPage.tsx:LoginPage",
+      "type": "function",
+      "name": "LoginPage",
+      "filePath": "client/src/pages/LoginPage.tsx",
+      "lineRange": [
+        16,
+        304
+      ],
+      "summary": "Combined login/registration form page that authenticates against the auth API and stores the session user.",
+      "tags": [
+        "page",
+        "auth",
+        "form"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/OrderHistoryPage.tsx",
+      "type": "file",
+      "name": "OrderHistoryPage.tsx",
+      "filePath": "client/src/pages/OrderHistoryPage.tsx",
+      "summary": "Page listing a signed-in user's past orders fetched from the backend order-history API.",
+      "tags": [
+        "page",
+        "orders",
+        "history"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/pages/OrderHistoryPage.tsx:resolveUserId",
+      "type": "function",
+      "name": "resolveUserId",
+      "filePath": "client/src/pages/OrderHistoryPage.tsx",
+      "lineRange": [
+        13,
+        29
+      ],
+      "summary": "Derives a stable user id from the stored user object for order-history lookups.",
+      "tags": [
+        "utility",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/OrderHistoryPage.tsx:OrderHistoryPage",
+      "type": "function",
+      "name": "OrderHistoryPage",
+      "filePath": "client/src/pages/OrderHistoryPage.tsx",
+      "lineRange": [
+        31,
+        165
+      ],
+      "summary": "Fetches and renders a signed-in user's past orders.",
+      "tags": [
+        "page",
+        "orders"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/OrderSuccessPage.tsx",
+      "type": "file",
+      "name": "OrderSuccessPage.tsx",
+      "filePath": "client/src/pages/OrderSuccessPage.tsx",
+      "summary": "Post-checkout confirmation page summarizing the placed order, payment method and estimated delivery time.",
+      "tags": [
+        "page",
+        "checkout",
+        "confirmation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/pages/OrderSuccessPage.tsx:OrderSuccessPage",
+      "type": "function",
+      "name": "OrderSuccessPage",
+      "filePath": "client/src/pages/OrderSuccessPage.tsx",
+      "lineRange": [
+        32,
+        225
+      ],
+      "summary": "Post-checkout confirmation page summarizing the order, payment method and estimated delivery window.",
+      "tags": [
+        "page",
+        "checkout",
+        "confirmation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/PaymentPage.tsx",
+      "type": "file",
+      "name": "PaymentPage.tsx",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "summary": "Checkout page handling delivery address, payment method selection (UPI, cards, wallets) and order placement, with numerous small icon/row sub-components.",
+      "tags": [
+        "page",
+        "payment",
+        "checkout"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/PaymentPage.tsx:resolveUserId",
+      "type": "function",
+      "name": "resolveUserId",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "lineRange": [
+        20,
+        36
+      ],
+      "summary": "Derives a stable user id from the stored user object for placing the order.",
+      "tags": [
+        "utility",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/PaymentPage.tsx:methodLabel",
+      "type": "function",
+      "name": "methodLabel",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "lineRange": [
+        47,
+        58
+      ],
+      "summary": "Maps an internal payment method code to its human-readable display label.",
+      "tags": [
+        "utility",
+        "payment"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/PaymentPage.tsx:Row",
+      "type": "function",
+      "name": "Row",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "lineRange": [
+        61,
+        99
+      ],
+      "summary": "Small labeled key/value row component used in the order summary section.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/PaymentPage.tsx:QrIcon",
+      "type": "function",
+      "name": "QrIcon",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "lineRange": [
+        149,
+        160
+      ],
+      "summary": "Renders the QR-code payment method icon (inline SVG).",
+      "tags": [
+        "component",
+        "icon",
+        "payment"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/PaymentPage.tsx:PaymentPage",
+      "type": "function",
+      "name": "PaymentPage",
+      "filePath": "client/src/pages/PaymentPage.tsx",
+      "lineRange": [
+        204,
+        554
+      ],
+      "summary": "Checkout page managing delivery address, payment method selection and order placement against the backend.",
+      "tags": [
+        "page",
+        "payment",
+        "checkout"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/PrivacyPolicyPage.tsx",
+      "type": "file",
+      "name": "PrivacyPolicyPage.tsx",
+      "filePath": "client/src/pages/PrivacyPolicyPage.tsx",
+      "summary": "Static privacy policy legal page.",
+      "tags": [
+        "page",
+        "legal",
+        "static-content"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/PrivacyPolicyPage.tsx:PrivacyPolicyPage",
+      "type": "function",
+      "name": "PrivacyPolicyPage",
+      "filePath": "client/src/pages/PrivacyPolicyPage.tsx",
+      "lineRange": [
+        3,
+        92
+      ],
+      "summary": "Renders the static privacy policy legal page.",
+      "tags": [
+        "page",
+        "legal",
+        "static-content"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/ProductPage.tsx",
+      "type": "file",
+      "name": "ProductPage.tsx",
+      "filePath": "client/src/pages/ProductPage.tsx",
+      "summary": "Single product detail page with pricing, description and add/remove-from-cart actions.",
+      "tags": [
+        "page",
+        "product",
+        "detail"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/pages/ProductPage.tsx:ProductPage",
+      "type": "function",
+      "name": "ProductPage",
+      "filePath": "client/src/pages/ProductPage.tsx",
+      "lineRange": [
+        13,
+        234
+      ],
+      "summary": "Product detail page showing full product info with add/remove-from-cart controls.",
+      "tags": [
+        "page",
+        "product"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/SearchResultsPage.tsx",
+      "type": "file",
+      "name": "SearchResultsPage.tsx",
+      "filePath": "client/src/pages/SearchResultsPage.tsx",
+      "summary": "Search results page rendering products matching a catalog search query.",
+      "tags": [
+        "page",
+        "search",
+        "product-listing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/pages/SearchResultsPage.tsx:ProductResultCard",
+      "type": "function",
+      "name": "ProductResultCard",
+      "filePath": "client/src/pages/SearchResultsPage.tsx",
+      "lineRange": [
+        14,
+        109
+      ],
+      "summary": "Search-result variant of the product card, showing match relevance alongside standard product details.",
+      "tags": [
+        "component",
+        "search",
+        "product"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/SearchResultsPage.tsx:SearchResultsPage",
+      "type": "function",
+      "name": "SearchResultsPage",
+      "filePath": "client/src/pages/SearchResultsPage.tsx",
+      "lineRange": [
+        111,
+        213
+      ],
+      "summary": "Page rendering catalog search results for a query, including empty and loading states.",
+      "tags": [
+        "page",
+        "search"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/ShopPage.tsx",
+      "type": "file",
+      "name": "ShopPage.tsx",
+      "filePath": "client/src/pages/ShopPage.tsx",
+      "summary": "Category browsing page listing products with filtering by category and search term.",
+      "tags": [
+        "page",
+        "shop",
+        "product-listing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/ShopPage.tsx:ShopPage",
+      "type": "function",
+      "name": "ShopPage",
+      "filePath": "client/src/pages/ShopPage.tsx",
+      "lineRange": [
+        45,
+        302
+      ],
+      "summary": "Category browsing page listing and filtering products by category and search term.",
+      "tags": [
+        "page",
+        "shop",
+        "product-listing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/SubscriptionsPage.tsx",
+      "type": "file",
+      "name": "SubscriptionsPage.tsx",
+      "filePath": "client/src/pages/SubscriptionsPage.tsx",
+      "summary": "Page for managing recurring product subscriptions, including adding new subscriptions via brand search and adjusting frequency.",
+      "tags": [
+        "page",
+        "subscriptions",
+        "recurring"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/SubscriptionsPage.tsx:resolveUserId",
+      "type": "function",
+      "name": "resolveUserId",
+      "filePath": "client/src/pages/SubscriptionsPage.tsx",
+      "lineRange": [
+        27,
+        44
+      ],
+      "summary": "Derives a stable user id from the stored user object for subscription management calls.",
+      "tags": [
+        "utility",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/SubscriptionsPage.tsx:BrandPicker",
+      "type": "function",
+      "name": "BrandPicker",
+      "filePath": "client/src/pages/SubscriptionsPage.tsx",
+      "lineRange": [
+        58,
+        211
+      ],
+      "summary": "Debounced product/brand search picker used to add a new subscription from this page.",
+      "tags": [
+        "component",
+        "search",
+        "subscriptions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/pages/SubscriptionsPage.tsx:SubscriptionsPage",
+      "type": "function",
+      "name": "SubscriptionsPage",
+      "filePath": "client/src/pages/SubscriptionsPage.tsx",
+      "lineRange": [
+        214,
+        478
+      ],
+      "summary": "Page for viewing and managing all of a user's recurring subscriptions, including adding, removing and adjusting frequency.",
+      "tags": [
+        "page",
+        "subscriptions"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/pages/TermsPage.tsx",
+      "type": "file",
+      "name": "TermsPage.tsx",
+      "filePath": "client/src/pages/TermsPage.tsx",
+      "summary": "Static terms & conditions legal page.",
+      "tags": [
+        "page",
+        "legal",
+        "static-content"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/TermsPage.tsx:TermsPage",
+      "type": "function",
+      "name": "TermsPage",
+      "filePath": "client/src/pages/TermsPage.tsx",
+      "lineRange": [
+        3,
+        94
+      ],
+      "summary": "Renders the static terms & conditions legal page.",
+      "tags": [
+        "page",
+        "legal",
+        "static-content"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/ui/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "client/src/ui/index.ts",
+      "summary": "Barrel file re-exporting shared UI primitives (Button, Card, Chip, Panel, Spinner, EmptyState, ErrorState, Toast provider, animation helpers) used across the client.",
+      "tags": [
+        "barrel",
+        "ui-kit",
+        "design-system"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:client/src/pages/LoginPage.tsx",
+      "target": "function:client/src/pages/LoginPage.tsx:LoginPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/LoginPage.tsx",
+      "target": "function:client/src/pages/LoginPage.tsx:LoginPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/LoginPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/LoginPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/LoginPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "function:client/src/pages/OrderHistoryPage.tsx:resolveUserId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "function:client/src/pages/OrderHistoryPage.tsx:OrderHistoryPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "function:client/src/pages/OrderHistoryPage.tsx:OrderHistoryPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/OrderHistoryPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/OrderSuccessPage.tsx",
+      "target": "function:client/src/pages/OrderSuccessPage.tsx:OrderSuccessPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/OrderSuccessPage.tsx",
+      "target": "function:client/src/pages/OrderSuccessPage.tsx:OrderSuccessPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/OrderSuccessPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/OrderSuccessPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:resolveUserId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:methodLabel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:Row",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:QrIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:PaymentPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "function:client/src/pages/PaymentPage.tsx:PaymentPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "file:client/src/context/LocationContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/PaymentPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/PrivacyPolicyPage.tsx",
+      "target": "function:client/src/pages/PrivacyPolicyPage.tsx:PrivacyPolicyPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/PrivacyPolicyPage.tsx",
+      "target": "function:client/src/pages/PrivacyPolicyPage.tsx:PrivacyPolicyPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/ProductPage.tsx",
+      "target": "function:client/src/pages/ProductPage.tsx:ProductPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/ProductPage.tsx",
+      "target": "function:client/src/pages/ProductPage.tsx:ProductPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/ProductPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/ProductPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/ProductPage.tsx",
+      "target": "file:client/src/components/ProductCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "function:client/src/pages/SearchResultsPage.tsx:ProductResultCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "function:client/src/pages/SearchResultsPage.tsx:SearchResultsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "function:client/src/pages/SearchResultsPage.tsx:SearchResultsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "file:client/src/components/NowCartVerified.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SearchResultsPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/ShopPage.tsx",
+      "target": "function:client/src/pages/ShopPage.tsx:ShopPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/ShopPage.tsx",
+      "target": "function:client/src/pages/ShopPage.tsx:ShopPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/ShopPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/ShopPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/ShopPage.tsx",
+      "target": "file:client/src/components/ProductCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "function:client/src/pages/SubscriptionsPage.tsx:resolveUserId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "function:client/src/pages/SubscriptionsPage.tsx:BrandPicker",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "function:client/src/pages/SubscriptionsPage.tsx:SubscriptionsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "function:client/src/pages/SubscriptionsPage.tsx:SubscriptionsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/SubscriptionsPage.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/pages/TermsPage.tsx",
+      "target": "function:client/src/pages/TermsPage.tsx:TermsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/pages/TermsPage.tsx",
+      "target": "function:client/src/pages/TermsPage.tsx:TermsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

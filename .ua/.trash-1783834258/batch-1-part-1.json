@@ -1,0 +1,1783 @@
+{
+  "nodes": [
+    {
+      "id": "file:client/src/App.tsx",
+      "type": "file",
+      "name": "App.tsx",
+      "filePath": "client/src/App.tsx",
+      "summary": "Root React application component that sets up client-side routing, holds top-level user/cart state shared via context, and shows a location-permission prompt on load.",
+      "tags": [
+        "entry-point",
+        "routing",
+        "state-management",
+        "react"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/App.tsx:LocationPrompt",
+      "type": "function",
+      "name": "LocationPrompt",
+      "filePath": "client/src/App.tsx",
+      "lineRange": [
+        43,
+        113
+      ],
+      "summary": "Modal prompting the user to share their location, handling geolocation permission requests and timeout/error states.",
+      "tags": [
+        "component",
+        "geolocation",
+        "permission-prompt"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/App.tsx:App",
+      "type": "function",
+      "name": "App",
+      "filePath": "client/src/App.tsx",
+      "lineRange": [
+        121,
+        200
+      ],
+      "summary": "Top-level app shell wiring up React Router routes, cart/user state, and the header/footer/cart drawer layout.",
+      "tags": [
+        "entry-point",
+        "routing",
+        "layout"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/api/client.ts",
+      "type": "file",
+      "name": "client.ts",
+      "filePath": "client/src/api/client.ts",
+      "summary": "Central typed fetch wrapper exposing every backend API call used by the client, covering cart operations, catalog search, subscriptions, predictions, checkout and auth.",
+      "tags": [
+        "api-handler",
+        "utility",
+        "data-fetching",
+        "service"
+      ],
+      "complexity": "complex",
+      "languageNotes": "A single shared `request()` helper wraps fetch/JSON handling so each exported function stays a thin, typed one-liner."
+    },
+    {
+      "id": "function:client/src/api/client.ts:request",
+      "type": "function",
+      "name": "request",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        5,
+        15
+      ],
+      "summary": "Shared low-level fetch helper that issues an HTTP request against the API base URL and parses the JSON response.",
+      "tags": [
+        "utility",
+        "http",
+        "data-fetching"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postOutcome",
+      "type": "function",
+      "name": "postOutcome",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        77,
+        82
+      ],
+      "summary": "Submits free-text shopping intent to build a cart outcome.",
+      "tags": [
+        "api-handler",
+        "cart-builder"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postVoiceIntent",
+      "type": "function",
+      "name": "postVoiceIntent",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        84,
+        89
+      ],
+      "summary": "Submits a voice transcript to the intent API to build or update a cart.",
+      "tags": [
+        "api-handler",
+        "voice"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postVisionAnalyze",
+      "type": "function",
+      "name": "postVisionAnalyze",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        92,
+        106
+      ],
+      "summary": "Uploads an image (multipart form) plus optional text to the vision analysis endpoint to build a cart.",
+      "tags": [
+        "api-handler",
+        "vision"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postShareParse",
+      "type": "function",
+      "name": "postShareParse",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        109,
+        114
+      ],
+      "summary": "Submits a shared link or text to the share-parse endpoint to extract a cart.",
+      "tags": [
+        "api-handler",
+        "share"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postConstraint",
+      "type": "function",
+      "name": "postConstraint",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        116,
+        121
+      ],
+      "summary": "Submits budget, servings and optional text constraints to build a budget-aware cart.",
+      "tags": [
+        "api-handler",
+        "constraint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postCartOp",
+      "type": "function",
+      "name": "postCartOp",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        125,
+        135
+      ],
+      "summary": "Applies a single cart operation (add/remove/update quantity) for a given session.",
+      "tags": [
+        "api-handler",
+        "cart"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getCart",
+      "type": "function",
+      "name": "getCart",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        137,
+        139
+      ],
+      "summary": "Fetches the current cart state for a session.",
+      "tags": [
+        "api-handler",
+        "cart"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:searchCatalog",
+      "type": "function",
+      "name": "searchCatalog",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        141,
+        147
+      ],
+      "summary": "Searches the product catalog by query, category and result limit.",
+      "tags": [
+        "api-handler",
+        "search"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getProduct",
+      "type": "function",
+      "name": "getProduct",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        149,
+        151
+      ],
+      "summary": "Fetches a single product by id.",
+      "tags": [
+        "api-handler",
+        "product"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postStockOverride",
+      "type": "function",
+      "name": "postStockOverride",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        153,
+        158
+      ],
+      "summary": "Admin call overriding a product's in-stock status.",
+      "tags": [
+        "api-handler",
+        "admin"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:searchRecommend",
+      "type": "function",
+      "name": "searchRecommend",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        166,
+        171
+      ],
+      "summary": "Fetches recommended products for a search query.",
+      "tags": [
+        "api-handler",
+        "search",
+        "recommendations"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getSubscribedCart",
+      "type": "function",
+      "name": "getSubscribedCart",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        197,
+        199
+      ],
+      "summary": "Fetches a cart built from a user's active subscriptions.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getPredictionInsights",
+      "type": "function",
+      "name": "getPredictionInsights",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        201,
+        203
+      ],
+      "summary": "Fetches personalized reorder prediction insights for a user.",
+      "tags": [
+        "api-handler",
+        "predictions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:addSubscription",
+      "type": "function",
+      "name": "addSubscription",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        214,
+        224
+      ],
+      "summary": "Creates a new recurring product subscription for a user.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:removeSubscription",
+      "type": "function",
+      "name": "removeSubscription",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        226,
+        228
+      ],
+      "summary": "Cancels a user's subscription to a product.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getUserSubscriptions",
+      "type": "function",
+      "name": "getUserSubscriptions",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        230,
+        232
+      ],
+      "summary": "Fetches all active subscriptions for a user.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getDueSubscriptions",
+      "type": "function",
+      "name": "getDueSubscriptions",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        234,
+        236
+      ],
+      "summary": "Fetches subscriptions currently due for reorder.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getAllSubscriptionsCart",
+      "type": "function",
+      "name": "getAllSubscriptionsCart",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        238,
+        240
+      ],
+      "summary": "Fetches a combined cart of all of a user's subscribed items.",
+      "tags": [
+        "api-handler",
+        "subscriptions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getUserPreferences",
+      "type": "function",
+      "name": "getUserPreferences",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        257,
+        259
+      ],
+      "summary": "Fetches stored shopping preferences for a user.",
+      "tags": [
+        "api-handler",
+        "preferences"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getUserPantry",
+      "type": "function",
+      "name": "getUserPantry",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        268,
+        270
+      ],
+      "summary": "Fetches the inferred pantry/stock state for a user.",
+      "tags": [
+        "api-handler",
+        "pantry"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postReplan",
+      "type": "function",
+      "name": "postReplan",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        273,
+        278
+      ],
+      "summary": "Submits feedback and cart context to replan/adjust an existing cart.",
+      "tags": [
+        "api-handler",
+        "replan"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:postOutcomePersonalized",
+      "type": "function",
+      "name": "postOutcomePersonalized",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        281,
+        286
+      ],
+      "summary": "Builds a personalized cart outcome for a specific user from free-text intent.",
+      "tags": [
+        "api-handler",
+        "personalization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getCounterfactuals",
+      "type": "function",
+      "name": "getCounterfactuals",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        306,
+        321
+      ],
+      "summary": "Fetches counterfactual/alternative product candidates for a given cart need.",
+      "tags": [
+        "api-handler",
+        "explainability"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/api/client.ts:placeOrder",
+      "type": "function",
+      "name": "placeOrder",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        344,
+        353
+      ],
+      "summary": "Places an order for a session, user and payment method.",
+      "tags": [
+        "api-handler",
+        "checkout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:getOrderHistory",
+      "type": "function",
+      "name": "getOrderHistory",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        355,
+        357
+      ],
+      "summary": "Fetches a user's past order history.",
+      "tags": [
+        "api-handler",
+        "orders"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/api/client.ts:registerUser",
+      "type": "function",
+      "name": "registerUser",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        373,
+        391
+      ],
+      "summary": "Registers a new user account with profile details.",
+      "tags": [
+        "api-handler",
+        "auth"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/api/client.ts:loginUser",
+      "type": "function",
+      "name": "loginUser",
+      "filePath": "client/src/api/client.ts",
+      "lineRange": [
+        393,
+        398
+      ],
+      "summary": "Authenticates a user with email and password.",
+      "tags": [
+        "api-handler",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/components/CartDrawer.tsx",
+      "type": "file",
+      "name": "CartDrawer.tsx",
+      "filePath": "client/src/components/CartDrawer.tsx",
+      "summary": "Slide-out cart panel with recommended/economical tabs, per-item quantity controls, budget summary and a checkout call-to-action.",
+      "tags": [
+        "component",
+        "cart",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/CartDrawer.tsx:CartDrawer",
+      "type": "function",
+      "name": "CartDrawer",
+      "filePath": "client/src/components/CartDrawer.tsx",
+      "lineRange": [
+        17,
+        406
+      ],
+      "summary": "Main cart drawer component rendering recommended/economical tabs, item rows with quantity controls, budget summary and checkout button.",
+      "tags": [
+        "component",
+        "cart",
+        "checkout"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/Composer.tsx",
+      "type": "file",
+      "name": "Composer.tsx",
+      "filePath": "client/src/components/Composer.tsx",
+      "summary": "Primary multi-mode input composer (text, voice, budget) used on the home page to capture shopping intent and trigger cart building.",
+      "tags": [
+        "component",
+        "composer",
+        "input-handling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/Composer.tsx:looksLikeSingleItemSearch",
+      "type": "function",
+      "name": "looksLikeSingleItemSearch",
+      "filePath": "client/src/components/Composer.tsx",
+      "lineRange": [
+        25,
+        36
+      ],
+      "summary": "Heuristic that decides whether typed text looks like a single-item search query rather than a full meal/intent request.",
+      "tags": [
+        "utility",
+        "heuristic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/Composer.tsx:Composer",
+      "type": "function",
+      "name": "Composer",
+      "filePath": "client/src/components/Composer.tsx",
+      "lineRange": [
+        38,
+        225
+      ],
+      "summary": "Multi-mode composer component switching between text, voice and budget input tabs to submit shopping intent.",
+      "tags": [
+        "component",
+        "composer",
+        "input-handling"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/Footer.tsx",
+      "type": "file",
+      "name": "Footer.tsx",
+      "filePath": "client/src/components/Footer.tsx",
+      "summary": "Site footer with newsletter signup, PWA install prompt trigger, and category/legal navigation links.",
+      "tags": [
+        "component",
+        "footer",
+        "pwa"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/Footer.tsx:Footer",
+      "type": "function",
+      "name": "Footer",
+      "filePath": "client/src/components/Footer.tsx",
+      "lineRange": [
+        7,
+        217
+      ],
+      "summary": "Footer component rendering newsletter signup, PWA install button (with iOS hint), and navigation link groups.",
+      "tags": [
+        "component",
+        "footer",
+        "pwa"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/components/NowCartVerified.tsx",
+      "type": "file",
+      "name": "NowCartVerified.tsx",
+      "filePath": "client/src/components/NowCartVerified.tsx",
+      "summary": "Small reusable badge component that renders a \"NowCart Verified\" trust signal on product listings.",
+      "tags": [
+        "component",
+        "badge",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/NowCartVerified.tsx:NowCartVerified",
+      "type": "function",
+      "name": "NowCartVerified",
+      "filePath": "client/src/components/NowCartVerified.tsx",
+      "lineRange": [
+        10,
+        54
+      ],
+      "summary": "Renders a small \"NowCart Verified\" badge with configurable size.",
+      "tags": [
+        "component",
+        "badge"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/components/ProductCard.tsx",
+      "type": "file",
+      "name": "ProductCard.tsx",
+      "filePath": "client/src/components/ProductCard.tsx",
+      "summary": "Reusable product tile showing image, rating stars, pricing and add/remove-from-cart controls, used across shop, search and home pages.",
+      "tags": [
+        "component",
+        "product",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/ProductCard.tsx:ProductCard",
+      "type": "function",
+      "name": "ProductCard",
+      "filePath": "client/src/components/ProductCard.tsx",
+      "lineRange": [
+        13,
+        118
+      ],
+      "summary": "Product tile showing rating stars, price, discount and add/remove-from-cart controls.",
+      "tags": [
+        "component",
+        "product"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/components/cart/EngineTrail.tsx",
+      "type": "file",
+      "name": "EngineTrail.tsx",
+      "filePath": "client/src/components/cart/EngineTrail.tsx",
+      "summary": "Renders a human-readable \"why this happened\" trail translating the cart-building engine's internal reasoning steps into plain language.",
+      "tags": [
+        "component",
+        "cart",
+        "explainability"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/cart/EngineTrail.tsx:humanStep",
+      "type": "function",
+      "name": "humanStep",
+      "filePath": "client/src/components/cart/EngineTrail.tsx",
+      "lineRange": [
+        13,
+        93
+      ],
+      "summary": "Translates a raw engine reasoning-trail string into a human-readable label and icon by matching known step patterns.",
+      "tags": [
+        "utility",
+        "explainability",
+        "text-parsing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:client/src/components/cart/EngineTrail.tsx:EngineTrail",
+      "type": "function",
+      "name": "EngineTrail",
+      "filePath": "client/src/components/cart/EngineTrail.tsx",
+      "lineRange": [
+        95,
+        135
+      ],
+      "summary": "Renders the deduplicated, humanized list of engine reasoning steps in an expandable trail UI.",
+      "tags": [
+        "component",
+        "explainability"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/components/cart/HitlPrompt.tsx",
+      "type": "file",
+      "name": "HitlPrompt.tsx",
+      "filePath": "client/src/components/cart/HitlPrompt.tsx",
+      "summary": "Small human-in-the-loop confirmation prompt asking the user to proceed with the current cart or view alternatives.",
+      "tags": [
+        "component",
+        "cart",
+        "hitl"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/cart/HitlPrompt.tsx:HitlPrompt",
+      "type": "function",
+      "name": "HitlPrompt",
+      "filePath": "client/src/components/cart/HitlPrompt.tsx",
+      "lineRange": [
+        17,
+        34
+      ],
+      "summary": "Renders a question with \"proceed\" and \"show alternatives\" action buttons for human-in-the-loop confirmation.",
+      "tags": [
+        "component",
+        "hitl"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/components/cart/ReplanBar.tsx",
+      "type": "file",
+      "name": "ReplanBar.tsx",
+      "filePath": "client/src/components/cart/ReplanBar.tsx",
+      "summary": "Inline chat bar letting users give free-text or quick-chip feedback to swap items or replan the current cart.",
+      "tags": [
+        "component",
+        "cart",
+        "replan"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/cart/ReplanBar.tsx:resolveUserId",
+      "type": "function",
+      "name": "resolveUserId",
+      "filePath": "client/src/components/cart/ReplanBar.tsx",
+      "lineRange": [
+        12,
+        28
+      ],
+      "summary": "Derives a stable user id string from a stored user object, falling back to deriving one from the email.",
+      "tags": [
+        "utility",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/cart/ReplanBar.tsx:ReplanBar",
+      "type": "function",
+      "name": "ReplanBar",
+      "filePath": "client/src/components/cart/ReplanBar.tsx",
+      "lineRange": [
+        56,
+        189
+      ],
+      "summary": "Chat-style bar for cart replanning, supporting quick-chip direct swaps and free-text feedback submitted to the replan API.",
+      "tags": [
+        "component",
+        "replan",
+        "chat"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:client/src/components/cart/WhyThisOne.tsx",
+      "type": "file",
+      "name": "WhyThisOne.tsx",
+      "filePath": "client/src/components/cart/WhyThisOne.tsx",
+      "summary": "Expandable panel that humanizes the engine's reasoning trail and confidence score for why a specific product was chosen.",
+      "tags": [
+        "component",
+        "cart",
+        "explainability"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/cart/WhyThisOne.tsx:humaniseReason",
+      "type": "function",
+      "name": "humaniseReason",
+      "filePath": "client/src/components/cart/WhyThisOne.tsx",
+      "lineRange": [
+        17,
+        50
+      ],
+      "summary": "Converts a raw selection-reason string and confidence score into a human-friendly explanation sentence.",
+      "tags": [
+        "utility",
+        "explainability",
+        "text-parsing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:client/src/components/cart/WhyThisOne.tsx:WhyThisOne",
+      "type": "function",
+      "name": "WhyThisOne",
+      "filePath": "client/src/components/cart/WhyThisOne.tsx",
+      "lineRange": [
+        52,
+        101
+      ],
+      "summary": "Expandable panel showing the humanized reasoning and trail for why a cart item was selected.",
+      "tags": [
+        "component",
+        "explainability"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "type": "file",
+      "name": "FrontDoorPanel.tsx",
+      "filePath": "client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "summary": "Modal dispatcher that renders the correct \"front door\" intent-capture panel (constrain/predict/share/show/speak) based on the selected door.",
+      "tags": [
+        "component",
+        "modal",
+        "router"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/frontdoors/FrontDoorPanel.tsx:FrontDoorPanel",
+      "type": "function",
+      "name": "FrontDoorPanel",
+      "filePath": "client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "lineRange": [
+        21,
+        42
+      ],
+      "summary": "Dispatches to the correct panel component (Constrain/Predict/Share/Show/Speak) based on the selected front door id.",
+      "tags": [
+        "component",
+        "router",
+        "modal"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "function:client/src/App.tsx:LocationPrompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "function:client/src/App.tsx:App",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/components/CartDrawer.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/components/Footer.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/components/Header.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/components/PwaInstallPrompt.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/context/LocationContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/AboutPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/AdminDashboardPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/DeliveryInfoPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/HomePage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/LoginPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/OrderHistoryPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/OrderSuccessPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/PaymentPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/PrivacyPolicyPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/ProductPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/SearchResultsPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/ShopPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/SubscriptionsPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/pages/TermsPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/App.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postOutcome",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postOutcome",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postVoiceIntent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postVoiceIntent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postVisionAnalyze",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postVisionAnalyze",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postShareParse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postShareParse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postConstraint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postConstraint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postCartOp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postCartOp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getCart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getCart",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:searchCatalog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:searchCatalog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getProduct",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getProduct",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postStockOverride",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postStockOverride",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:searchRecommend",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:searchRecommend",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getSubscribedCart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getSubscribedCart",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getPredictionInsights",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getPredictionInsights",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:addSubscription",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:addSubscription",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:removeSubscription",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:removeSubscription",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserSubscriptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserSubscriptions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getDueSubscriptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getDueSubscriptions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getAllSubscriptionsCart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getAllSubscriptionsCart",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserPreferences",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserPreferences",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserPantry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getUserPantry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postReplan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postReplan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postOutcomePersonalized",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:postOutcomePersonalized",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getCounterfactuals",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getCounterfactuals",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:placeOrder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:placeOrder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getOrderHistory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:getOrderHistory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:registerUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:registerUser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:loginUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/api/client.ts",
+      "target": "function:client/src/api/client.ts:loginUser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "function:client/src/components/CartDrawer.tsx:CartDrawer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "function:client/src/components/CartDrawer.tsx:CartDrawer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/components/cart/EngineTrail.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/components/cart/HitlPrompt.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/components/cart/ReplanBar.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/components/cart/WhyThisOne.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/components/NowCartVerified.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/CartDrawer.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "function:client/src/components/Composer.tsx:looksLikeSingleItemSearch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "function:client/src/components/Composer.tsx:Composer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "function:client/src/components/Composer.tsx:Composer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/Composer.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/Footer.tsx",
+      "target": "function:client/src/components/Footer.tsx:Footer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/Footer.tsx",
+      "target": "function:client/src/components/Footer.tsx:Footer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/Footer.tsx",
+      "target": "file:client/src/hooks/usePwaInstall.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/Footer.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/NowCartVerified.tsx",
+      "target": "function:client/src/components/NowCartVerified.tsx:NowCartVerified",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/NowCartVerified.tsx",
+      "target": "function:client/src/components/NowCartVerified.tsx:NowCartVerified",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/ProductCard.tsx",
+      "target": "function:client/src/components/ProductCard.tsx:ProductCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/ProductCard.tsx",
+      "target": "function:client/src/components/ProductCard.tsx:ProductCard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/ProductCard.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/ProductCard.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/cart/EngineTrail.tsx",
+      "target": "function:client/src/components/cart/EngineTrail.tsx:humanStep",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/EngineTrail.tsx",
+      "target": "function:client/src/components/cart/EngineTrail.tsx:EngineTrail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/EngineTrail.tsx",
+      "target": "function:client/src/components/cart/EngineTrail.tsx:EngineTrail",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/cart/HitlPrompt.tsx",
+      "target": "function:client/src/components/cart/HitlPrompt.tsx:HitlPrompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/HitlPrompt.tsx",
+      "target": "function:client/src/components/cart/HitlPrompt.tsx:HitlPrompt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/cart/HitlPrompt.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/cart/ReplanBar.tsx",
+      "target": "function:client/src/components/cart/ReplanBar.tsx:resolveUserId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/ReplanBar.tsx",
+      "target": "function:client/src/components/cart/ReplanBar.tsx:ReplanBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/ReplanBar.tsx",
+      "target": "function:client/src/components/cart/ReplanBar.tsx:ReplanBar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/cart/ReplanBar.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/cart/ReplanBar.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/cart/WhyThisOne.tsx",
+      "target": "function:client/src/components/cart/WhyThisOne.tsx:humaniseReason",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/WhyThisOne.tsx",
+      "target": "function:client/src/components/cart/WhyThisOne.tsx:WhyThisOne",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/cart/WhyThisOne.tsx",
+      "target": "function:client/src/components/cart/WhyThisOne.tsx:WhyThisOne",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/cart/WhyThisOne.tsx",
+      "target": "file:client/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "function:client/src/components/frontdoors/FrontDoorPanel.tsx:FrontDoorPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "function:client/src/components/frontdoors/FrontDoorPanel.tsx:FrontDoorPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/doors.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/panels/ConstrainPanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/panels/PredictPanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/panels/SharePanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/panels/ShowPanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/components/frontdoors/panels/SpeakPanel.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/frontdoors/FrontDoorPanel.tsx",
+      "target": "file:client/src/ui/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

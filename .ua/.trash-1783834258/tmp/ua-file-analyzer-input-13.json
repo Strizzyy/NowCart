@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/bijit/NowCart",
+  "batchFiles": [
+    {
+      "path": ".kiro/specs/nowcart/design.md",
+      "language": "markdown",
+      "sizeLines": 194,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/specs/nowcart/requirements.md",
+      "language": "markdown",
+      "sizeLines": 227,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/specs/nowcart/tasks.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".kiro/specs/nowcart/design.md": [],
+    ".kiro/specs/nowcart/requirements.md": [],
+    ".kiro/specs/nowcart/tasks.md": []
+  }
+}

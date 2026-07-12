@@ -1,0 +1,248 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "client/src/ui/Panel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 127,
+      "nonEmptyLines": 114,
+      "functions": [
+        {
+          "name": "Panel",
+          "startLine": 31,
+          "endLine": 127,
+          "params": [
+            "{\r\n  open,\r\n  onClose,\r\n  title,\r\n  subtitle,\r\n  icon,\r\n  tone = 'primary',\r\n  children,\r\n  footer,\r\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Panel",
+          "line": 31,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Panel",
+          "callee": "useRef",
+          "lineNumber": 41
+        },
+        {
+          "caller": "Panel",
+          "callee": "useEffect",
+          "lineNumber": 43
+        },
+        {
+          "caller": "Panel",
+          "callee": "dialogRef.current?.querySelector",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Panel",
+          "callee": "toFocus?.focus",
+          "lineNumber": 57
+        },
+        {
+          "caller": "onKey",
+          "callee": "onClose",
+          "lineNumber": 60
+        },
+        {
+          "caller": "Panel",
+          "callee": "document.addEventListener",
+          "lineNumber": 62
+        },
+        {
+          "caller": "Panel",
+          "callee": "window.scrollTo",
+          "lineNumber": 69
+        },
+        {
+          "caller": "Panel",
+          "callee": "document.removeEventListener",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/Toast.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 90,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "ToastItem",
+          "startLine": 25,
+          "endLine": 50,
+          "params": [
+            "{ toast, onDismiss }"
+          ]
+        },
+        {
+          "name": "ToastProvider",
+          "startLine": 56,
+          "endLine": 81,
+          "params": [
+            "{ children }"
+          ]
+        },
+        {
+          "name": "useToast",
+          "startLine": 83,
+          "endLine": 90,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ToastProvider",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "useToast",
+          "line": 83,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ToastItem",
+          "callee": "useEffect",
+          "lineNumber": 26
+        },
+        {
+          "caller": "ToastItem",
+          "callee": "setTimeout",
+          "lineNumber": 27
+        },
+        {
+          "caller": "ToastItem",
+          "callee": "onDismiss",
+          "lineNumber": 27
+        },
+        {
+          "caller": "ToastItem",
+          "callee": "clearTimeout",
+          "lineNumber": 28
+        },
+        {
+          "caller": "ToastItem",
+          "callee": "onDismiss",
+          "lineNumber": 41
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "useState",
+          "lineNumber": 57
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "useCallback",
+          "lineNumber": 59
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "setToasts",
+          "lineNumber": 60
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "cur.filter",
+          "lineNumber": 60
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "useCallback",
+          "lineNumber": 63
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "setToasts",
+          "lineNumber": 64
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "Date.now",
+          "lineNumber": 64
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "Math.random",
+          "lineNumber": 64
+        },
+        {
+          "caller": "ToastProvider",
+          "callee": "toasts.map",
+          "lineNumber": 75
+        },
+        {
+          "caller": "useToast",
+          "callee": "useContext",
+          "lineNumber": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "client/src/ui/Transition.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "FadeIn",
+          "startLine": 13,
+          "endLine": 23,
+          "params": [
+            "{ delay, className = '', style, children, ...rest }"
+          ]
+        },
+        {
+          "name": "PopIn",
+          "startLine": 29,
+          "endLine": 39,
+          "params": [
+            "{ delay, className = '', style, children, ...rest }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FadeIn",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "PopIn",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

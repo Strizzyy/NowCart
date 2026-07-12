@@ -1,0 +1,527 @@
+{
+  "nodes": [
+    {
+      "id": "config:.claude/settings.json",
+      "type": "config",
+      "name": "settings.json",
+      "filePath": ".claude/settings.json",
+      "summary": "Claude Code project settings file listing enabled plugins for the local development assistant.",
+      "tags": ["configuration", "tooling", "claude-code"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.kiro/specs/user-authentication/.config.kiro",
+      "type": "file",
+      "name": ".config.kiro",
+      "filePath": ".kiro/specs/user-authentication/.config.kiro",
+      "summary": "Marker/config file for the Kiro spec-driven development tool tied to the user-authentication feature spec.",
+      "tags": ["kiro", "spec-config", "configuration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.kiro/specs/user-authentication/requirements.md",
+      "type": "document",
+      "name": "requirements.md",
+      "filePath": ".kiro/specs/user-authentication/requirements.md",
+      "summary": "Requirements document for a user-authentication feature (signup, OTP verification, login, JWT token management, auth UI, session persistence/logout, and user data storage) written in EARS acceptance-criteria format.",
+      "tags": ["documentation", "requirements", "authentication", "spec"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.ua/.understandignore",
+      "type": "config",
+      "name": ".understandignore",
+      "filePath": ".ua/.understandignore",
+      "summary": "Ignore-pattern list controlling which files and directories the Understand-Anything knowledge graph scanner excludes from analysis.",
+      "tags": ["configuration", "tooling", "ignore-patterns"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/capacitor.config.ts",
+      "type": "config",
+      "name": "capacitor.config.ts",
+      "filePath": "client/capacitor.config.ts",
+      "summary": "Capacitor configuration for packaging the NowCart web client as a native mobile app, defining app ID, name, and web directory settings.",
+      "tags": ["configuration", "mobile", "capacitor", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/eslint.config.js",
+      "type": "config",
+      "name": "eslint.config.js",
+      "filePath": "client/eslint.config.js",
+      "summary": "ESLint flat-config for the client codebase, defining linting rules and plugin setup for TypeScript/React source files.",
+      "tags": ["configuration", "linting", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/gen-icons.mjs",
+      "type": "file",
+      "name": "gen-icons.mjs",
+      "filePath": "client/gen-icons.mjs",
+      "summary": "Node build script that generates app icon assets (favicons/mobile icons) for the client from a source image.",
+      "tags": ["build-script", "utility", "assets"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/nginx.conf",
+      "type": "config",
+      "name": "nginx.conf",
+      "filePath": "client/nginx.conf",
+      "summary": "Nginx server configuration used to serve the built client SPA and proxy API requests in production/container deployment.",
+      "tags": ["configuration", "infrastructure", "nginx", "deployment"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/api/schema.d.ts",
+      "type": "file",
+      "name": "schema.d.ts",
+      "filePath": "client/src/api/schema.d.ts",
+      "summary": "Auto-generated TypeScript type definitions describing the backend API's request/response schema, used for typed API client calls.",
+      "tags": ["type-definition", "api-schema", "generated", "client"],
+      "complexity": "complex",
+      "languageNotes": "Large generated declaration file (868 lines), likely produced by an OpenAPI-to-TypeScript generator."
+    },
+    {
+      "id": "file:client/src/components/ui/Button.tsx",
+      "type": "file",
+      "name": "Button.tsx",
+      "filePath": "client/src/components/ui/Button.tsx",
+      "summary": "Reusable styled Button UI component supporting variants, sizes, loading state, and icon slots.",
+      "tags": ["component", "ui", "design-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/ui/Button.tsx:Button",
+      "type": "function",
+      "name": "Button",
+      "filePath": "client/src/components/ui/Button.tsx",
+      "lineRange": [32, 64],
+      "summary": "React functional component rendering a button element with variant/size/loading/icon props, composing class names via the cn utility.",
+      "tags": ["component", "ui", "react"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/components/ui/cn.ts",
+      "type": "file",
+      "name": "cn.ts",
+      "filePath": "client/src/components/ui/cn.ts",
+      "summary": "Tiny utility module exporting a class-name concatenation helper used across UI components.",
+      "tags": ["utility", "styling", "helper"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/components/ui/cn.ts:cn",
+      "type": "function",
+      "name": "cn",
+      "filePath": "client/src/components/ui/cn.ts",
+      "lineRange": [2, 4],
+      "summary": "Joins truthy class name fragments into a single space-separated string, similar to the classnames/clsx pattern.",
+      "tags": ["utility", "styling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "client/src/index.css",
+      "summary": "Global stylesheet defining base styles, CSS custom properties (design tokens like shadows/colors), and Tailwind layer imports for the client app.",
+      "tags": ["styling", "css", "design-tokens"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:client/src/pages/SosPage.tsx",
+      "type": "file",
+      "name": "SosPage.tsx",
+      "filePath": "client/src/pages/SosPage.tsx",
+      "summary": "Minimal placeholder page component for an SOS/emergency-help route in the client app.",
+      "tags": ["component", "page", "placeholder"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/pages/SosPage.tsx:SosPage",
+      "type": "function",
+      "name": "SosPage",
+      "filePath": "client/src/pages/SosPage.tsx",
+      "lineRange": [4, 6],
+      "summary": "Trivial React page component stub for the SOS page route.",
+      "tags": ["component", "page"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/ui/Card.tsx",
+      "type": "file",
+      "name": "Card.tsx",
+      "filePath": "client/src/ui/Card.tsx",
+      "summary": "Reusable Card UI component providing surface styling, padding variants, and optional interactive hover states.",
+      "tags": ["component", "ui", "design-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/Card.tsx:Card",
+      "type": "function",
+      "name": "Card",
+      "filePath": "client/src/ui/Card.tsx",
+      "lineRange": [22, 45],
+      "summary": "React functional component rendering a styled card container with configurable padding and interactive hover/shadow behavior.",
+      "tags": ["component", "ui", "react"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:client/src/ui/Chip.tsx",
+      "type": "file",
+      "name": "Chip.tsx",
+      "filePath": "client/src/ui/Chip.tsx",
+      "summary": "Reusable Chip/badge UI component with tone and size variants, optionally rendering a leading icon.",
+      "tags": ["component", "ui", "design-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:client/src/ui/Chip.tsx:Chip",
+      "type": "function",
+      "name": "Chip",
+      "filePath": "client/src/ui/Chip.tsx",
+      "lineRange": [29, 44],
+      "summary": "React functional component rendering a pill-shaped chip with tone-based coloring and optional icon.",
+      "tags": ["component", "ui", "react"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:client/vite.config.ts",
+      "type": "config",
+      "name": "vite.config.ts",
+      "filePath": "client/vite.config.ts",
+      "summary": "Vite build configuration for the client app, defining plugins, dev server settings, and build output options.",
+      "tags": ["configuration", "build-system", "vite"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scripts/add_5000_more.py",
+      "type": "file",
+      "name": "add_5000_more.py",
+      "filePath": "scripts/add_5000_more.py",
+      "summary": "Data-generation utility script that appends roughly 5000 additional product/catalog records, verifying associated image URLs before inclusion.",
+      "tags": ["script", "data-pipeline", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/add_5000_more.py:verify_image",
+      "type": "function",
+      "name": "verify_image",
+      "filePath": "scripts/add_5000_more.py",
+      "lineRange": [86, 102],
+      "summary": "Validates that a catalog row's image URL is reachable and returns a real image by issuing an HTTP request and checking content length/headers.",
+      "tags": ["validation", "http", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/check_cors.py",
+      "type": "file",
+      "name": "check_cors.py",
+      "filePath": "scripts/check_cors.py",
+      "summary": "Diagnostic script for verifying CORS headers/behavior of the NowCart backend API.",
+      "tags": ["script", "diagnostics", "cors"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/check_page2.py",
+      "type": "file",
+      "name": "check_page2.py",
+      "filePath": "scripts/check_page2.py",
+      "summary": "Small ad-hoc script for inspecting/testing a second page of paginated data or results, likely used during catalog debugging.",
+      "tags": ["script", "diagnostics", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/create_verified_csv.py",
+      "type": "file",
+      "name": "create_verified_csv.py",
+      "filePath": "scripts/create_verified_csv.py",
+      "summary": "Data-pipeline script that builds a CSV of catalog records after verifying each entry's image URL is valid and reachable.",
+      "tags": ["script", "data-pipeline", "csv", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/create_verified_csv.py:check_image_url",
+      "type": "function",
+      "name": "check_image_url",
+      "filePath": "scripts/create_verified_csv.py",
+      "lineRange": [23, 31],
+      "summary": "Checks whether a given image URL responds successfully via an HTTP HEAD/GET-style request before a row is written to the verified CSV.",
+      "tags": ["validation", "http", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/find_placeholders.py",
+      "type": "file",
+      "name": "find_placeholders.py",
+      "filePath": "scripts/find_placeholders.py",
+      "summary": "Scans catalog data rows to detect placeholder or invalid product images by comparing downloaded content size against expected thresholds.",
+      "tags": ["script", "data-pipeline", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scripts/find_placeholders.py:check_size",
+      "type": "function",
+      "name": "check_size",
+      "filePath": "scripts/find_placeholders.py",
+      "lineRange": [31, 40],
+      "summary": "Fetches a row's image URL and inspects the response content-length header to flag likely placeholder images.",
+      "tags": ["validation", "http", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/fix_placeholders.py",
+      "type": "file",
+      "name": "fix_placeholders.py",
+      "filePath": "scripts/fix_placeholders.py",
+      "summary": "Remediation script that re-checks and replaces placeholder/broken product images identified in the catalog data.",
+      "tags": ["script", "data-pipeline", "remediation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/fix_placeholders.py:check_real_image",
+      "type": "function",
+      "name": "check_real_image",
+      "filePath": "scripts/fix_placeholders.py",
+      "lineRange": [51, 65],
+      "summary": "Verifies whether a catalog row's image URL points to a genuine (non-placeholder) image by inspecting HTTP response size and headers.",
+      "tags": ["validation", "http", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/__init__.py",
+      "summary": "Empty package marker file establishing the server.app Python package.",
+      "tags": ["entry-point", "package-init"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/async_jobs/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "server/app/async_jobs/__init__.py",
+      "summary": "Package docstring/init module describing the async_jobs architecture: API endpoint to SQS queue to Lambda function to DynamoDB result, with frontend polling for completion, used to offload heavy operations like vision analysis and cart decomposition.",
+      "tags": ["entry-point", "package-init", "documentation", "async-jobs"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server/app/async_jobs/lambda_handlers.py",
+      "type": "file",
+      "name": "lambda_handlers.py",
+      "filePath": "server/app/async_jobs/lambda_handlers.py",
+      "summary": "AWS Lambda handler stubs for offloaded async jobs — vision analysis, share/decomposition, and outcome processing — invoked via SQS to scale heavy operations outside the main API process.",
+      "tags": ["lambda", "async-jobs", "aws", "service"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/async_jobs/lambda_handlers.py:vision_handler",
+      "type": "function",
+      "name": "vision_handler",
+      "filePath": "server/app/async_jobs/lambda_handlers.py",
+      "lineRange": [39, 84],
+      "summary": "Lambda entry point that processes vision-analysis job events from SQS, parses payloads, runs analysis, and returns/logs results with error handling per item.",
+      "tags": ["lambda", "vision", "event-handler", "aws"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/async_jobs/lambda_handlers.py:share_handler",
+      "type": "function",
+      "name": "share_handler",
+      "filePath": "server/app/async_jobs/lambda_handlers.py",
+      "lineRange": [87, 128],
+      "summary": "Lambda entry point handling share/cart-decomposition job events from SQS, parsing payloads and aggregating per-item results with error handling.",
+      "tags": ["lambda", "event-handler", "aws"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:server/app/async_jobs/lambda_handlers.py:outcome_handler",
+      "type": "function",
+      "name": "outcome_handler",
+      "filePath": "server/app/async_jobs/lambda_handlers.py",
+      "lineRange": [131, 174],
+      "summary": "Lambda entry point processing outcome-tracking job events from SQS, parsing payloads and recording per-item success/failure results.",
+      "tags": ["lambda", "event-handler", "aws"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:client/src/components/ui/Button.tsx",
+      "target": "file:client/src/components/ui/cn.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:client/src/components/ui/Button.tsx",
+      "target": "function:client/src/components/ui/Button.tsx:Button",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/components/ui/Button.tsx",
+      "target": "function:client/src/components/ui/Button.tsx:Button",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:client/src/components/ui/Button.tsx:Button",
+      "target": "function:client/src/components/ui/cn.ts:cn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/components/ui/cn.ts",
+      "target": "function:client/src/components/ui/cn.ts:cn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/components/ui/cn.ts",
+      "target": "function:client/src/components/ui/cn.ts:cn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/pages/SosPage.tsx",
+      "target": "function:client/src/pages/SosPage.tsx:SosPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/pages/SosPage.tsx",
+      "target": "function:client/src/pages/SosPage.tsx:SosPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/Card.tsx",
+      "target": "function:client/src/ui/Card.tsx:Card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/Card.tsx",
+      "target": "function:client/src/ui/Card.tsx:Card",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:client/src/ui/Chip.tsx",
+      "target": "function:client/src/ui/Chip.tsx:Chip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:client/src/ui/Chip.tsx",
+      "target": "function:client/src/ui/Chip.tsx:Chip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scripts/add_5000_more.py",
+      "target": "function:scripts/add_5000_more.py:verify_image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:scripts/create_verified_csv.py",
+      "target": "function:scripts/create_verified_csv.py:check_image_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:scripts/find_placeholders.py",
+      "target": "function:scripts/find_placeholders.py:check_size",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:scripts/fix_placeholders.py",
+      "target": "function:scripts/fix_placeholders.py:check_real_image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:vision_handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:share_handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:outcome_handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:vision_handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:share_handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:server/app/async_jobs/lambda_handlers.py",
+      "target": "function:server/app/async_jobs/lambda_handlers.py:outcome_handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "config:client/vite.config.ts",
+      "target": "file:client/src/index.css",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:client/nginx.conf",
+      "target": "file:client/src/pages/SosPage.tsx",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "document:.kiro/specs/user-authentication/requirements.md",
+      "target": "file:.kiro/specs/user-authentication/.config.kiro",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

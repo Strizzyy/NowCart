@@ -1,0 +1,317 @@
+{
+  "batchIndex": 4,
+  "files": [
+    {
+      "path": "server/app/async_jobs/sqs_publisher.py",
+      "language": "python",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/controllers/meta.py",
+      "language": "python",
+      "sizeLines": 832,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/core/config.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/core/logging.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/__init__.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/base.py",
+      "language": "python",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/bedrock_provider.py",
+      "language": "python",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/factory.py",
+      "language": "python",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/gemini_provider.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/groq_provider.py",
+      "language": "python",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/llm/mock_provider.py",
+      "language": "python",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/main.py",
+      "language": "python",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/__init__.py",
+      "language": "python",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/pii_redaction.py",
+      "language": "python",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/rate_limit.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/request_id.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/middleware/telemetry.py",
+      "language": "python",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/confidence_service.py",
+      "language": "python",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    },
+    {
+      "path": "server/app/services/semantic_search_service.py",
+      "language": "python",
+      "sizeLines": 622,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "server/app/async_jobs/sqs_publisher.py": [
+      "server/app/core/config.py",
+      "server/app/core/logging.py"
+    ],
+    "server/app/controllers/meta.py": [
+      "server/app/core/config.py",
+      "server/app/middleware/telemetry.py"
+    ],
+    "server/app/core/config.py": [],
+    "server/app/core/logging.py": [
+      "server/app/core/logging.py"
+    ],
+    "server/app/llm/__init__.py": [
+      "server/app/llm/base.py",
+      "server/app/llm/factory.py"
+    ],
+    "server/app/llm/base.py": [],
+    "server/app/llm/bedrock_provider.py": [
+      "server/app/core/config.py",
+      "server/app/core/logging.py"
+    ],
+    "server/app/llm/factory.py": [
+      "server/app/core/config.py",
+      "server/app/core/logging.py",
+      "server/app/llm/base.py",
+      "server/app/llm/mock_provider.py"
+    ],
+    "server/app/llm/gemini_provider.py": [
+      "server/app/core/config.py",
+      "server/app/core/logging.py"
+    ],
+    "server/app/llm/groq_provider.py": [
+      "server/app/core/config.py",
+      "server/app/core/logging.py"
+    ],
+    "server/app/llm/mock_provider.py": [
+      "server/app/core/logging.py"
+    ],
+    "server/app/main.py": [
+      "server/app/controllers/__init__.py",
+      "server/app/core/config.py",
+      "server/app/core/logging.py",
+      "server/app/models/dto/responses.py"
+    ],
+    "server/app/middleware/__init__.py": [
+      "server/app/middleware/pii_redaction.py",
+      "server/app/middleware/rate_limit.py",
+      "server/app/middleware/request_id.py",
+      "server/app/middleware/telemetry.py"
+    ],
+    "server/app/middleware/pii_redaction.py": [],
+    "server/app/middleware/rate_limit.py": [],
+    "server/app/middleware/request_id.py": [],
+    "server/app/middleware/telemetry.py": [
+      "server/app/core/logging.py"
+    ],
+    "server/app/services/confidence_service.py": [
+      "server/app/core/config.py",
+      "server/app/models/domain/cart.py"
+    ],
+    "server/app/services/semantic_search_service.py": [
+      "server/app/core/config.py"
+    ]
+  },
+  "neighborMap": {
+    "server/app/controllers/meta.py": [
+      {
+        "path": "server/app/controllers/__init__.py",
+        "batchIndex": 2,
+        "symbols": []
+      }
+    ],
+    "server/app/core/config.py": [
+      {
+        "path": "server/app/agents/nodes.py",
+        "batchIndex": 2,
+        "symbols": [
+          "_normalize_quantity_to_packs",
+          "intent_node",
+          "decompose_node",
+          "match_node",
+          "confidence_node",
+          "counterfactual_node",
+          "replan_node"
+        ]
+      },
+      {
+        "path": "server/app/repositories/__init__.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_repository",
+          "get_cache"
+        ]
+      },
+      {
+        "path": "server/app/repositories/cache.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_MemoryCache",
+          "CacheLayer"
+        ]
+      },
+      {
+        "path": "server/app/repositories/dynamodb.py",
+        "batchIndex": 5,
+        "symbols": [
+          "_session_kwargs",
+          "_convert_floats",
+          "_convert_decimals",
+          "DynamoDBRepository"
+        ]
+      },
+      {
+        "path": "server/app/seed/seed_dynamodb.py",
+        "batchIndex": 5,
+        "symbols": [
+          "seed_dynamodb",
+          "is_dynamodb_seeded"
+        ]
+      },
+      {
+        "path": "server/app/services/subscribe_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "PredictedNeed",
+          "SubscribeService",
+          "get_subscribe_service",
+          "get_predictive_service"
+        ]
+      }
+    ],
+    "server/app/llm/factory.py": [
+      {
+        "path": "server/app/agents/nodes.py",
+        "batchIndex": 2,
+        "symbols": [
+          "_normalize_quantity_to_packs",
+          "intent_node",
+          "decompose_node",
+          "match_node",
+          "confidence_node",
+          "counterfactual_node",
+          "replan_node"
+        ]
+      },
+      {
+        "path": "server/app/services/share_service.py",
+        "batchIndex": 2,
+        "symbols": [
+          "_is_url",
+          "_extract_text_from_html",
+          "_fetch_url_content",
+          "ShareService",
+          "get_share_service"
+        ]
+      },
+      {
+        "path": "server/app/services/vision_service.py",
+        "batchIndex": 2,
+        "symbols": [
+          "VisionService",
+          "get_vision_service"
+        ]
+      }
+    ],
+    "server/app/main.py": [
+      {
+        "path": "server/app/controllers/__init__.py",
+        "batchIndex": 2,
+        "symbols": []
+      },
+      {
+        "path": "server/app/models/dto/responses.py",
+        "batchIndex": 2,
+        "symbols": [
+          "HealthResponse",
+          "OkResponse",
+          "ErrorResponse",
+          "ProductResponse",
+          "SubstitutionResponse",
+          "CartItemResponse",
+          "CartResponse"
+        ]
+      }
+    ],
+    "server/app/services/confidence_service.py": [
+      {
+        "path": "server/app/models/domain/cart.py",
+        "batchIndex": 2,
+        "symbols": [
+          "Substitution",
+          "CartItem",
+          "Cart"
+        ]
+      }
+    ]
+  }
+}

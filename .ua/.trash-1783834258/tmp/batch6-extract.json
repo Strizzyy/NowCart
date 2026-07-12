@@ -1,0 +1,100 @@
+{
+  "batchIndex": 6,
+  "files": [
+    {
+      "path": "client/src/components/AddressManager.tsx",
+      "language": "typescript",
+      "sizeLines": 390,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/Header.tsx",
+      "language": "typescript",
+      "sizeLines": 403,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/components/PwaInstallPrompt.tsx",
+      "language": "typescript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/context/LocationContext.tsx",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/hooks/useLocation.ts",
+      "language": "typescript",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "client/src/hooks/usePwaInstall.ts",
+      "language": "typescript",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "client/src/components/AddressManager.tsx": [
+      "client/src/context/LocationContext.tsx",
+      "client/src/hooks/useLocation.ts"
+    ],
+    "client/src/components/Header.tsx": [
+      "client/src/App.tsx",
+      "client/src/components/AddressManager.tsx",
+      "client/src/context/LocationContext.tsx",
+      "client/src/hooks/usePwaInstall.ts"
+    ],
+    "client/src/components/PwaInstallPrompt.tsx": [
+      "client/src/hooks/usePwaInstall.ts"
+    ],
+    "client/src/context/LocationContext.tsx": [
+      "client/src/hooks/useLocation.ts"
+    ],
+    "client/src/hooks/useLocation.ts": [],
+    "client/src/hooks/usePwaInstall.ts": []
+  },
+  "neighborMap": {
+    "client/src/components/Header.tsx": [
+      {
+        "path": "client/src/App.tsx",
+        "batchIndex": 1,
+        "symbols": []
+      }
+    ],
+    "client/src/components/PwaInstallPrompt.tsx": [
+      {
+        "path": "client/src/App.tsx",
+        "batchIndex": 1,
+        "symbols": []
+      }
+    ],
+    "client/src/context/LocationContext.tsx": [
+      {
+        "path": "client/src/App.tsx",
+        "batchIndex": 1,
+        "symbols": []
+      },
+      {
+        "path": "client/src/pages/PaymentPage.tsx",
+        "batchIndex": 1,
+        "symbols": [
+          "PaymentPage"
+        ]
+      }
+    ],
+    "client/src/hooks/usePwaInstall.ts": [
+      {
+        "path": "client/src/components/Footer.tsx",
+        "batchIndex": 1,
+        "symbols": [
+          "Footer"
+        ]
+      }
+    ]
+  }
+}
