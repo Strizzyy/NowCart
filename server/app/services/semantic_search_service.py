@@ -40,6 +40,20 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+# PyTorch defaults to intra-op parallelism across *all* CPU cores for a single
+# inference call. That's fine for one call at a time, but our ThreadPoolExecutor
+# below runs several calls concurrently across needs — without this, each of
+# those threads independently fans out across all cores, so e.g. 8 concurrent
+# calls oversubscribe a 12-core box ~8x and spend more time on scheduling/cache
+# contention than actual work. Restricting each call to a couple of threads lets
+# the outer pool's concurrency be the real source of parallelism instead.
+try:
+    import torch
+
+    torch.set_num_threads(1)
+except ImportError:
+    pass
+
 from app.core.config import settings
 
 if TYPE_CHECKING:
@@ -57,8 +71,15 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 # ───────────────────────────────────────────────────────────────────────────
 
-# Reuse a single thread pool for CPU-bound model inference to avoid blocking the event loop
-_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="hybrid-retrieval")
+# Reuse a single thread pool for CPU-bound model inference to avoid blocking the event loop.
+# Sized to available CPU cores (PyTorch/numpy release the GIL during the actual computation,
+# so this genuinely parallelizes) — capped at 8 so it stays safe on small production instances,
+# but a hardcoded 2 was badly serializing multi-ingredient recipes on any dev machine with more
+# cores (25 ingredients × 2 executor calls each through only 2 threads took 25+ seconds).
+_executor = ThreadPoolExecutor(
+    max_workers=min(8, max(2, os.cpu_count() or 2)),
+    thread_name_prefix="hybrid-retrieval",
+)
 
 # Bi-encoder re-ranking shortlist size before cross-encoder
 _BI_ENCODER_SHORTLIST = 20
