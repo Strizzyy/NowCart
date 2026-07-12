@@ -7,6 +7,7 @@ as a plain outcome if fetching fails.
 from __future__ import annotations
 
 import asyncio
+import html as html_lib
 import json
 import logging
 import re
@@ -30,8 +31,17 @@ _YT_PATTERNS = [
     re.compile(r"(?:https?://)?(?:www\.)?youtube\.com/shorts/([\w-]+)"),
 ]
 
-# Instagram reel pattern
-_INSTA_PATTERN = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([\w-]+)")
+# Instagram reel/post patterns
+_INSTA_PATTERNS = [
+    re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([\w-]+)"),
+    re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/p/([\w-]+)"),
+]
+
+# TikTok video patterns
+_TIKTOK_PATTERNS = [
+    re.compile(r"(?:https?://)?(?:www\.)?tiktok\.com/@[\w.-]+/video/(\d+)"),
+    re.compile(r"(?:https?://)?(?:vm|vt)\.tiktok\.com/([\w-]+)"),
+]
 
 
 def _is_url(text: str) -> bool:
@@ -61,6 +71,40 @@ def _extract_text_from_html(html: str, max_chars: int = 8000) -> str:
 
 def _is_youtube_url(url: str) -> bool:
     return any(p.search(url) for p in _YT_PATTERNS)
+
+
+def _is_instagram_url(url: str) -> bool:
+    return any(p.search(url) for p in _INSTA_PATTERNS)
+
+
+def _is_tiktok_url(url: str) -> bool:
+    return any(p.search(url) for p in _TIKTOK_PATTERNS)
+
+
+def _extract_og_meta(html: str, max_chars: int = 3000) -> str | None:
+    """Extract Open Graph title/description meta tags.
+
+    Instagram, TikTok, and most recipe blogs render these server-side even
+    though the rest of the page is client-rendered/JS-heavy — this is where
+    the actual post caption (often a full ingredient list with quantities)
+    lives, and it's exactly what a naive "strip all tags" text extractor
+    discards, since a <meta> tag's content is only in its attributes.
+    """
+    title_match = re.search(r'<meta\s+property=["\']og:title["\']\s+content=["\']([^"\']*)["\']', html, re.I)
+    desc_match = re.search(r'<meta\s+property=["\']og:description["\']\s+content=["\']([^"\']*)["\']', html, re.I)
+
+    title = html_lib.unescape(title_match.group(1)).strip() if title_match else ""
+    description = html_lib.unescape(desc_match.group(1)).strip() if desc_match else ""
+
+    if not title and not description:
+        return None
+
+    parts = []
+    if title:
+        parts.append(f"Post title: {title[:500]}")
+    if description:
+        parts.append(f"Post caption: {description[:max_chars]}")
+    return "\n".join(parts)
 
 
 def _youtube_video_id(url: str) -> str | None:
@@ -135,9 +179,11 @@ async def _extract_youtube_details(html: str, video_id: str | None) -> str | Non
 async def _fetch_url_content(url: str) -> str | None:
     """Fetch a URL and return its text content (truncated for LLM context).
 
-    YouTube watch pages are client-rendered, so the generic tag-stripping
-    extraction below yields only nav/footer boilerplate. For YouTube URLs,
-    pull the title/description straight out of the embedded player JSON.
+    Most of these platforms are client-rendered, so the generic tag-stripping
+    extraction below yields only nav/footer boilerplate on its own:
+    - YouTube: pull title/description/transcript from the embedded player JSON.
+    - Instagram/TikTok/blogs: pull the Open Graph title/description, which is
+      where the real caption (often a full ingredient list) lives.
     """
     try:
         async with httpx.AsyncClient(
@@ -157,6 +203,12 @@ async def _fetch_url_content(url: str) -> str | None:
                 if yt_details:
                     return yt_details
                 # Video unavailable/private or JSON blob not found — fall
+                # through to generic extraction as a last resort.
+            elif _is_instagram_url(url) or _is_tiktok_url(url):
+                og_details = _extract_og_meta(resp.text)
+                if og_details:
+                    return og_details
+                # No OG tags found (login wall, private post, etc.) — fall
                 # through to generic extraction as a last resort.
 
             return _extract_text_from_html(resp.text)
@@ -200,13 +252,16 @@ class ShareService:
                 # Use LLM to extract recipe/ingredients from page content
                 system_prompt = (
                     "You are a recipe extraction assistant. Given web page content from a recipe URL "
-                    "(could be a YouTube title/description/spoken transcript, recipe blog, Instagram caption, etc.), "
-                    "extract the recipe name and all grocery ingredients needed.\n\n"
+                    "(could be a YouTube title/description/spoken transcript, an Instagram or TikTok post "
+                    "caption, or a recipe blog), extract the recipe name and all grocery ingredients needed.\n\n"
                     "If a 'Video transcript' section is present, it is the host's actual spoken narration — "
                     "prioritize it over the title/description, since hosts usually name every ingredient and "
-                    "often state exact quantities out loud (e.g. '200 grams of paneer', 'two onions'). "
-                    "Prefer ingredients and quantities mentioned in the transcript; use the title/description "
-                    "only to fill gaps or confirm the dish name.\n\n"
+                    "often state exact quantities out loud (e.g. '200 grams of paneer', 'two onions').\n\n"
+                    "If a 'Post caption' section is present (Instagram/TikTok), treat it as the primary source — "
+                    "creators very often write out the full ingredient list with quantities directly in the "
+                    "caption (sometimes under an 'Ingredients:' heading or as a bullet/dash list).\n\n"
+                    "Use the title/description only to fill gaps or confirm the dish name when the above aren't "
+                    "detailed enough.\n\n"
                     "Return a concise summary in the format: "
                     "'Making [dish name]: [ingredient1] ([qty if stated]), [ingredient2] ([qty if stated]), ...'\n"
                     "If you can't identify a recipe, return the most relevant food/grocery items mentioned."
