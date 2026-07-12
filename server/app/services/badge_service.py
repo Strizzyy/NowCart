@@ -14,6 +14,7 @@ Usage:
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -71,22 +72,28 @@ class BadgeService:
         except Exception:
             pass
 
-        for uid in user_ids:
+        async def _fetch_orders(uid: str) -> tuple[str, list]:
             try:
-                orders = await repo.get_orders(uid)
-                for order in orders:
-                    try:
-                        order_date = datetime.fromisoformat(order.order_date)
-                    except (ValueError, TypeError):
-                        continue
-                    if order_date < cutoff:
-                        continue
-                    for item in order.items:
-                        pid = item.get("product_id", "")
-                        if pid:
-                            order_counts[pid] += 1
+                return uid, await repo.get_orders(uid)
             except Exception as exc:
                 logger.debug("Could not read orders for user %s: %s", uid, exc)
+                return uid, []
+
+        # One round trip per user, fired concurrently, instead of sequentially —
+        # was the same "loop of individual DB calls" pattern that made match_node
+        # take 16s under the real DynamoDB backend.
+        for _uid, orders in await asyncio.gather(*[_fetch_orders(uid) for uid in user_ids]):
+            for order in orders:
+                try:
+                    order_date = datetime.fromisoformat(order.order_date)
+                except (ValueError, TypeError):
+                    continue
+                if order_date < cutoff:
+                    continue
+                for item in order.items:
+                    pid = item.get("product_id", "")
+                    if pid:
+                        order_counts[pid] += 1
 
         # --- Step 2: Compute per-category max order count ---
         category_max: dict[str, int] = defaultdict(int)
@@ -96,9 +103,9 @@ class BadgeService:
                 cat = product.category or "unknown"
                 category_max[cat] = max(category_max[cat], count)
 
-        # --- Step 3: Compute badge scores and update products ---
+        # --- Step 3: Compute badge scores, collect changed products ---
         verified_count = 0
-        updated_count = 0
+        changed_products: list[Product] = []
 
         for product in all_products:
             cat = product.category or "unknown"
@@ -118,11 +125,18 @@ class BadgeService:
             ):
                 product.order_count_month = order_count
                 product.verified = new_verified
-                await repo.upsert_product(product)
-                updated_count += 1
+                changed_products.append(product)
 
             if new_verified:
                 verified_count += 1
+
+        # One batched write (DynamoDB's real batch_writer) instead of up to
+        # len(all_products) individual upsert_product calls, each of which opens
+        # its own connection — the same fix as match_node's, applied here since
+        # this loop runs over the full catalog (9k+ products).
+        updated_count = len(changed_products)
+        if changed_products:
+            await repo.bulk_upsert_products(changed_products)
 
         logger.info(
             "Badge recompute complete: %d products updated, %d verified",

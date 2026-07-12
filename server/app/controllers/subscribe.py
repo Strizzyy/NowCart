@@ -126,9 +126,29 @@ async def get_all_subscriptions_cart(user_id: str):
     catalog = get_catalog_service()
     items: list[CartItem] = []
 
+    # Batch-check availability for every subscription's primary product up front
+    # — one round trip instead of one check_availability() call per subscription.
+    products_by_sub = {
+        sub["product_id"]: await catalog.get_product_by_id(sub["product_id"]) for sub in subs
+    }
+    primary_availability = await catalog.bulk_check_availability(list(products_by_sub.keys()))
+
+    fallback_candidates: dict[str, list] = {}
     for sub in subs:
-        product = await catalog.get_product_by_id(sub["product_id"])
-        if product and await catalog.check_availability(product.product_id):
+        product = products_by_sub.get(sub["product_id"])
+        if not (product and primary_availability.get(product.product_id, False)):
+            fallback_candidates[sub["product_id"]] = await catalog.fuzzy_match_need(
+                need_name=sub["product_name"], category_hint=None, top_k=3
+            )
+    fallback_availability = await catalog.bulk_check_availability([
+        fp.product_id
+        for matches in fallback_candidates.values()
+        for fp, _score in matches
+    ])
+
+    for sub in subs:
+        product = products_by_sub.get(sub["product_id"])
+        if product and primary_availability.get(product.product_id, False):
             items.append(CartItem(
                 product_id=product.product_id,
                 name=product.name,
@@ -141,9 +161,9 @@ async def get_all_subscriptions_cart(user_id: str):
                 image_url=product.image_url,
             ))
         else:
-            matches = await catalog.fuzzy_match_need(need_name=sub["product_name"], category_hint=None, top_k=3)
+            matches = fallback_candidates.get(sub["product_id"], [])
             for fp, _ in matches:
-                if await catalog.check_availability(fp.product_id):
+                if fallback_availability.get(fp.product_id, False):
                     items.append(CartItem(
                         product_id=fp.product_id,
                         name=fp.name,

@@ -307,8 +307,30 @@ class SubscribeService:
         items: list[CartItem] = []
         notes: list[str] = ["Predicted restock — based on your purchase patterns"]
 
+        # Batch-check availability for every prediction's primary pick up front —
+        # one round trip instead of one check_availability() call per prediction
+        # (same "loop of individual cache/DB calls" fix as match_node's earlier).
+        primary_availability = await catalog.bulk_check_availability(
+            [pred.product_id for pred in predictions]
+        )
+
+        # Predictions whose primary pick is OOS need a fuzzy-matched fallback;
+        # gather those candidate lists first, then batch-check availability for
+        # all of them together in a second round trip rather than per-candidate.
+        fallback_candidates: dict[str, list] = {}
         for pred in predictions:
-            if await catalog.check_availability(pred.product_id):
+            if not primary_availability.get(pred.product_id, False):
+                fallback_candidates[pred.product_id] = await catalog.fuzzy_match_need(
+                    need_name=pred.product_name, category_hint=None, top_k=5
+                )
+        fallback_availability = await catalog.bulk_check_availability([
+            product.product_id
+            for matches in fallback_candidates.values()
+            for product, _score in matches
+        ])
+
+        for pred in predictions:
+            if primary_availability.get(pred.product_id, False):
                 product = await catalog.get_product_by_id(pred.product_id)
                 if product:
                     # Skip non-grocery / high-value items — restock cart is for
@@ -327,14 +349,12 @@ class SubscribeService:
                         image_url=product.image_url,
                     ))
             else:
-                matches = await catalog.fuzzy_match_need(
-                    need_name=pred.product_name, category_hint=None, top_k=5
-                )
+                matches = fallback_candidates.get(pred.product_id, [])
                 for product, score in matches:
                     if product.product_id != pred.product_id:
                         if product.sale_price > 2000:
                             continue
-                        if await catalog.check_availability(product.product_id):
+                        if fallback_availability.get(product.product_id, False):
                             items.append(CartItem(
                                 product_id=product.product_id,
                                 name=product.name,
