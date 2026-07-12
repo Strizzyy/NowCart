@@ -6,6 +6,7 @@ as a plain outcome if fetching fails.
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 import uuid
@@ -55,23 +56,68 @@ def _extract_text_from_html(html: str, max_chars: int = 8000) -> str:
     return text[:max_chars]
 
 
+def _is_youtube_url(url: str) -> bool:
+    return any(p.search(url) for p in _YT_PATTERNS)
+
+
+def _extract_youtube_details(html: str) -> str | None:
+    """Pull the real video title + description out of YouTube's embedded
+    ytInitialPlayerResponse JSON blob.
+
+    YouTube watch pages are client-rendered — the visible/stripped HTML text
+    is just nav/footer boilerplate. The actual title and description live
+    inside a <script>ytInitialPlayerResponse = {...};</script> blob, which a
+    naive "strip all tags/scripts" text extractor discards entirely.
+    """
+    match = re.search(r"ytInitialPlayerResponse\s*=\s*(\{.*?\});", html, re.S)
+    if not match:
+        return None
+    try:
+        data = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None
+
+    playability = data.get("playabilityStatus", {})
+    if playability.get("status") not in (None, "OK"):
+        return None  # video unavailable, private, age-restricted, etc.
+
+    video_details = data.get("videoDetails", {})
+    title = video_details.get("title", "")
+    if not title:
+        return None
+    description = video_details.get("shortDescription", "")
+
+    return f"Video title: {title}\nVideo description: {description[:2000]}"
+
+
 async def _fetch_url_content(url: str) -> str | None:
-    """Fetch a URL and return its text content (truncated for LLM context)."""
+    """Fetch a URL and return its text content (truncated for LLM context).
+
+    YouTube watch pages are client-rendered, so the generic tag-stripping
+    extraction below yields only nav/footer boilerplate. For YouTube URLs,
+    pull the title/description straight out of the embedded player JSON.
+    """
     try:
         async with httpx.AsyncClient(
             timeout=15.0,
             follow_redirects=True,
-            headers={"User-Agent": "NowCart/1.0 (recipe-parser)"},
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) NowCart/1.0"},
         ) as client:
             resp = await client.get(url)
             resp.raise_for_status()
             content_type = resp.headers.get("content-type", "")
 
-            if "text/html" in content_type or "text/plain" in content_type:
-                return _extract_text_from_html(resp.text)
-            else:
-                # Binary content — can't parse
-                return None
+            if "text/html" not in content_type and "text/plain" not in content_type:
+                return None  # Binary content — can't parse
+
+            if _is_youtube_url(url):
+                yt_details = _extract_youtube_details(resp.text)
+                if yt_details:
+                    return yt_details
+                # Video unavailable/private or JSON blob not found — fall
+                # through to generic extraction as a last resort.
+
+            return _extract_text_from_html(resp.text)
     except Exception as exc:
         logger.warning("Failed to fetch URL %s: %s", url, exc)
         return None
