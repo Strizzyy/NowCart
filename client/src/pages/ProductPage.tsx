@@ -75,7 +75,6 @@ export default function ProductPage({ ctx }: Props) {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <span className="text-5xl block mb-4">😕</span>
         <h2 className="font-heading font-bold text-2xl text-dark mb-2">Product not found</h2>
         <Link to="/shop" className="text-primary hover:underline">Back to shop →</Link>
       </div>

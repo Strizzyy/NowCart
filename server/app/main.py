@@ -68,15 +68,21 @@ async def lifespan(app: FastAPI):
         try:
             await seed_dynamodb(force=False)
 
+            # Always re-seed orders on startup — cheap operation, ensures
+            # mock orders reference correct product IDs after any catalog changes
+            from app.seed.mock_data import create_mock_users, create_mock_orders
             repo = get_repository()
             cache = get_cache()
             products = await repo.list_products()
             if products:
+                orders = create_mock_orders([p.product_id for p in products])
+                for order in orders:
+                    await repo.upsert_order(order)
                 override_ids = get_override_product_ids([p.product_id for p in products])
                 for pid in override_ids:
                     await cache.set_stock_override(pid, False)
-                logger.info("DynamoDB ready: %d products, %d stock overrides",
-                            len(products), len(override_ids))
+                logger.info("DynamoDB ready: %d products, %d orders re-seeded, %d stock overrides",
+                            len(products), len(orders), len(override_ids))
         except Exception as exc:
             logger.error("DynamoDB seed failed: %s — app will start but catalog may be empty", exc)
 

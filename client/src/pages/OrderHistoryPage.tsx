@@ -154,7 +154,7 @@ export default function OrderHistoryPage({ ctx }: Props) {
         {orders.length > 0 && (
           <div className="mt-8 bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
             <p className="text-sm text-violet-700">
-              🔮 Your order history feeds the <strong>Subscribe</strong> predictive engine.
+              Your order history feeds the <strong>Subscribe</strong> predictive engine.
               The more you order, the better we predict your restock needs.
             </p>
           </div>

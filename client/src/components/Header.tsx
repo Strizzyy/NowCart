@@ -191,8 +191,8 @@ export default function Header({ ctx, onLogout }: Props) {
               className="flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg border border-border hover:bg-light-bg transition min-h-[44px]"
               aria-label="User menu"
             >
-              <div className="w-8 h-8 bg-primary-light rounded-full flex items-center justify-center">
-                <User size={16} className="text-primary-ink" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <User size={16} className="text-muted" />
               </div>
               <span className="hidden md:inline text-sm font-medium text-dark max-w-[80px] truncate">
                 {ctx.user?.name || 'User'}
@@ -367,7 +367,7 @@ export default function Header({ ctx, onLogout }: Props) {
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
             <div className="flex items-center gap-3 mb-4">
-              <img src="/icons/icon-192.png" alt="NowCart" className="w-12 h-12 rounded-xl" />
+              <img src="/logoo.jpeg" alt="NowCart" className="w-12 h-12 rounded-xl" />
               <div>
                 <p className="font-heading font-bold text-dark">Install NowCart</p>
                 <p className="text-xs text-muted">

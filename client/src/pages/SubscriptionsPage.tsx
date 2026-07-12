@@ -22,25 +22,36 @@ interface Props {
 /**
  * Resolve the backend user_id from the logged-in user.
  * Must match exactly what PredictPanel uses so subscriptions are found.
- * Priority: userId set at login (from backend) → email prefix.
+ * For guests, uses a stable localStorage ID so subscriptions persist across reloads.
  */
 function resolveUserId(ctx: AppContext): string {
   if (ctx.user?.userId) return ctx.user.userId;
-  const email = (ctx.user?.email ?? '').toLowerCase();
-  if (!email) return 'user-001';
-  // Hardcoded map mirrors PredictPanel so both use the same key
-  const map: Record<string, string> = {
-    'rahul@gmail.com': 'rahul',
-    'priya@example.com': 'user-001',
-    'rahul@example.com': 'user-002',
-    'anita@example.com': 'user-003',
-    'vikram@example.com': 'user-004',
-    'demo@example.com': 'user-005',
-    'demo@nowcart.app': 'user-005',
-    'admin@nowcart.app': 'user-001',
-    'guest@nowcart.app': 'user-005',
-  };
-  return map[email] ?? email.split('@')[0];
+  if (ctx.user?.email) {
+    const email = ctx.user.email.toLowerCase();
+    const map: Record<string, string> = {
+      'rahul@gmail.com': 'rahul',
+      'priya@example.com': 'user-001',
+      'rahul@example.com': 'user-002',
+      'anita@example.com': 'user-003',
+      'vikram@example.com': 'user-004',
+      'demo@example.com': 'user-005',
+      'demo@nowcart.app': 'user-005',
+      'admin@nowcart.app': 'user-001',
+      'guest@nowcart.app': 'user-005',
+    };
+    return map[email] ?? email.split('@')[0];
+  }
+  // Guest — stable ID from localStorage
+  try {
+    let guestId = localStorage.getItem('nc_guest_user_id');
+    if (!guestId) {
+      guestId = 'guest-' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem('nc_guest_user_id', guestId);
+    }
+    return guestId;
+  } catch {
+    return 'guest-anonymous';
+  }
 }
 
 function freqColor(freq: string): 'success' | 'primary' | 'info' {
@@ -464,9 +475,9 @@ export default function SubscriptionsPage({ ctx }: Props) {
               </Button>
             </div>
 
-            <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 text-center">
-              <p className="text-xs text-violet-700">
-                🔔 Subscribed items also auto-add on their due date.
+            <div className="bg-light-bg border border-border rounded-2xl p-4 text-center">
+              <p className="text-xs text-muted">
+                Subscribed items also auto-add on their due date.
                 You always review and confirm before checkout.
               </p>
             </div>

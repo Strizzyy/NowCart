@@ -133,7 +133,7 @@ function NcUpiIcon() {
   return (
     <div className="w-10 h-10 rounded-xl bg-green-600 flex flex-col items-center justify-center">
       <span className="text-white font-black text-xs leading-none">NC</span>
-      <span className="text-green-200 text-[8px] leading-none font-semibold mt-0.5">UPI ▶</span>
+      <span className="text-green-200 text-[8px] leading-none font-semibold mt-0.5">UPI ✢</span>
     </div>
   );
 }
@@ -195,12 +195,12 @@ function PayLaterIcon() {
 function LazyIcon() {
   return (
     <div className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center">
-      <span className="text-pink-500 font-black text-sm">▶</span>
+      <span className="text-pink-500 font-black text-sm">✢</span>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════ MAIN PAGE ══ */
+/* ══════════════════════════════════════════════════════════ MAIN PAGE ══ */
 export default function PaymentPage({ ctx }: Props) {
   const navigate = useNavigate();
   const routerLoc = useRouterLocation();
@@ -233,6 +233,7 @@ export default function PaymentPage({ ctx }: Props) {
     setProcessingMsg('Payment successful!');
     setStep('done');
     setTimeout(() => {
+      ctx.setCart(null);
       ctx.setCartOpen(false);
       navigate('/order-success', { state: { paymentMethod: toServerMethod(method), activeTab } });
     }, 1200);
@@ -350,7 +351,7 @@ export default function PaymentPage({ ctx }: Props) {
         {/* ── NowCart UPI ── */}
         <div className="px-3 pt-5 pb-2 flex items-center gap-2">
           <span className="text-green-600 font-extrabold text-lg italic tracking-tight">nowcart</span>
-          <span className="text-sm font-bold text-gray-800">UPI ▶</span>
+          <span className="text-sm font-bold text-gray-800">UPI ✢</span>
         </div>
         <SectionCard>
           <Row
@@ -522,7 +523,7 @@ export default function PaymentPage({ ctx }: Props) {
 
         {/* ── Trust badges ── */}
         <div className="flex flex-wrap gap-2 justify-center px-3 pt-5 pb-2">
-          {[['🔒', '256-bit SSL'], ['🏦', 'RBI Compliant'], ['🛡', 'PCI-DSS'], ['↩️', 'Easy Refunds']].map(([icon, text]) => (
+          {[['🔒', '256-bit SSL'], ['🏪', 'RBI Compliant'], ['🢡', 'PCI-DSS'], ['✩', 'Easy Refunds']].map(([icon, text]) => (
             <div key={text} className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1.5">
               <span>{icon}</span><span>{text}</span>
             </div>

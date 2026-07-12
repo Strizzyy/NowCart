@@ -211,7 +211,7 @@ async def get_predicted_cart(user_id: str):
     if is_starter:
         msg = f"🛒 Here are your starter essentials — personalised for your profile ({len(cart.items)} items)"
     else:
-        msg = f"🔮 We predicted {len(cart.items)} items you might need soon"
+        msg = f"We predicted {len(cart.items)} items you might need soon"
 
     return {
         "message": msg,

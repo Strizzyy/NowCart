@@ -18,8 +18,8 @@ interface PanelProps {
 
 const ICON_TONES: Record<NonNullable<PanelProps['tone']>, string> = {
   primary: 'bg-primary-light text-primary-ink',
-  secondary: 'bg-secondary/15 text-secondary-dark',
-  accent: 'bg-accent/10 text-accent-dark',
+  secondary: 'bg-primary-light text-primary-ink',
+  accent: 'bg-primary-light text-primary-ink',
 };
 
 /**

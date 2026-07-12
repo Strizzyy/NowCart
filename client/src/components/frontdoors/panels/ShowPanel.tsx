@@ -192,7 +192,7 @@ export default function ShowPanel({ ctx, onClose }: Props) {
           className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-4 px-3 text-dark hover:border-primary hover:bg-primary-light/40 active:scale-[0.97] transition min-h-[80px]"
           aria-label="Take a photo with camera"
         >
-          <span className="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center">
+          <span className="w-10 h-10 rounded-xl bg-primary-light text-primary-ink flex items-center justify-center">
             <Camera size={20} aria-hidden="true" />
           </span>
           <span className="text-xs font-semibold leading-tight text-center">
@@ -207,7 +207,7 @@ export default function ShowPanel({ ctx, onClose }: Props) {
           className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-4 px-3 text-dark hover:border-primary hover:bg-primary-light/40 active:scale-[0.97] transition min-h-[80px]"
           aria-label={isMobile ? 'Choose from gallery' : 'Browse files'}
         >
-          <span className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+          <span className="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center">
             <FolderOpen size={20} aria-hidden="true" />
           </span>
           <span className="text-xs font-semibold leading-tight text-center">

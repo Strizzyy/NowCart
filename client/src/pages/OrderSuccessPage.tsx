@@ -96,18 +96,18 @@ export default function OrderSuccessPage({ ctx }: Props) {
           {Array.from({ length: 50 }).map((_, i) => (
             <div
               key={i}
-              className="absolute animate-bounce"
+              className="absolute animate-bounce rounded-full"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 2}s`,
                 animationDuration: `${1 + Math.random() * 2}s`,
-                opacity: 0.8,
-                fontSize: `${10 + Math.random() * 14}px`,
+                opacity: 0.6,
+                width: `${6 + Math.random() * 8}px`,
+                height: `${6 + Math.random() * 8}px`,
+                backgroundColor: ['#3bb77e', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#34d399'][i % 6],
               }}
-            >
-              {['🎉', '🎊', '✨', '🥳', '🛒', '🎈', '⭐', '💚'][i % 8]}
-            </div>
+            />
           ))}
         </div>
       )}
@@ -216,7 +216,7 @@ export default function OrderSuccessPage({ ctx }: Props) {
 
           {/* Fun message */}
           <p className="text-xs text-muted mt-6 italic">
-            "Order saved! Subscribe will learn from this purchase to predict your next restock." 🧠✨
+            "Order saved! Subscribe will learn from this purchase to predict your next restock."
           </p>
         </div>
       </FadeIn>

@@ -215,7 +215,6 @@ export default function ShopPage({ ctx }: Props) {
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-16">
-              <span className="text-5xl block mb-4">🔍</span>
               <h3 className="font-heading font-bold text-dark mb-2">No products found</h3>
               <p className="text-muted text-sm">Try a different search or category</p>
             </div>

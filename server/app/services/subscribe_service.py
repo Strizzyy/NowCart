@@ -305,13 +305,14 @@ class SubscribeService:
         """
         catalog = get_catalog_service()
         items: list[CartItem] = []
-        notes: list[str] = ["🔮 Predicted restock — based on your purchase patterns"]
+        notes: list[str] = ["Predicted restock — based on your purchase patterns"]
 
         for pred in predictions:
             if await catalog.check_availability(pred.product_id):
                 product = await catalog.get_product_by_id(pred.product_id)
                 if product:
-                    # Skip very high-value items — restock cart is for everyday consumables
+                    # Skip non-grocery / high-value items — restock cart is for
+                    # everyday consumables, not appliances or luxury goods
                     if product.sale_price > 2000:
                         continue
                     items.append(CartItem(

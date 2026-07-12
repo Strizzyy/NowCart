@@ -51,8 +51,8 @@ export const FRONT_DOORS: FrontDoor[] = [
       "Two modes in one: let NowCart watch your purchase patterns and predict when you'll run out — or set recurring daily, weekly, or monthly subscriptions for products you always need. Pre-builds a confident cart before you even ask.",
     endpoint: 'subscribe',
     icon: <Zap size={22} />,
-    tone: 'secondary',
-    chipTone: 'secondary',
+    tone: 'primary',
+    chipTone: 'primary',
     featured: true,
   },
   // ── Secondary two (Speak, Budget) ──
@@ -75,7 +75,7 @@ export const FRONT_DOORS: FrontDoor[] = [
       'Set a budget and how many people you are feeding. The engine assembles the most complete cart that fits — and tells you exactly what is left over.',
     endpoint: 'constraint',
     icon: <Wallet size={22} />,
-    tone: 'secondary',
-    chipTone: 'secondary',
+    tone: 'primary',
+    chipTone: 'primary',
   },
 ];

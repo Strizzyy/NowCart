@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square, Send } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { Button, Spinner, ErrorState } from '../../../ui';
 import type { AppContext } from '../../../App';
-import { postVoiceIntent, postCartOp, type CartResponse } from '../../../api/client';
+import { postVoiceIntent, type CartResponse } from '../../../api/client';
 import PanelResult from '../PanelResult';
 
 interface Props {
@@ -13,17 +14,14 @@ interface Props {
 type Phase = 'idle' | 'listening' | 'processing' | 'confirming' | 'error';
 
 interface SpeechRecognitionLike {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  start: () => void;
-  stop: () => void;
+  lang: string; continuous: boolean; interimResults: boolean;
+  start: () => void; stop: () => void;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
   onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
 }
 
-function getRecognition(): SpeechRecognitionLike | null {
+function getWebRecognition(): SpeechRecognitionLike | null {
   const w = window as unknown as {
     SpeechRecognition?: new () => SpeechRecognitionLike;
     webkitSpeechRecognition?: new () => SpeechRecognitionLike;
@@ -31,20 +29,13 @@ function getRecognition(): SpeechRecognitionLike | null {
   const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
   if (!Ctor) return null;
   const rec = new Ctor();
-  rec.lang = 'en-IN';
-  rec.continuous = false;
-  rec.interimResults = true;
+  rec.lang = 'en-IN'; rec.continuous = false; rec.interimResults = true;
   return rec;
 }
 
-function parseFollowUp(text: string): { op: string; entity: string; quantity?: number } | null {
-  const t = text.trim().toLowerCase();
-  const add = t.match(/^(?:add|include|put in)\s+(?:(\d+)\s+)?(?:more\s+)?(.+)$/);
-  if (add) return { op: 'add', entity: add[2].trim(), quantity: add[1] ? Number(add[1]) : 1 };
-  const remove = t.match(/^(?:remove|delete|drop|take out)\s+(?:the\s+)?(.+)$/);
-  if (remove) return { op: 'remove', entity: remove[1].trim() };
-  return null;
-}
+const isNative = Capacitor.isNativePlatform();
+const webSpeechSupported = !!getWebRecognition();
+const speechSupported = isNative || webSpeechSupported;
 
 export default function SpeakPanel({ ctx, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>('idle');
@@ -55,109 +46,121 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [micStatus, setMicStatus] = useState<'ok' | 'denied' | 'unsupported'>('ok');
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const speechSupported = !!getRecognition();
 
   useEffect(() => {
     return () => {
       recRef.current?.stop();
       recRef.current = null;
+      if (isNative) {
+        import('@capacitor-community/speech-recognition')
+          .then(({ SpeechRecognition }) => SpeechRecognition.removeAllListeners())
+          .catch(() => {});
+      }
     };
   }, []);
 
+  const applyCart = (c: CartResponse) => {
+    setCart(c);
+    ctx.setCart(c);
+    setPhase('confirming');
+  };
+
   const submit = async (text: string) => {
     if (!text.trim()) return;
-    setPhase('processing');
-    setError(null);
+    setPhase('processing'); setError(null);
     try {
       const result = await postVoiceIntent(text.trim(), cart?.session_id ?? ctx.cart?.session_id);
-      setCart(result);
-      ctx.setCart(result);
-      setPhase('confirming');
+      applyCart(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Voice request failed');
       setPhase('error');
     }
   };
 
-  const startListening = async () => {
-    // Clean up any previous recognition instance
-    if (recRef.current) {
-      recRef.current.onend = null;
-      recRef.current.onerror = null;
-      recRef.current.onresult = null;
-      recRef.current.stop();
-      recRef.current = null;
-    }
-
-    if (!speechSupported) {
-      setMicStatus('unsupported');
-      return;
-    }
-
-    // getUserMedia first — keeps an active audio stream open while
-    // SpeechRecognition runs. Required on some Android Chrome builds where
-    // webkitSpeechRecognition silently fails without an active MediaStream.
-    let stream: MediaStream | null = null;
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        stream = null; // permission denied — SpeechRecognition will surface the error
+  // ── Native Capacitor mic ───────────────────────────────────────────────────
+  const startListeningNative = async () => {
+    try {
+      const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
+      const perm = await SpeechRecognition.requestPermissions();
+      if (perm.speechRecognition !== 'granted') { setMicStatus('denied'); return; }
+      const { available } = await SpeechRecognition.available();
+      if (!available) { setMicStatus('unsupported'); return; }
+      setMicStatus('ok'); setTranscript(''); setPhase('listening');
+      await SpeechRecognition.removeAllListeners();
+      await SpeechRecognition.addListener('partialResults', (data: { matches: string[] }) => {
+        if (data.matches?.length) setTranscript(data.matches[0]);
+      });
+      await SpeechRecognition.addListener('listeningState', async (state: { status: string }) => {
+        if (state.status === 'stopped') {
+          await SpeechRecognition.removeAllListeners();
+          setTranscript(cur => { if (cur.trim()) void submit(cur); else setPhase('idle'); return cur; });
+        }
+      });
+      const result = await SpeechRecognition.start({ language: 'en-IN', maxResults: 1, popup: false, partialResults: true });
+      if (result?.matches?.length) {
+        await SpeechRecognition.removeAllListeners();
+        const text = result.matches[0];
+        setTranscript(text); void submit(text);
       }
+    } catch (e: any) {
+      const msg = (e?.message ?? '').toLowerCase();
+      if (msg.includes('permission') || msg.includes('not-allowed')) setMicStatus('denied');
+      else setMicStatus('unsupported');
+      setPhase('idle');
     }
+  };
 
-    const rec = getRecognition()!;
+  // ── Web SpeechRecognition ──────────────────────────────────────────────────
+  const startListeningWeb = () => {
+    if (recRef.current) {
+      recRef.current.onend = null; recRef.current.onerror = null;
+      recRef.current.onresult = null; recRef.current.stop(); recRef.current = null;
+    }
+    const rec = getWebRecognition();
+    if (!rec) { setMicStatus('unsupported'); return; }
     recRef.current = rec;
-    setTranscript('');
-    setMicStatus('ok');
-    setPhase('listening');
-
-    const releaseStream = () => { stream?.getTracks().forEach(t => t.stop()); stream = null; };
-
+    setMicStatus('ok'); setTranscript(''); setPhase('listening');
     rec.onresult = (e) => {
-      const text = Array.from(e.results).map((r) => r[0].transcript).join(' ');
+      const text = Array.from(e.results).map(r => r[0].transcript).join(' ');
       setTranscript(text);
     };
-
     rec.onerror = (e) => {
-      releaseStream();
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setMicStatus('denied');
       setPhase('idle');
     };
-
     rec.onend = () => {
-      releaseStream();
-      setTranscript((current) => {
-        if (current.trim()) void submit(current);
-        else setPhase('idle');
-        return current;
-      });
+      setTranscript(cur => { if (cur.trim()) void submit(cur); else setPhase('idle'); return cur; });
     };
-
     rec.start();
   };
 
-  const stopListening = () => recRef.current?.stop();
+  const startListening = () => {
+    if (isNative) { void startListeningNative(); return; }
+    startListeningWeb();
+  };
+
+  const stopListening = () => {
+    if (isNative) {
+      import('@capacitor-community/speech-recognition')
+        .then(({ SpeechRecognition }) => SpeechRecognition.stop()).catch(() => {});
+      return;
+    }
+    recRef.current?.stop();
+  };
 
   const sendFollowUp = async (text: string) => {
     if (!text.trim() || !cart) return;
-    const parsed = parseFollowUp(text);
-    setPhase('processing');
-    setFollowUp('');
+    setPhase('processing'); setFollowUp('');
     try {
-      const result = parsed
-        ? await postCartOp(cart.session_id, parsed.op, parsed.entity, parsed.quantity)
-        : await postVoiceIntent(text.trim(), cart.session_id);
-      setCart(result);
-      ctx.setCart(result);
-      setPhase('confirming');
+      const result = await postVoiceIntent(text.trim(), cart.session_id);
+      applyCart(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Follow-up failed');
       setPhase('error');
     }
   };
 
-  // ----- error -----
+  // ── Render: error ─────────────────────────────────────────────────────────
   if (phase === 'error') {
     return (
       <ErrorState
@@ -168,7 +171,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- processing -----
+  // ── Render: processing ────────────────────────────────────────────────────
   if (phase === 'processing') {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
@@ -179,7 +182,7 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- confirming (result) -----
+  // ── Render: confirming ────────────────────────────────────────────────────
   if (phase === 'confirming' && cart) {
     return (
       <div className="space-y-4">
@@ -191,6 +194,8 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
           }}
           caption={transcript ? <>Heard: "{transcript}"</> : undefined}
         />
+
+        {/* Follow-up mic + text bar */}
         <div className="border-t border-border pt-3">
           <label htmlFor="speak-followup" className="text-xs font-semibold text-dark">
             Follow up (e.g. "remove onions", "add more protein")
@@ -199,12 +204,12 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
             <input
               id="speak-followup"
               value={followUp}
-              onChange={(e) => setFollowUp(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendFollowUp(followUp)}
+              onChange={e => setFollowUp(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendFollowUp(followUp)}
               placeholder="e.g. remove onions"
               className="flex-1 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
             />
-            {speechSupported && micStatus === 'ok' && (
+            {(speechSupported && micStatus === 'ok') && (
               <Button variant="outline" size="md" onClick={startListening} aria-label="Speak a follow-up">
                 <Mic size={16} />
               </Button>
@@ -218,21 +223,18 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
     );
   }
 
-  // ----- idle / listening -----
+  // ── Render: idle / listening ──────────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* Only shown when SpeechRecognition explicitly fires not-allowed */}
       {micStatus === 'denied' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
           <p className="text-sm font-semibold text-amber-800">Microphone access needed</p>
           <p className="text-xs text-amber-700 leading-snug">
-            Tap the lock icon in Chrome's address bar → <strong>Permissions</strong> → enable
-            <strong> Microphone</strong>. Then tap the mic button below.
+            {isNative
+              ? "Allow microphone access in your phone's app settings, then try again."
+              : "Tap the lock icon in Chrome's address bar → Permissions → enable Microphone."}
           </p>
-          <button
-            onClick={() => setMicStatus('ok')}
-            className="text-xs font-semibold text-amber-800 underline"
-          >
+          <button onClick={() => setMicStatus('ok')} className="text-xs font-semibold text-amber-800 underline">
             Try again
           </button>
         </div>
@@ -240,12 +242,12 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
 
       {micStatus === 'unsupported' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-          Voice isn't supported in this browser. Type your request below.
+          Voice isn't supported on this device. Type your request below.
         </div>
       )}
 
       {/* Mic button */}
-      {speechSupported && (
+      {speechSupported && micStatus !== 'unsupported' && (
         <div className="flex flex-col items-center gap-4 py-2">
           <button
             type="button"
@@ -272,13 +274,13 @@ export default function SpeakPanel({ ctx, onClose }: Props) {
         </div>
       )}
 
-      {/* Text input — always available */}
+      {/* Text input */}
       <div className="flex gap-2">
         <input
           id="speak-typed"
           value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit(typed)}
+          onChange={e => setTyped(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit(typed)}
           placeholder="e.g. healthy breakfast for two people"
           autoFocus={micStatus === 'unsupported'}
           className="flex-1 border border-border rounded-xl px-3 py-3 text-sm outline-none focus:border-primary min-h-[44px]"

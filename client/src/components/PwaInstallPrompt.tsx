@@ -55,7 +55,7 @@ export default function PwaInstallPrompt() {
       <div className="bg-dark border border-white/10 text-white rounded-2xl shadow-[var(--shadow-pop)] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img src="/icons/icon-192.png" alt="NowCart" className="w-11 h-11 rounded-xl shrink-0" />
+            <img src="/logoo.jpeg" alt="NowCart" className="w-11 h-11 rounded-xl shrink-0" />
             <div>
               <p className="text-sm font-semibold leading-snug">Install NowCart</p>
               <p className="text-xs text-white/60 mt-0.5">
