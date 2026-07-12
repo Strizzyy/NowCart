@@ -12,6 +12,7 @@ multiple "rotated" models each silently shared whichever key was configured
 last — breaking rotation and racing under concurrent requests. Client
 instances here are fully isolated per API key.
 """
+import asyncio
 import itertools
 import json
 
@@ -22,6 +23,11 @@ from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+# No per-call timeout existed before — a merely-slow (not erroring) response was
+# awaited indefinitely. This bounds each key attempt so a hung call fails fast
+# and rotates to the next key instead of blocking the whole request.
+_VISION_TIMEOUT_SECONDS = 20
 
 
 class GeminiProvider:
@@ -128,15 +134,24 @@ class GeminiVisionProvider:
         for _ in range(len(self._clients)):
             client = self._next_client()
             try:
-                resp = await client.aio.models.generate_content(
-                    model=self._model_name,
-                    contents=[full_prompt, image_part],
+                resp = await asyncio.wait_for(
+                    client.aio.models.generate_content(
+                        model=self._model_name,
+                        contents=[full_prompt, image_part],
+                    ),
+                    timeout=_VISION_TIMEOUT_SECONDS,
                 )
                 data = json.loads(_strip_fences(resp.text))
                 data.setdefault("degraded", False)
                 data.setdefault("dish", "unknown dish")
                 data.setdefault("ingredients", [])
                 return data
+            except asyncio.TimeoutError as exc:
+                last_exc = exc
+                logger.warning(
+                    "Gemini vision call timed out after %ds, trying next key",
+                    _VISION_TIMEOUT_SECONDS,
+                )
             except Exception as exc:  # noqa: BLE001
                 last_exc = exc
                 logger.warning("Gemini vision key failed, trying next in rotation: %s", exc)

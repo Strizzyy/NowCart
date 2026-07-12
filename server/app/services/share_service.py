@@ -161,7 +161,10 @@ async def _extract_youtube_details(html: str, video_id: str | None) -> str | Non
     title = video_details.get("title", "")
     if not title:
         return None
-    description = video_details.get("shortDescription", "")
+    # YouTube legitimately returns shortDescription: null for videos with no
+    # description — .get(key, "") only substitutes when the key is absent, so
+    # an explicit null would otherwise reach description[:2000] below and crash.
+    description = video_details.get("shortDescription") or ""
 
     parts = [f"Video title: {title}", f"Video description: {description[:2000]}"]
 

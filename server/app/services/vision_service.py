@@ -6,7 +6,10 @@ Falls back gracefully if vision is unavailable.
 """
 from __future__ import annotations
 
+import io
 import logging
+
+from PIL import Image
 
 from app.llm.factory import get_vision_provider, get_text_provider
 from app.models.domain.cart import Cart
@@ -14,6 +17,38 @@ from app.models.domain.enums import IntentMode
 from app.services.outcome_service import get_outcome_service
 
 logger = logging.getLogger(__name__)
+
+# Full-resolution phone photos (often 3-8MB) sent as-is to Gemini are the
+# dominant cost in the ~20s "Show" latency — food identification doesn't need
+# more than this long edge, so downscaling first cuts upload + inference time
+# with no meaningful accuracy loss.
+_MAX_VISION_DIMENSION = 1280
+_VISION_JPEG_QUALITY = 85
+
+
+def _resize_for_vision(image_bytes: bytes) -> bytes:
+    """Downscale + re-encode an image before sending it to the vision model.
+
+    Falls back to the original bytes on any decode failure (unsupported
+    format, corrupt upload) so a resize problem never breaks the request.
+    """
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            if img.width <= _MAX_VISION_DIMENSION and img.height <= _MAX_VISION_DIMENSION:
+                return image_bytes
+            img = img.convert("RGB")
+            img.thumbnail((_MAX_VISION_DIMENSION, _MAX_VISION_DIMENSION), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=_VISION_JPEG_QUALITY)
+            resized = buf.getvalue()
+            logger.info(
+                "Resized vision upload: %d bytes -> %d bytes (%dx%d)",
+                len(image_bytes), len(resized), img.width, img.height,
+            )
+            return resized
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Vision image resize failed, sending original bytes: %s", exc)
+        return image_bytes
 
 
 class VisionService:
@@ -55,8 +90,9 @@ class VisionService:
         if text_hint:
             prompt += f"\n\nUser context: {text_hint}"
 
-        # Call vision provider
-        vision_result = await vision.describe_image(image_bytes, prompt)
+        # Call vision provider — resize first, the biggest lever on end-to-end latency
+        resized_bytes = _resize_for_vision(image_bytes)
+        vision_result = await vision.describe_image(resized_bytes, prompt)
 
         # Check if vision degraded
         if vision_result.get("degraded", False):
@@ -74,11 +110,14 @@ class VisionService:
                 cart.session_id = session_id
             return cart
 
-        # Extract info from vision result
-        dish = vision_result.get("dish", "unknown dish")
-        ingredients = vision_result.get("ingredients", [])
-        servings = vision_result.get("servings_estimate", 2)
-        cuisine = vision_result.get("cuisine", "")
+        # Extract info from vision result. Gemini can return an explicit null for
+        # a field it's unsure about (e.g. "cuisine": null) — .get(key, default)
+        # only substitutes for a missing key, not an explicit null, so that would
+        # otherwise render as the literal text "None" in the outcome sentence below.
+        dish = vision_result.get("dish") or "unknown dish"
+        ingredients = vision_result.get("ingredients") or []
+        servings = vision_result.get("servings_estimate") or 2
+        cuisine = vision_result.get("cuisine") or ""
 
         # Build a natural-language outcome from the vision analysis
         if ingredients:

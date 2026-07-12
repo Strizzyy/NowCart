@@ -204,28 +204,36 @@ export default function CartDrawer({ ctx }: Props) {
                 </div>
               )}
 
-              {/* Unmatched / couldn't-add notes — collapsible, collapsed by default */}
-              {cart.notes.length > 0 && (
-                <div className="border border-border rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setNotesExpanded(v => !v)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 bg-light-bg hover:bg-border/40 transition text-left"
-                  >
-                    <p className="text-xs font-semibold text-muted flex items-center gap-1.5">
-                      <PackageX size={12} aria-hidden="true" />
-                      {cart.notes.length} item{cart.notes.length === 1 ? '' : 's'} couldn't fit
-                    </p>
-                    <span className="text-[10px] text-muted">{notesExpanded ? 'Hide ▲' : 'Show ▼'}</span>
-                  </button>
-                  {notesExpanded && (
-                    <div className="px-3 pb-3 pt-1 space-y-0.5">
-                      {cart.notes.map((note, i) => (
-                        <p key={i} className="text-xs text-muted">{note}</p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Unmatched / couldn't-add notes — collapsible, collapsed by default.
+                  cart.notes is a general-purpose bag (meal-context marker, unmatched-need
+                  notices, budget-drop notices, restock/subscription notices) — only the
+                  genuine drop notices belong in a "couldn't fit" count. */}
+              {(() => {
+                const droppableNotes = cart.notes.filter(n =>
+                  !n.startsWith('🍽️') && !n.includes('Predicted restock') && !n.includes('subscription')
+                );
+                return droppableNotes.length > 0 && (
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setNotesExpanded(v => !v)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 bg-light-bg hover:bg-border/40 transition text-left"
+                    >
+                      <p className="text-xs font-semibold text-muted flex items-center gap-1.5">
+                        <PackageX size={12} aria-hidden="true" />
+                        {droppableNotes.length} item{droppableNotes.length === 1 ? '' : 's'} couldn't fit
+                      </p>
+                      <span className="text-[10px] text-muted">{notesExpanded ? 'Hide ▲' : 'Show ▼'}</span>
+                    </button>
+                    {notesExpanded && (
+                      <div className="px-3 pb-3 pt-1 space-y-0.5">
+                        {droppableNotes.map((note, i) => (
+                          <p key={i} className="text-xs text-muted">{note}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Section Tabs: Recommended vs Economical */}
               {cart.economical_items && cart.economical_items.length > 0 && (

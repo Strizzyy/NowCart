@@ -35,6 +35,32 @@ _SPOON_UNITS = {"tablespoon", "tablespoons", "tbsp", "teaspoon", "teaspoons", "t
                 "cup", "cups", "pinch"}
 
 
+def _safe_quantity(value, default: float = 1.0) -> float:
+    """Coerce an LLM/cart-supplied quantity to a float, defaulting on null/garbage.
+
+    dict.get(key, default) only substitutes when the key is absent — real LLM
+    output can (and does) return {"quantity": null} for an ambiguous item like
+    "salt to taste", which previously crashed float(None) mid-pipeline.
+    """
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_str(value, default: str) -> str:
+    """Coerce an LLM/cart-supplied string field to non-empty, defaulting on null.
+
+    Same footgun as _safe_quantity: dict.get(key, default) doesn't substitute
+    when the LLM explicitly returns e.g. {"category_hint": null}, and Need's
+    fields are non-optional strings — that null reaches Need(...) unguarded
+    and fails Pydantic validation mid-pipeline.
+    """
+    return value.strip() if isinstance(value, str) and value.strip() else default
+
+
 def _normalize_quantity_to_packs(quantity: float, unit: str) -> float:
     """Convert raw LLM quantities to number of product packs to buy."""
     unit_lower = unit.lower().strip()
@@ -278,9 +304,13 @@ async def decompose_node(state: AgentState) -> dict:
             "You are a grocery assistant for an Indian grocery delivery app. Given a user's food/cooking "
             f"outcome, decompose it into a shopping list of ingredients. The user is cooking for {servings} people. "
             "Return quantities as number of packs/units to buy from a store. "
+            "If the input explicitly names specific ingredients or dishes (e.g. 'noodles', 'paneer', "
+            "'idli'), you MUST include every one of them verbatim as a need — do not substitute, "
+            "generalize, or drop them in favor of generic meal components. Only add reasonable "
+            "complementary staples if the request is incomplete on its own. "
             "For category_hint, use one of these exact values: rice, grains, pulses, flour, oil, ghee, spices, "
             "masala, vegetables, fruits, meat, chicken, fish, eggs, dairy, milk, cheese, paneer, "
-            "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs. "
+            "bakery, beverages, tea, coffee, snacks, dry fruits, nuts, herbs, pasta, noodles, instant food. "
             "Return JSON with \"dish\" (string or null) and \"needs\" (array of "
             '{name, quantity, unit, category_hint}). quantity = how many to buy, unit = pack/kg/piece/bottle etc.'
             + constraint_context + exclusion_context + region_context + demographic_context
@@ -305,13 +335,13 @@ async def decompose_node(state: AgentState) -> dict:
     raw_needs = result.get("needs", [])
     new_needs: list[Need] = []
     for item in raw_needs:
-        quantity = float(item.get("quantity", 1))
-        unit = item.get("unit", "unit")
+        quantity = _safe_quantity(item.get("quantity"))
+        unit = _safe_str(item.get("unit"), "unit")
         new_needs.append(Need(
-            name=item.get("name", "unknown"),
+            name=_safe_str(item.get("name"), "unknown"),
             quantity=quantity,
             unit=unit,
-            category_hint=item.get("category_hint", ""),
+            category_hint=_safe_str(item.get("category_hint"), ""),
             status=NeedStatus.PENDING,
         ))
 
@@ -321,7 +351,7 @@ async def decompose_node(state: AgentState) -> dict:
         for li in locked_items:
             locked_need = Need(
                 name=li["name"],
-                quantity=float(li.get("quantity", 1)),
+                quantity=_safe_quantity(li.get("quantity")),
                 unit="unit",
                 category_hint="",
                 status=NeedStatus.MATCHED,  # already matched — skip the catalog matcher
@@ -372,9 +402,6 @@ async def match_node(state: AgentState) -> dict:
             hybrid_service = svc
     except Exception:
         pass
-
-    from app.repositories import get_repository
-    repo = get_repository()
 
     _match_log.info("match_node: starting for %d needs, hybrid=%s", len(needs), hybrid_service is not None)
 
@@ -461,10 +488,16 @@ async def match_node(state: AgentState) -> dict:
         for pid, hscore in hybrid_results:
             score_map[pid] = max(score_map.get(pid, 0.0), hscore)
 
-        # Supplement fuzzy_matches with any hybrid-only hits (rare in rapidfuzz mode)
+        # Supplement fuzzy_matches with any hybrid-only hits — semantic search
+        # routinely surfaces different candidates than rapidfuzz (that's the point
+        # of running both), so this fires on most needs, not rarely. It must stay
+        # on the in-memory product cache (already warmed at startup) rather than
+        # repo.get_product(), which was hitting DynamoDB with a real network round
+        # trip per candidate — sequentially, up to ~15 times per need — and was the
+        # actual cause of multi-second match_node latency under the dynamodb backend.
         for pid, _score in hybrid_results:
             if pid not in {p.product_id for p, _ in fuzzy_matches}:
-                product = await repo.get_product(pid)
+                product = await catalog.get_product_by_id(pid)
                 if product:
                     fuzzy_matches.append((product, score_map[pid] * 100.0))
 
@@ -560,12 +593,17 @@ async def match_node(state: AgentState) -> dict:
         confidence = min(score, 1.0)
         cart_quantity = _normalize_quantity_to_packs(need.quantity, need.unit)
 
-        # Threshold for considering it a match
+        # Threshold for considering it a match. Below this, the candidate is too
+        # weak to trust as a real product for this need — skip it entirely rather
+        # than padding the cart with a low-quality guess (it was previously added
+        # unconditionally, which is why carts ended up with too many junk items).
         if score >= 0.4:
             need.matched_product_id = product_id
             need.status = NeedStatus.MATCHED
         else:
             need.status = NeedStatus.UNMATCHED
+            notes.append(f"Low-confidence match skipped for: {need.name}")
+            continue
 
         # Build a human-readable reason — no raw scores exposed to the frontend
         if score >= 0.9:
@@ -683,6 +721,24 @@ async def confidence_node(state: AgentState) -> dict:
         total_confidence += final_confidence
         if final_confidence < threshold:
             low_confidence_items.append(item.name)
+
+    # Surface the strongest/most "primary" matches first — sorted here (on the
+    # final adjusted confidence) rather than in match_node, because the loop
+    # above just rewrote every item.confidence with a different formula
+    # (substitution/name-length/price factors); sorting earlier would have
+    # been silently invalidated by that rewrite. items and economical_items
+    # are built 1:1 in match_node (each need contributes at most one pair, in
+    # the same iteration), so they're sorted together to keep that positional
+    # pairing intact — budget trimming and cart edit ops index into both lists
+    # by the same position.
+    if cart.items and len(cart.items) == len(cart.economical_items):
+        paired = sorted(
+            zip(cart.items, cart.economical_items), key=lambda pair: pair[0].confidence, reverse=True
+        )
+        cart.items = [p[0] for p in paired]
+        cart.economical_items = [p[1] for p in paired]
+    elif cart.items:
+        cart.items = sorted(cart.items, key=lambda i: i.confidence, reverse=True)
 
     overall_confidence = total_confidence / len(cart.items)
     cart.confidence = round(overall_confidence, 3)
@@ -915,7 +971,7 @@ async def replan_node(state: AgentState) -> dict:
             needs = [
                 Need(
                     name=li["name"],
-                    quantity=float(li.get("quantity", 1)),
+                    quantity=_safe_quantity(li.get("quantity")),
                     unit="unit",
                     category_hint="",
                     status=NeedStatus.MATCHED,

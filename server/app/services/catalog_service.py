@@ -40,11 +40,13 @@ _DERIVED_INDICATORS = {
     "pickle", "chutney", "powder", "chips", "flavour", "flavor", "flavoured",
     "flavored", "spread", "dip", "mix", "masala", "curry", "based", "infused",
     "extract", "syrup", "squash", "concentrate", "drink", "candy", "toffee",
-    "bar", "cake", "cookie", "biscuit", "wafer", "noodles",
+    "bar", "cake", "cookie", "biscuit", "wafer",
     "instant", "ready", "oats", "cereal", "muesli", "rings", "nuggets",
     "fries", "burger", "pizza", "wrap", "roll", "samosa", "pakora",
     "bhujia", "papad", "poppadom", "chaat", "nachos", "crackers",
     "chocolate", "ice", "cream", "milkshake", "smoothie", "shake",
+    "tea", "coffee", "bread", "lotion", "soap", "shampoo", "wash", "gel",
+    "toothpaste", "formula", "conditioner",
 }
 
 
@@ -199,16 +201,21 @@ _CATEGORY_ALIASES: dict[str, list[str]] = {
     "fish": ["eggs meat fish", "fish seafood"],
     "seafood": ["eggs meat fish", "fish seafood"],
     "eggs": ["eggs meat fish", "eggs"],
-    # Dairy
-    "dairy": ["bakery cakes dairy", "dairy cheese"],
-    "milk": ["bakery cakes dairy", "dairy cheese"],
-    "cheese": ["bakery cakes dairy", "dairy cheese"],
-    "paneer": ["bakery cakes dairy", "dairy cheese"],
-    "yogurt": ["bakery cakes dairy", "dairy cheese"],
-    "curd": ["bakery cakes dairy", "dairy cheese"],
+    # Dairy — sub-category "dairy" only; the parent category "bakery cakes
+    # dairy" also contains breads/cakes/cookies, so it must NOT be a target
+    # here or a "milk" need would match "Milk Bread" (see _filter_by_category_hint).
+    "dairy": ["dairy", "dairy cheese"],
+    "milk": ["dairy", "dairy cheese"],
+    "cheese": ["dairy cheese", "dairy"],
+    "paneer": ["dairy cheese", "dairy"],
+    "yogurt": ["dairy"],
+    "curd": ["dairy"],
     # Bakery
-    "bakery": ["bakery cakes dairy", "gourmet breads", "cakes pastries"],
-    "bread": ["bakery cakes dairy", "gourmet breads"],
+    "bakery": ["bakery snacks", "gourmet breads", "cakes pastries", "cookies rusk khari"],
+    "bread": ["breads buns", "gourmet breads"],
+    # Pasta & noodles
+    "pasta": ["noodle pasta vermicelli", "pasta soup noodles"],
+    "noodles": ["noodle pasta vermicelli", "pasta soup noodles"],
     # Beverages
     "beverages": ["beverages", "coffee", "tea"],
     "tea": ["beverages"],
@@ -523,18 +530,26 @@ class CatalogService:
         """
         hint_lower = category_hint.lower().strip()
 
-        # Strategy 1: Use known alias mapping
+        # Strategy 1: Use known alias mapping. Sub-category is checked first and
+        # preferred — BigBasket's top-level category names are compound strings
+        # (e.g. "bakery cakes dairy" covers dairy AND breads AND cakes), so a
+        # category-level substring match is too broad for aliases like "dairy"
+        # and would let e.g. "Milk Bread" match a "milk" need. Only fall back to
+        # category-level matching when the precise sub-category pass finds nothing.
         alias_targets = _CATEGORY_ALIASES.get(hint_lower, [])
         if alias_targets:
-            candidates = [
+            sub_candidates = [
                 p for p in all_products
-                if any(
-                    target in p.category.lower() or target in p.sub_category.lower()
-                    for target in alias_targets
-                )
+                if any(target in p.sub_category.lower() for target in alias_targets)
             ]
-            if candidates:
-                return candidates
+            if sub_candidates:
+                return sub_candidates
+            cat_candidates = [
+                p for p in all_products
+                if any(target in p.category.lower() for target in alias_targets)
+            ]
+            if cat_candidates:
+                return cat_candidates
 
         # Strategy 2: Bidirectional substring matching
         candidates = [
