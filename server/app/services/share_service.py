@@ -6,12 +6,15 @@ as a plain outcome if fetching fails.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
 import uuid
 
 import httpx
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import CouldNotRetrieveTranscript
 
 from app.llm.factory import get_text_provider
 from app.models.domain.cart import Cart
@@ -60,9 +63,38 @@ def _is_youtube_url(url: str) -> bool:
     return any(p.search(url) for p in _YT_PATTERNS)
 
 
-def _extract_youtube_details(html: str) -> str | None:
+def _youtube_video_id(url: str) -> str | None:
+    for pattern in _YT_PATTERNS:
+        match = pattern.search(url)
+        if match:
+            return match.group(1)
+    return None
+
+
+def _fetch_youtube_transcript_sync(video_id: str, max_chars: int = 6000) -> str | None:
+    """Fetch the actual spoken transcript (manual or auto-generated captions).
+
+    This is what makes recipe extraction *semantic* rather than a guess from
+    title/description alone — cooking videos narrate ingredients, quantities,
+    and steps out loud, which the transcript captures verbatim.
+    """
+    try:
+        api = YouTubeTranscriptApi()
+        transcript = api.fetch(video_id)
+    except CouldNotRetrieveTranscript:
+        return None
+    except Exception:  # noqa: BLE001 — any other transcript-fetch failure
+        return None
+
+    full_text = " ".join(snippet.text for snippet in transcript).strip()
+    if not full_text:
+        return None
+    return full_text[:max_chars]
+
+
+async def _extract_youtube_details(html: str, video_id: str | None) -> str | None:
     """Pull the real video title + description out of YouTube's embedded
-    ytInitialPlayerResponse JSON blob.
+    ytInitialPlayerResponse JSON blob, plus the spoken transcript when available.
 
     YouTube watch pages are client-rendered — the visible/stripped HTML text
     is just nav/footer boilerplate. The actual title and description live
@@ -87,7 +119,17 @@ def _extract_youtube_details(html: str) -> str | None:
         return None
     description = video_details.get("shortDescription", "")
 
-    return f"Video title: {title}\nVideo description: {description[:2000]}"
+    parts = [f"Video title: {title}", f"Video description: {description[:2000]}"]
+
+    if video_id:
+        transcript = await asyncio.to_thread(_fetch_youtube_transcript_sync, video_id)
+        if transcript:
+            parts.append(f"Video transcript (spoken narration): {transcript}")
+            logger.info("Fetched YouTube transcript for %s (%d chars)", video_id, len(transcript))
+        else:
+            logger.info("No transcript available for %s — using title/description only", video_id)
+
+    return "\n".join(parts)
 
 
 async def _fetch_url_content(url: str) -> str | None:
@@ -111,7 +153,7 @@ async def _fetch_url_content(url: str) -> str | None:
                 return None  # Binary content — can't parse
 
             if _is_youtube_url(url):
-                yt_details = _extract_youtube_details(resp.text)
+                yt_details = await _extract_youtube_details(resp.text, _youtube_video_id(url))
                 if yt_details:
                     return yt_details
                 # Video unavailable/private or JSON blob not found — fall
@@ -158,12 +200,15 @@ class ShareService:
                 # Use LLM to extract recipe/ingredients from page content
                 system_prompt = (
                     "You are a recipe extraction assistant. Given web page content from a recipe URL "
-                    "(could be YouTube description, recipe blog, Instagram caption, etc.), "
+                    "(could be a YouTube title/description/spoken transcript, recipe blog, Instagram caption, etc.), "
                     "extract the recipe name and all grocery ingredients needed.\n\n"
-                    "If it's a YouTube video about cooking, extract the dish name and ingredients "
-                    "mentioned in the title/description.\n\n"
+                    "If a 'Video transcript' section is present, it is the host's actual spoken narration — "
+                    "prioritize it over the title/description, since hosts usually name every ingredient and "
+                    "often state exact quantities out loud (e.g. '200 grams of paneer', 'two onions'). "
+                    "Prefer ingredients and quantities mentioned in the transcript; use the title/description "
+                    "only to fill gaps or confirm the dish name.\n\n"
                     "Return a concise summary in the format: "
-                    "'Making [dish name]: [ingredient1], [ingredient2], ...'\n"
+                    "'Making [dish name]: [ingredient1] ([qty if stated]), [ingredient2] ([qty if stated]), ...'\n"
                     "If you can't identify a recipe, return the most relevant food/grocery items mentioned."
                 )
                 extracted_text = await llm.complete_text(system_prompt, page_content)
