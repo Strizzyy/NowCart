@@ -13,10 +13,10 @@ import logging
 import re
 import uuid
 
-import httpx
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import CouldNotRetrieveTranscript
 
+from app.core.ssrf_guard import SSRFBlocked, safe_get
 from app.llm.factory import get_text_provider
 from app.models.domain.cart import Cart
 from app.models.domain.enums import IntentMode
@@ -189,32 +189,35 @@ async def _fetch_url_content(url: str) -> str | None:
       where the real caption (often a full ingredient list) lives.
     """
     try:
-        async with httpx.AsyncClient(
-            timeout=15.0,
-            follow_redirects=True,
+        # safe_get validates scheme/host/IP (blocking internal/metadata
+        # addresses), pins DNS, and re-validates every redirect hop — see
+        # app/core/ssrf_guard.py. Never replace this with a raw httpx call.
+        resp = await safe_get(
+            url,
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) NowCart/1.0"},
-        ) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            content_type = resp.headers.get("content-type", "")
+        )
+        content_type = resp.headers.get("content-type", "")
 
-            if "text/html" not in content_type and "text/plain" not in content_type:
-                return None  # Binary content — can't parse
+        if "text/html" not in content_type and "text/plain" not in content_type:
+            return None  # Binary content — can't parse
 
-            if _is_youtube_url(url):
-                yt_details = await _extract_youtube_details(resp.text, _youtube_video_id(url))
-                if yt_details:
-                    return yt_details
-                # Video unavailable/private or JSON blob not found — fall
-                # through to generic extraction as a last resort.
-            elif _is_instagram_url(url) or _is_tiktok_url(url):
-                og_details = _extract_og_meta(resp.text)
-                if og_details:
-                    return og_details
-                # No OG tags found (login wall, private post, etc.) — fall
-                # through to generic extraction as a last resort.
+        if _is_youtube_url(url):
+            yt_details = await _extract_youtube_details(resp.text, _youtube_video_id(url))
+            if yt_details:
+                return yt_details
+            # Video unavailable/private or JSON blob not found — fall
+            # through to generic extraction as a last resort.
+        elif _is_instagram_url(url) or _is_tiktok_url(url):
+            og_details = _extract_og_meta(resp.text)
+            if og_details:
+                return og_details
+            # No OG tags found (login wall, private post, etc.) — fall
+            # through to generic extraction as a last resort.
 
-            return _extract_text_from_html(resp.text)
+        return _extract_text_from_html(resp.text)
+    except SSRFBlocked as exc:
+        logger.warning("Blocked unsafe share URL %s: %s", url, exc)
+        return None
     except Exception as exc:
         logger.warning("Failed to fetch URL %s: %s", url, exc)
         return None
