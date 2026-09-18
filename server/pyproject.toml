@@ -2,7 +2,6 @@
 name = "nowcart-server"
 version = "0.1.0"
 description = "NowCart — intent-capture layer for quick-commerce (FastAPI + LangGraph)"
-readme = "../README.md"
 requires-python = ">=3.11"
 
 dependencies = [
