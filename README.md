@@ -95,11 +95,6 @@ flowchart TB
 | Infra | EC2 (`ap-southeast-2`, Sydney) + Nginx · S3 + CloudFront (`ap-south-1`, Mumbai) — cross-region by historical accident, not by design; see note below |
 | CI/CD | GitHub Actions — push to `master` auto-deploys frontend to S3/CloudFront and backend to EC2 |
 
-> **Region note:** the backend EC2 instance (`nowcart-server`) actually runs in `ap-southeast-2`
-> (Sydney), while S3, CloudFront, and DynamoDB are in `ap-south-1` (Mumbai). This mismatch
-> wasn't intentional and previously caused a false "the server is gone" scare when checking
-> the EC2 console in the documented region — it's always been alive in Sydney. Worth
-> consolidating into one region eventually, but not urgent since everything works as-is.
 
 ---
 
